@@ -1,0 +1,11 @@
+[workspace]
+members = [
+  "crates/ndc-graphql",
+  "crates/ndc-graphql-cli",
+  "crates/common",
+]
+resolver = "2"
+
+package.version = "0.2.8"
+package.edition = "2021"
+
