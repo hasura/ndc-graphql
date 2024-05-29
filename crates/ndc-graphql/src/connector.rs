@@ -78,6 +78,10 @@ impl Connector for GraphQLConnector {
                     aggregates: None,
                     variables: None,
                     explain: Some(LeafCapability {}),
+                    nested_fields: models::NestedFieldCapabilities {
+                        filter_by: None,
+                        order_by: None,
+                    },
                 },
                 mutation: models::MutationCapabilities {
                     transactional: None,

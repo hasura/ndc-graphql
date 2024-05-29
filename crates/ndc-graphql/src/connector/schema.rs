@@ -83,6 +83,19 @@ pub fn schema_from_graphql_document(
                             models::ObjectField {
                                 description: field.description.to_owned(),
                                 r#type: to_ndc_type(&field.field_type),
+                                arguments: field
+                                    .arguments
+                                    .iter()
+                                    .map(|arg| {
+                                        (
+                                            arg.name.to_owned(),
+                                            models::ArgumentInfo {
+                                                description: arg.description.to_owned(),
+                                                argument_type: to_ndc_type(&arg.value_type),
+                                            },
+                                        )
+                                    })
+                                    .collect(),
                             },
                         )
                     })
@@ -109,6 +122,7 @@ pub fn schema_from_graphql_document(
                             models::ObjectField {
                                 description: field.description.to_owned(),
                                 r#type: to_ndc_type(&field.value_type),
+                                arguments: BTreeMap::new(),
                             },
                         )
                     })

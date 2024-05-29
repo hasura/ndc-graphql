@@ -8,7 +8,9 @@ async-trait = "0.1.78"
 common = { path = "../common" }
 graphql-parser = "0.4.0"
 indexmap = "2.1.0"
-ndc-sdk = { git = "https://github.com/hasura/ndc-sdk-rs", rev = "972dba6", package = "ndc-sdk" }
+ndc-sdk = { git = "https://github.com/hasura/ndc-sdk-rs", tag = "v0.1.3", package = "ndc-sdk", features = [
+  "rustls",
+], default-features = false }
 prometheus = "0.13.3"
 reqwest = { version = "0.12.3", features = [
   "json",

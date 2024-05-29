@@ -24,6 +24,7 @@ pub enum QueryBuilderError {
         field: String,
         argument: String,
     },
+    Unexpected(String),
 }
 
 impl std::error::Error for QueryBuilderError {}
@@ -84,6 +85,7 @@ impl Display for QueryBuilderError {
                 f,
                 "Argument {argument} for field {field} not found in Object Type {object}"
             ),
+            QueryBuilderError::Unexpected(s) => write!(f, "Unexpected: {s}"),
         }
     }
 }

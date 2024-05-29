@@ -110,17 +110,27 @@ pub fn build_query_document<'a>(
             .ok_or_else(|| QueryBuilderError::NoRequesQueryFields)?
             .iter()
             .map(|(alias, field)| {
-                let fields = match field {
-                    models::Field::Column { column, fields } if column == "__value" => Ok(fields),
-                    models::Field::Column { column, fields: _ } => {
-                        Err(QueryBuilderError::NotSupported(format!(
-                            "Expected field with key __value, got {column}"
-                        )))
-                    }
+                let (fields, arguments) = match field {
+                    models::Field::Column {
+                        column,
+                        fields,
+                        arguments,
+                    } if column == "__value" => Ok((fields, arguments)),
+                    models::Field::Column {
+                        column,
+                        fields: _,
+                        arguments: _,
+                    } => Err(QueryBuilderError::NotSupported(format!(
+                        "Expected field with key __value, got {column}"
+                    ))),
                     models::Field::Relationship { .. } => {
                         Err(QueryBuilderError::NotSupported("Relationships".to_string()))
                     }
                 }?;
+
+                if !arguments.is_empty() {
+                    return Err(QueryBuilderError::Unexpected("Functions arguments should be passed to the collection, not the __value field".to_string()))
+                }
 
                 selection_set_field(
                     alias,
@@ -161,7 +171,7 @@ fn selection_set_field<'a>(
     arguments: Vec<(String, Value<'a, String>)>,
     parent_object_type: &'a schema::ObjectType<'a, String>,
     fields: &Option<NestedField>,
-    variables: &mut OperationVariables,
+    variables: &mut OperationVariables<'a>,
     schema_document: &'a schema::Document<'a, String>,
 ) -> Result<Selection<'a, String>, QueryBuilderError> {
     let selection_set = match fields.as_ref().map(underlying_fields) {
@@ -174,21 +184,29 @@ fn selection_set_field<'a>(
             let items = fields
                 .iter()
                 .map(|(alias, field)| {
-                    let (name, fields) = match field {
-                        models::Field::Column { column, fields } => (column, fields),
+                    let (name, fields, arguments) = match field {
+                        models::Field::Column {
+                            column,
+                            fields,
+                            arguments,
+                        } => (column, fields, arguments),
                         models::Field::Relationship { .. } => {
                             return Err(QueryBuilderError::NotSupported(
                                 "Relationships".to_string(),
                             ))
                         }
                     };
-                    // todo: support field arguments
-                    let arguments = vec![];
 
                     selection_set_field(
                         alias,
                         name,
-                        arguments,
+                        field_arguments(
+                            arguments,
+                            map_query_arg,
+                            name,
+                            field_object_type,
+                            variables,
+                        )?,
                         field_object_type,
                         fields,
                         variables,
