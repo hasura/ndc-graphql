@@ -191,7 +191,7 @@ impl Connector for GraphQLConnector {
 
         tracing::info_span!("Process Response").in_scope(|| {
             if let Some(errors) = response.errors {
-                Err(MutationError::Other(
+                Err(MutationError::InvalidRequest(
                     serde_json::to_string(&errors)
                         .map_err(|err| MutationError::Other(err.into()))?
                         .into(),
