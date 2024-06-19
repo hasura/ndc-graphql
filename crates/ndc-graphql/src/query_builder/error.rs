@@ -11,6 +11,12 @@ pub enum QueryBuilderError {
     NoQueryType,
     NoMutationType,
     NotSupported(String),
+    QueryFieldNotFound {
+        field: String,
+    },
+    MutationFieldNotFound {
+        field: String,
+    },
     ObjectFieldNotFound {
         object: String,
         field: String,
@@ -24,6 +30,7 @@ pub enum QueryBuilderError {
         field: String,
         argument: String,
     },
+    MisshapenHeadersArgument(serde_json::Value),
     Unexpected(String),
 }
 
@@ -86,6 +93,15 @@ impl Display for QueryBuilderError {
                 "Argument {argument} for field {field} not found in Object Type {object}"
             ),
             QueryBuilderError::Unexpected(s) => write!(f, "Unexpected: {s}"),
+            QueryBuilderError::QueryFieldNotFound { field } => {
+                write!(f, "Field {field} not found in Query type")
+            }
+            QueryBuilderError::MutationFieldNotFound { field } => {
+                write!(f, "Field {field} not found in Mutation type")
+            }
+            QueryBuilderError::MisshapenHeadersArgument(headers) => {
+                write!(f, "Misshapen headers argument: {}", headers.to_string())
+            }
         }
     }
 }

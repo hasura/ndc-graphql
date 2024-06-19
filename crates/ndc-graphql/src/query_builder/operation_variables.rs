@@ -1,17 +1,17 @@
 use std::collections::BTreeMap;
 
+use common::schema::TypeRef;
 use graphql_parser::{
     query::{Type, Value, VariableDefinition},
-    schema::InputValue,
     Pos,
 };
 
-pub struct OperationVariables<'c> {
-    variables: BTreeMap<String, (serde_json::Value, &'c Type<'c, String>)>,
+pub struct OperationVariables {
+    variables: BTreeMap<String, (serde_json::Value, TypeRef)>,
     variable_index: u32,
 }
 
-impl<'c> OperationVariables<'c> {
+impl<'c> OperationVariables {
     pub fn new() -> Self {
         Self {
             variables: BTreeMap::new(),
@@ -22,13 +22,13 @@ impl<'c> OperationVariables<'c> {
         &mut self,
         name: &str,
         value: serde_json::Value,
-        input_value: &'c InputValue<'c, String>,
+        r#type: &TypeRef,
     ) -> Value<'c, String> {
         let name = format!("arg_{}_{}", self.variable_index, name);
         self.variable_index += 1;
 
         self.variables
-            .insert(name.clone(), (value, &input_value.value_type));
+            .insert(name.clone(), (value, r#type.to_owned()));
 
         Value::Variable(name)
     }
@@ -38,16 +38,25 @@ impl<'c> OperationVariables<'c> {
         BTreeMap<String, serde_json::Value>,
         Vec<VariableDefinition<'c, String>>,
     ) {
+        fn typeref_to_type<'c>(typeref: TypeRef) -> Type<'c, String> {
+            match typeref {
+                TypeRef::Named(name) => Type::NamedType(name),
+                TypeRef::List(underlying) => Type::ListType(Box::new(typeref_to_type(*underlying))),
+                TypeRef::NonNull(underlying) => {
+                    Type::NonNullType(Box::new(typeref_to_type(*underlying)))
+                }
+            }
+        }
         let (values, definitions) = self
             .variables
             .into_iter()
-            .map(|(alias, (value, var_type))| {
+            .map(|(alias, (value, typeref))| {
                 (
                     (alias.clone(), value),
                     VariableDefinition {
                         position: Pos { line: 0, column: 0 },
                         name: alias,
-                        var_type: var_type.to_owned(),
+                        var_type: typeref_to_type(typeref),
                         default_value: None,
                     },
                 )

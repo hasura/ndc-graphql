@@ -2,7 +2,8 @@ use std::{env, iter::once, path::PathBuf};
 
 use common::{
     config::{ConnectionConfig, ServerConfig},
-    config_file::{ConfigValue, Header, ServerConfigFile, CONFIG_FILE_NAME, SCHEMA_FILE_NAME},
+    config_file::{ConfigValue, ServerConfigFile, CONFIG_FILE_NAME, SCHEMA_FILE_NAME},
+    schema::SchemaDefinition,
 };
 use graphql_parser::parse_schema;
 use ndc_sdk::connector::{InvalidNode, InvalidNodes, KeyOrIndex, LocatedError, ParseError};
@@ -23,25 +24,40 @@ pub async fn read_configuration(context_path: &PathBuf) -> Result<ServerConfig, 
     })?;
 
     let schema_file_path = context_path.join(SCHEMA_FILE_NAME);
-    let schema_string = fs::read_to_string(schema_file_path)
+    let schema_string = fs::read_to_string(&schema_file_path)
         .await
         .map_err(|err| ParseError::IoError(err))?;
-    // temporary: we'd like to keep a parsed schema as config
-    // lifetimes of the graphql parser library are making this difficult
-    // for now, parse the schema for validation, but discard the value.
-    let _schema_ast = parse_schema(&schema_string)
+
+    let schema_document = parse_schema(&schema_string).map_err(|err| {
+        ParseError::ParseError(LocatedError {
+            file_path: config_file_path.clone(),
+            line: 0,
+            column: 0,
+            message: err.to_string(),
+        })
+    })?;
+
+    let request_config = config_file
+        .request
+        .map(|request| request.into())
+        .unwrap_or_default();
+    let response_config = config_file
+        .response
+        .map(|response| response.into())
+        .unwrap_or_default();
+
+    let schema = SchemaDefinition::new(&schema_document, &request_config, &response_config)
         .map_err(|err| {
-            ParseError::ParseError(LocatedError {
-                file_path: config_file_path.clone(),
-                line: 0,
-                column: 0,
+            ParseError::ValidateError(InvalidNodes(vec![InvalidNode {
+                file_path: schema_file_path,
+                node_path: vec![],
                 message: err.to_string(),
-            })
-        })?
-        .into_static();
+            }]))
+        })?;
 
     let config = ServerConfig {
-        schema_string,
+        schema,
+        // schema_string,
         connection: ConnectionConfig {
             endpoint: read_config_value(
                 &config_file_path,
@@ -56,12 +72,64 @@ pub async fn read_configuration(context_path: &PathBuf) -> Result<ServerConfig, 
                     let value = read_config_value(
                         &config_file_path,
                         &["connection", "headers", &header_name, "value"],
-                        header_value.value,
+                        header_value,
                     )?;
-                    Ok((header_name, Header { value }))
+                    Ok((header_name, value))
                 })
                 .collect::<Result<_, ParseError>>()?,
         },
+        request: request_config,
+        response: response_config,
+        // request: RequestConfig {
+        //     headers_argument: config_file
+        //         .request
+        //         .as_ref()
+        //         .and_then(|request| request.headers_argument.as_ref())
+        //         .unwrap_or(&"_headers".to_string())
+        //         .to_owned(),
+        //     headers_type_name: config_file
+        //         .request
+        //         .as_ref()
+        //         .and_then(|request| request.headers_type_name.as_ref())
+        //         .unwrap_or(&"_HeaderMap".to_string())
+        //         .to_owned(),
+        //     forward_headers: config_file
+        //         .request
+        //         .as_ref()
+        //         .map(|response| response.forward_headers)
+        //         .unwrap_or(vec![]),
+        // },
+        // response: ResponseConfig {
+        //     headers_field: config_file
+        //         .response
+        //         .as_ref()
+        //         .and_then(|response| response.headers_field.as_ref())
+        //         .unwrap_or(&"headers".to_string())
+        //         .to_owned(),
+        //     response_field: config_file
+        //         .response
+        //         .as_ref()
+        //         .and_then(|response| response.response_field.as_ref())
+        //         .unwrap_or(&"response".to_string())
+        //         .to_owned(),
+        //     typename_prefix: config_file
+        //         .response
+        //         .as_ref()
+        //         .and_then(|response| response.typename_prefix.as_ref())
+        //         .unwrap_or(&"_".to_string())
+        //         .to_owned(),
+        //     typename_suffix: config_file
+        //         .response
+        //         .as_ref()
+        //         .and_then(|response| response.typename_suffix.as_ref())
+        //         .unwrap_or(&"Response".to_string())
+        //         .to_owned(),
+        //     forward_headers: config_file
+        //         .response
+        //         .as_ref()
+        //         .map(|response| response.forward_headers)
+        //         .unwrap_or(vec![]),
+        // },
     };
 
     Ok(config)

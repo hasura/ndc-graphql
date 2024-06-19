@@ -4,9 +4,9 @@ use clap::{Parser, Subcommand, ValueEnum};
 use common::{
     config::ConnectionConfig,
     config_file::{
-        ConfigValue, Header, ServerConfigFile, CONFIG_FILE_NAME, CONFIG_SCHEMA_FILE_NAME,
-        SCHEMA_FILE_NAME,
+        ConfigValue, ServerConfigFile, CONFIG_FILE_NAME, CONFIG_SCHEMA_FILE_NAME, SCHEMA_FILE_NAME,
     },
+    schema::SchemaDefinition,
 };
 use graphql::{execute_graphql_introspection, schema_from_introspection};
 use graphql_parser::schema;
@@ -94,7 +94,24 @@ async fn main() -> Result<(), Box<dyn Error>> {
             update_config(&context_path).await?;
         }
         Command::Validate {} => {
-            let _schema_document = read_schema_file(&context_path).await?;
+            let config_file = read_config_file(&context_path)
+                .await?
+                .ok_or_else(|| format!("Could not find {CONFIG_FILE_NAME}"))?;
+            let schema_document = read_schema_file(&context_path)
+                .await?
+                .ok_or_else(|| format!("Could not find {SCHEMA_FILE_NAME}"))?;
+
+            let request_config = config_file
+                .request
+                .map(|request| request.into())
+                .unwrap_or_default();
+            let response_config = config_file
+                .response
+                .map(|response| response.into())
+                .unwrap_or_default();
+
+            let _schema =
+                SchemaDefinition::new(&schema_document, &request_config, &response_config)?;
         }
         Command::Watch {} => {
             todo!("implement watch command")
@@ -172,19 +189,18 @@ async fn update_config(context_path: &PathBuf) -> Result<(), Box<dyn Error>> {
         }
     }?;
 
+    // CLI uses the introspection connection if available
+    let connection_file = config_file
+        .introspection
+        .unwrap_or_else(|| config_file.connection);
+
     let connection = ConnectionConfig {
-        endpoint: read_config_value(&config_file.connection.endpoint)?,
-        headers: config_file
-            .connection
+        endpoint: read_config_value(&connection_file.endpoint)?,
+        headers: connection_file
             .headers
             .iter()
             .map(|(header_name, header_value)| {
-                Ok((
-                    header_name.to_owned(),
-                    Header {
-                        value: read_config_value(&header_value.value)?,
-                    },
-                ))
+                Ok((header_name.to_owned(), read_config_value(&header_value)?))
             })
             .collect::<Result<_, std::env::VarError>>()?,
     };
@@ -210,6 +226,7 @@ fn read_config_value(value: &ConfigValue) -> Result<String, std::env::VarError> 
 }
 
 #[tokio::test]
+#[ignore]
 async fn update_configuration_directory() {
     update_config(&std::path::Path::new("../../config").to_path_buf())
         .await

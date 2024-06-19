@@ -4,7 +4,9 @@ version.workspace = true
 edition.workspace = true
 
 [dependencies]
+glob-match = "0.2.1"
 graphql_client = "0.14.0"
+graphql-parser = "0.4.0"
 reqwest = { version = "0.12.3", features = [
     "json",
     "rustls-tls",

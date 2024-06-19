@@ -1,4 +1,5 @@
 use crate::config::ConnectionConfig;
+use glob_match::glob_match;
 use serde::Serialize;
 use std::{collections::BTreeMap, error::Error, fmt::Debug};
 
@@ -13,13 +14,15 @@ pub fn get_http_client(
 pub async fn execute_graphql<T: serde::de::DeserializeOwned>(
     query: &str,
     variables: BTreeMap<String, serde_json::Value>,
+    endpoint: &str,
+    headers: &BTreeMap<String, String>,
     client: &reqwest::Client,
-    connection_config: &ConnectionConfig,
-) -> Result<graphql_client::Response<T>, Box<dyn Error>> {
-    let mut request = client.post(&connection_config.endpoint);
+    return_headers: &Vec<String>,
+) -> Result<(BTreeMap<String, String>, graphql_client::Response<T>), Box<dyn Error>> {
+    let mut request = client.post(endpoint);
 
-    for (header_name, header_value) in &connection_config.headers {
-        request = request.header(header_name, &header_value.value);
+    for (header_name, header_value) in headers {
+        request = request.header(header_name, header_value);
     }
 
     let request_body = GraphQLRequest::new(query, &variables);
@@ -27,6 +30,21 @@ pub async fn execute_graphql<T: serde::de::DeserializeOwned>(
     let request = request.json(&request_body);
 
     let response = request.send().await?;
+    let headers = response
+        .headers()
+        .iter()
+        .filter_map(|(name, value)| {
+            for pattern in return_headers {
+                if glob_match(pattern, name.as_str()) {
+                    return Some((
+                        name.to_string(),
+                        value.to_str().unwrap_or_default().to_string(),
+                    ));
+                }
+            }
+            None
+        })
+        .collect();
 
     if response.error_for_status_ref().is_err() {
         return Err(response.text().await?.into());
@@ -34,7 +52,7 @@ pub async fn execute_graphql<T: serde::de::DeserializeOwned>(
 
     let response: graphql_client::Response<T> = response.json().await?;
 
-    Ok(response)
+    Ok((headers, response))
 }
 
 #[derive(Debug, Serialize)]

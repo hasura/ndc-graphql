@@ -24,11 +24,13 @@ pub async fn execute_graphql_introspection(
 
     let introspection_query = include_str!("./graphql/introspection_query.graphql");
 
-    let introspection = execute_graphql::<Introspection>(
+    let (_, introspection) = execute_graphql::<Introspection>(
         &introspection_query,
         BTreeMap::new(),
+        &connection.endpoint,
+        &connection.headers,
         &client,
-        &connection,
+        &vec![],
     )
     .await?;
 
