@@ -100,7 +100,7 @@ impl Display for QueryBuilderError {
                 write!(f, "Field {field} not found in Mutation type")
             }
             QueryBuilderError::MisshapenHeadersArgument(headers) => {
-                write!(f, "Misshapen headers argument: {}", headers.to_string())
+                write!(f, "Misshapen headers argument: {}", headers)
             }
         }
     }

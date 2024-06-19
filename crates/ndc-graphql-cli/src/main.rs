@@ -1,4 +1,8 @@
-use std::{env, error::Error, path::PathBuf};
+use std::{
+    env,
+    error::Error,
+    path::{Path, PathBuf},
+};
 
 use clap::{Parser, Subcommand, ValueEnum};
 use common::{
@@ -122,7 +126,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
 }
 
 async fn write_config_file(
-    context_path: &PathBuf,
+    context_path: &Path,
     config: &ServerConfigFile,
 ) -> Result<(), Box<dyn Error>> {
     let config_file_path = context_path.join(CONFIG_FILE_NAME);
@@ -131,7 +135,7 @@ async fn write_config_file(
     Ok(())
 }
 async fn write_schema_file(
-    context_path: &PathBuf,
+    context_path: &Path,
     schema: &graphql_parser::schema::Document<'_, String>,
 ) -> Result<(), Box<dyn Error>> {
     let schema_file_path = context_path.join(SCHEMA_FILE_NAME);
@@ -139,7 +143,7 @@ async fn write_schema_file(
     fs::write(schema_file_path, schema_file).await?;
     Ok(())
 }
-async fn write_config_schema_file(context_path: &PathBuf) -> Result<(), Box<dyn Error>> {
+async fn write_config_schema_file(context_path: &Path) -> Result<(), Box<dyn Error>> {
     let config_schema_file_path = context_path.join(CONFIG_SCHEMA_FILE_NAME);
     let config_schema_file = schema_for!(ServerConfigFile);
     fs::write(
@@ -150,9 +154,7 @@ async fn write_config_schema_file(context_path: &PathBuf) -> Result<(), Box<dyn 
     Ok(())
 }
 
-async fn read_config_file(
-    context_path: &PathBuf,
-) -> Result<Option<ServerConfigFile>, Box<dyn Error>> {
+async fn read_config_file(context_path: &Path) -> Result<Option<ServerConfigFile>, Box<dyn Error>> {
     let file_path = context_path.join(CONFIG_FILE_NAME);
     let config: Option<ServerConfigFile> = match fs::read_to_string(file_path).await {
         Ok(file) => Some(serde_json::from_str(&file)
@@ -165,7 +167,7 @@ async fn read_config_file(
 }
 
 async fn read_schema_file(
-    context_path: &PathBuf,
+    context_path: &Path,
 ) -> Result<Option<schema::Document<'static, String>>, Box<dyn std::error::Error>> {
     let file_path = context_path.join(SCHEMA_FILE_NAME);
     let config: Option<schema::Document<'static, String>> = match fs::read_to_string(file_path).await {
@@ -178,21 +180,19 @@ async fn read_schema_file(
     Ok(config)
 }
 
-async fn update_config(context_path: &PathBuf) -> Result<(), Box<dyn Error>> {
-    let config_file = match read_config_file(&context_path).await? {
+async fn update_config(context_path: &Path) -> Result<(), Box<dyn Error>> {
+    let config_file = match read_config_file(context_path).await? {
         Some(config) => Ok(config),
         None => {
             println!("Configuration file {CONFIG_FILE_NAME} missing, initializing configuration directory.");
-            write_config_schema_file(&context_path).await?;
-            write_config_file(&context_path, &ServerConfigFile::default()).await?;
+            write_config_schema_file(context_path).await?;
+            write_config_file(context_path, &ServerConfigFile::default()).await?;
             Err::<_, String>("Configuration file could not be found, created a new one. Please fill in connection information before trying again.".into())
         }
     }?;
 
     // CLI uses the introspection connection if available
-    let connection_file = config_file
-        .introspection
-        .unwrap_or_else(|| config_file.connection);
+    let connection_file = config_file.introspection.unwrap_or(config_file.connection);
 
     let connection = ConnectionConfig {
         endpoint: read_config_value(&connection_file.endpoint)?,
@@ -200,7 +200,7 @@ async fn update_config(context_path: &PathBuf) -> Result<(), Box<dyn Error>> {
             .headers
             .iter()
             .map(|(header_name, header_value)| {
-                Ok((header_name.to_owned(), read_config_value(&header_value)?))
+                Ok((header_name.to_owned(), read_config_value(header_value)?))
             })
             .collect::<Result<_, std::env::VarError>>()?,
     };
@@ -213,7 +213,7 @@ async fn update_config(context_path: &PathBuf) -> Result<(), Box<dyn Error>> {
     let schema = schema_from_introspection(introspection);
 
     write_schema_file(context_path, &schema).await?;
-    write_config_schema_file(&context_path).await?;
+    write_config_schema_file(context_path).await?;
 
     Ok(())
 }
@@ -228,7 +228,7 @@ fn read_config_value(value: &ConfigValue) -> Result<String, std::env::VarError> 
 #[tokio::test]
 #[ignore]
 async fn update_configuration_directory() {
-    update_config(&std::path::Path::new("../../config").to_path_buf())
+    update_config(std::path::Path::new("../../config"))
         .await
         .expect("updating config should work");
 }

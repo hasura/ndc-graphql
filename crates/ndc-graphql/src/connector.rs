@@ -35,7 +35,7 @@ impl ConnectorSetup for GraphQLConnector {
         &self,
         configuration_dir: impl AsRef<Path> + Send,
     ) -> Result<<Self as Connector>::Configuration, ParseError> {
-        read_configuration(&configuration_dir.as_ref().to_path_buf()).await
+        read_configuration(configuration_dir.as_ref()).await
     }
 
     async fn try_init_state(
@@ -43,7 +43,7 @@ impl ConnectorSetup for GraphQLConnector {
         configuration: &<Self as Connector>::Configuration,
         _metrics: &mut prometheus::Registry,
     ) -> Result<<Self as Connector>::State, InitializationError> {
-        Ok(ServerState::new(&configuration))
+        Ok(ServerState::new(configuration))
     }
 }
 
@@ -100,7 +100,7 @@ impl Connector for GraphQLConnector {
         request: models::QueryRequest,
     ) -> Result<JsonResponse<models::ExplainResponse>, ExplainError> {
         let operation = tracing::info_span!("Build Query Document", internal.visibility = "user")
-            .in_scope(|| build_query_document(&request, &configuration))?;
+            .in_scope(|| build_query_document(&request, configuration))?;
 
         let query = serde_json::to_string_pretty(&GraphQLRequest::new(
             &operation.query,
@@ -127,7 +127,7 @@ impl Connector for GraphQLConnector {
     ) -> Result<JsonResponse<models::ExplainResponse>, ExplainError> {
         let operation =
             tracing::info_span!("Build Mutation Document", internal.visibility = "user")
-                .in_scope(|| build_mutation_document(&request, &configuration))?;
+                .in_scope(|| build_mutation_document(&request, configuration))?;
 
         let query = serde_json::to_string_pretty(&GraphQLRequest::new(
             &operation.query,
@@ -154,10 +154,10 @@ impl Connector for GraphQLConnector {
     ) -> Result<JsonResponse<models::MutationResponse>, MutationError> {
         let operation =
             tracing::info_span!("Build Mutation Document", internal.visibility = "user")
-                .in_scope(|| build_mutation_document(&request, &configuration))?;
+                .in_scope(|| build_mutation_document(&request, configuration))?;
 
         let client = state
-            .client(&configuration)
+            .client(configuration)
             .await
             .map_err(|err| MutationError::Other(err.to_string().into()))?;
 
@@ -180,8 +180,7 @@ impl Connector for GraphQLConnector {
             if let Some(errors) = response.errors {
                 Err(MutationError::InvalidRequest(
                     serde_json::to_string(&errors)
-                        .map_err(|err| MutationError::Other(err.into()))?
-                        .into(),
+                        .map_err(|err| MutationError::Other(err.into()))?,
                 ))
             } else if let Some(mut data) = response.data {
                 let operation_results = request
@@ -227,10 +226,10 @@ impl Connector for GraphQLConnector {
         request: models::QueryRequest,
     ) -> Result<JsonResponse<models::QueryResponse>, QueryError> {
         let operation = tracing::info_span!("Build Query Document", internal.visibility = "user")
-            .in_scope(|| build_query_document(&request, &configuration))?;
+            .in_scope(|| build_query_document(&request, configuration))?;
 
         let client = state
-            .client(&configuration)
+            .client(configuration)
             .await
             .map_err(|err| QueryError::Other(err.to_string().into()))?;
 

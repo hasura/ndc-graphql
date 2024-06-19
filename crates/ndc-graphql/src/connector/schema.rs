@@ -109,7 +109,7 @@ pub fn schema_response(configuration: &ServerConfig) -> models::SchemaResponse {
     let mut functions = vec![];
 
     for (name, field) in &configuration.schema.query_fields {
-        let response_type_name = configuration.response.query_response_type_name(&name);
+        let response_type_name = configuration.response.query_response_type_name(name);
 
         object_types.insert(
             response_type_name.clone(),
@@ -142,7 +142,7 @@ pub fn schema_response(configuration: &ServerConfig) -> models::SchemaResponse {
     let mut procedures = vec![];
 
     for (name, field) in &configuration.schema.mutation_fields {
-        let response_type_name = configuration.response.mutation_response_type_name(&name);
+        let response_type_name = configuration.response.mutation_response_type_name(name);
 
         object_types.insert(
             response_type_name.clone(),

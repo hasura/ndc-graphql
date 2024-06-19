@@ -1,4 +1,8 @@
-use std::{env, iter::once, path::PathBuf};
+use std::{
+    env,
+    iter::once,
+    path::{Path, PathBuf},
+};
 
 use common::{
     config::{ConnectionConfig, ServerConfig},
@@ -9,11 +13,11 @@ use graphql_parser::parse_schema;
 use ndc_sdk::connector::{InvalidNode, InvalidNodes, KeyOrIndex, LocatedError, ParseError};
 use tokio::fs;
 
-pub async fn read_configuration(context_path: &PathBuf) -> Result<ServerConfig, ParseError> {
+pub async fn read_configuration(context_path: &Path) -> Result<ServerConfig, ParseError> {
     let config_file_path = context_path.join(CONFIG_FILE_NAME);
     let config_file = fs::read_to_string(&config_file_path)
         .await
-        .map_err(|err| ParseError::IoError(err))?;
+        .map_err(ParseError::IoError)?;
     let config_file: ServerConfigFile = serde_json::from_str(&config_file).map_err(|err| {
         ParseError::ParseError(LocatedError {
             file_path: config_file_path.clone(),
@@ -26,7 +30,7 @@ pub async fn read_configuration(context_path: &PathBuf) -> Result<ServerConfig, 
     let schema_file_path = context_path.join(SCHEMA_FILE_NAME);
     let schema_string = fs::read_to_string(&schema_file_path)
         .await
-        .map_err(|err| ParseError::IoError(err))?;
+        .map_err(ParseError::IoError)?;
 
     let schema_document = parse_schema(&schema_string).map_err(|err| {
         ParseError::ParseError(LocatedError {
@@ -57,7 +61,6 @@ pub async fn read_configuration(context_path: &PathBuf) -> Result<ServerConfig, 
 
     let config = ServerConfig {
         schema,
-        // schema_string,
         connection: ConnectionConfig {
             endpoint: read_config_value(
                 &config_file_path,
@@ -80,56 +83,6 @@ pub async fn read_configuration(context_path: &PathBuf) -> Result<ServerConfig, 
         },
         request: request_config,
         response: response_config,
-        // request: RequestConfig {
-        //     headers_argument: config_file
-        //         .request
-        //         .as_ref()
-        //         .and_then(|request| request.headers_argument.as_ref())
-        //         .unwrap_or(&"_headers".to_string())
-        //         .to_owned(),
-        //     headers_type_name: config_file
-        //         .request
-        //         .as_ref()
-        //         .and_then(|request| request.headers_type_name.as_ref())
-        //         .unwrap_or(&"_HeaderMap".to_string())
-        //         .to_owned(),
-        //     forward_headers: config_file
-        //         .request
-        //         .as_ref()
-        //         .map(|response| response.forward_headers)
-        //         .unwrap_or(vec![]),
-        // },
-        // response: ResponseConfig {
-        //     headers_field: config_file
-        //         .response
-        //         .as_ref()
-        //         .and_then(|response| response.headers_field.as_ref())
-        //         .unwrap_or(&"headers".to_string())
-        //         .to_owned(),
-        //     response_field: config_file
-        //         .response
-        //         .as_ref()
-        //         .and_then(|response| response.response_field.as_ref())
-        //         .unwrap_or(&"response".to_string())
-        //         .to_owned(),
-        //     typename_prefix: config_file
-        //         .response
-        //         .as_ref()
-        //         .and_then(|response| response.typename_prefix.as_ref())
-        //         .unwrap_or(&"_".to_string())
-        //         .to_owned(),
-        //     typename_suffix: config_file
-        //         .response
-        //         .as_ref()
-        //         .and_then(|response| response.typename_suffix.as_ref())
-        //         .unwrap_or(&"Response".to_string())
-        //         .to_owned(),
-        //     forward_headers: config_file
-        //         .response
-        //         .as_ref()
-        //         .map(|response| response.forward_headers)
-        //         .unwrap_or(vec![]),
-        // },
     };
 
     Ok(config)

@@ -28,7 +28,7 @@ pub struct Operation {
     pub headers: BTreeMap<String, String>,
 }
 
-pub fn build_mutation_document<'a>(
+pub fn build_mutation_document(
     request: &models::MutationRequest,
     configuration: &ServerConfig,
 ) -> Result<Operation, QueryBuilderError> {
@@ -67,14 +67,14 @@ pub fn build_mutation_document<'a>(
 
                     selection_set_field(
                         &alias,
-                        &name,
+                        name,
                         field_arguments(
                             &procedure_arguments,
                             |v| Ok(v.to_owned()),
                             field_definition,
                             &mut variables,
                         )?,
-                        &fields,
+                        fields,
                         field_definition,
                         &mut variables,
                         configuration,
@@ -104,7 +104,7 @@ pub fn build_mutation_document<'a>(
         headers: request_headers,
     })
 }
-pub fn build_query_document<'a>(
+pub fn build_query_document(
     request: &models::QueryRequest,
     configuration: &ServerConfig,
 ) -> Result<Operation, QueryBuilderError> {
@@ -185,17 +185,14 @@ pub fn build_query_document<'a>(
     })
 }
 
+type Headers = BTreeMap<String, String>;
+type Arguments = BTreeMap<String, serde_json::Value>;
+
 fn extract_headers<A, M>(
     arguments: &BTreeMap<String, A>,
     map_argument: M,
     configuration: &ServerConfig,
-) -> Result<
-    (
-        BTreeMap<String, String>,
-        BTreeMap<String, serde_json::Value>,
-    ),
-    QueryBuilderError,
->
+) -> Result<(Headers, Arguments), QueryBuilderError>
 where
     M: Fn(&A) -> Result<serde_json::Value, QueryBuilderError>,
 {
@@ -203,7 +200,7 @@ where
     let mut headers = BTreeMap::new();
 
     for (name, argument) in arguments {
-        let value = map_argument(&argument)?;
+        let value = map_argument(argument)?;
 
         if name == &configuration.request.headers_argument {
             match value {
@@ -230,7 +227,7 @@ where
                             }
                             serde_json::Value::String(header) => {
                                 for pattern in &configuration.request.forward_headers {
-                                    if glob_match(&pattern, &name) {
+                                    if glob_match(pattern, &name) {
                                         headers.insert(name, header);
                                         break;
                                     }
@@ -410,7 +407,7 @@ mod test {
           }
           
         "#;
-        let schema_document = graphql_parser::parse_schema(&schema_string)?;
+        let schema_document = graphql_parser::parse_schema(schema_string)?;
         let request_config = RequestConfig::default();
         let response_config = ResponseConfig::default();
 

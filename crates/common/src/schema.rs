@@ -24,7 +24,7 @@ impl SchemaDefinition {
                 | schema::Definition::TypeExtension(_)
                 | schema::Definition::DirectiveDefinition(_) => None,
             })
-            .ok_or_else(|| SchemaDefinitionError::MissingSchemaType)?;
+            .ok_or(SchemaDefinitionError::MissingSchemaType)?;
 
         // note: if there are duplicate definitions, the last one will stick.
         let definitions: BTreeMap<_, _> = schema_document
@@ -182,10 +182,8 @@ impl TypeRef {
     fn new(type_reference: &schema::Type<String>) -> Self {
         match type_reference {
             schema::Type::NamedType(name) => Self::Named(name.to_owned()),
-            schema::Type::ListType(underlying) => Self::List(Box::new(Self::new(&underlying))),
-            schema::Type::NonNullType(underlying) => {
-                Self::NonNull(Box::new(Self::new(&underlying)))
-            }
+            schema::Type::ListType(underlying) => Self::List(Box::new(Self::new(underlying))),
+            schema::Type::NonNullType(underlying) => Self::NonNull(Box::new(Self::new(underlying))),
         }
     }
     pub fn name(&self) -> &str {
