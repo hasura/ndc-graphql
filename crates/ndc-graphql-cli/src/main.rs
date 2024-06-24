@@ -95,7 +95,9 @@ async fn main() -> Result<(), Box<dyn Error>> {
             println!("Configuration Initialized. Add your endpoint, then introspect your schema to continue.")
         }
         Command::Update {} => {
-            update_config(&context_path).await?;
+            let (config_file, schema_document) = update_config(&context_path).await?;
+
+            validate_config(config_file, schema_document).await?;
         }
         Command::Validate {} => {
             let config_file = read_config_file(&context_path)
@@ -105,17 +107,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
                 .await?
                 .ok_or_else(|| format!("Could not find {SCHEMA_FILE_NAME}"))?;
 
-            let request_config = config_file
-                .request
-                .map(|request| request.into())
-                .unwrap_or_default();
-            let response_config = config_file
-                .response
-                .map(|response| response.into())
-                .unwrap_or_default();
-
-            let _schema =
-                SchemaDefinition::new(&schema_document, &request_config, &response_config)?;
+            validate_config(config_file, schema_document).await?;
         }
         Command::Watch {} => {
             todo!("implement watch command")
@@ -180,7 +172,27 @@ async fn read_schema_file(
     Ok(config)
 }
 
-async fn update_config(context_path: &Path) -> Result<(), Box<dyn Error>> {
+async fn validate_config(
+    config_file: ServerConfigFile,
+    schema_document: graphql_parser::schema::Document<'_, String>,
+) -> Result<(), Box<dyn Error>> {
+    let request_config = config_file.request.into();
+    let response_config = config_file.response.into();
+
+    let _schema = SchemaDefinition::new(&schema_document, &request_config, &response_config)?;
+
+    Ok(())
+}
+
+async fn update_config(
+    context_path: &Path,
+) -> Result<
+    (
+        ServerConfigFile,
+        graphql_parser::schema::Document<'static, String>,
+    ),
+    Box<dyn Error>,
+> {
     let config_file = match read_config_file(context_path).await? {
         Some(config) => Ok(config),
         None => {
@@ -191,8 +203,8 @@ async fn update_config(context_path: &Path) -> Result<(), Box<dyn Error>> {
         }
     }?;
 
-    // CLI uses the introspection connection if available
-    let connection_file = config_file.introspection.unwrap_or(config_file.connection);
+    // CLI uses the introspection connection
+    let connection_file = &config_file.introspection;
 
     let connection = ConnectionConfig {
         endpoint: read_config_value(&connection_file.endpoint)?,
@@ -210,12 +222,12 @@ async fn update_config(context_path: &Path) -> Result<(), Box<dyn Error>> {
     // todo: handle graphql errors!
     let introspection = response.data.expect("Successful introspection");
 
-    let schema = schema_from_introspection(introspection);
+    let schema_document = schema_from_introspection(introspection);
 
-    write_schema_file(context_path, &schema).await?;
+    write_schema_file(context_path, &schema_document).await?;
     write_config_schema_file(context_path).await?;
 
-    Ok(())
+    Ok((config_file, schema_document))
 }
 
 fn read_config_value(value: &ConfigValue) -> Result<String, std::env::VarError> {

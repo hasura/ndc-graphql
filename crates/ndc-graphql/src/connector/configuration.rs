@@ -41,14 +41,8 @@ pub async fn read_configuration(context_path: &Path) -> Result<ServerConfig, Par
         })
     })?;
 
-    let request_config = config_file
-        .request
-        .map(|request| request.into())
-        .unwrap_or_default();
-    let response_config = config_file
-        .response
-        .map(|response| response.into())
-        .unwrap_or_default();
+    let request_config = config_file.request.into();
+    let response_config = config_file.response.into();
 
     let schema = SchemaDefinition::new(&schema_document, &request_config, &response_config)
         .map_err(|err| {
@@ -65,10 +59,10 @@ pub async fn read_configuration(context_path: &Path) -> Result<ServerConfig, Par
             endpoint: read_config_value(
                 &config_file_path,
                 &["connection", "endpoint"],
-                config_file.connection.endpoint,
+                config_file.execution.endpoint,
             )?,
             headers: config_file
-                .connection
+                .execution
                 .headers
                 .into_iter()
                 .map(|(header_name, header_value)| {

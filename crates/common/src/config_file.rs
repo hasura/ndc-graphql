@@ -11,58 +11,23 @@ pub struct ServerConfigFile {
     #[serde(rename = "$schema")]
     pub json_schema: String,
     /// Connection configuration for query execution
-    /// Also used for introspection unless introspection connnection configuration is provided
-    pub connection: ConnectionConfigFile,
+    pub execution: ConnectionConfigFile,
     /// Optional Connection Configuration for introspection
-    pub introspection: Option<ConnectionConfigFile>,
+    pub introspection: ConnectionConfigFile,
     /// Optional configuration for requests
-    pub request: Option<RequestConfig<Option<String>>>,
+    pub request: RequestConfig<Option<String>>,
     /// Optional configuration for responses
-    pub response: Option<ResponseConfig<Option<String>>>,
+    pub response: ResponseConfig<Option<String>>,
 }
 
 impl Default for ServerConfigFile {
     fn default() -> Self {
         Self {
             json_schema: CONFIG_SCHEMA_FILE_NAME.to_owned(),
-            connection: ConnectionConfigFile {
-                endpoint: ConfigValue::Value("".to_string()),
-                headers: BTreeMap::from_iter(vec![
-                    (
-                        "Content-Type".to_owned(),
-                        ConfigValue::Value("application/json".to_string()),
-                    ),
-                    (
-                        "Authorization".to_owned(),
-                        ConfigValue::ValueFromEnv("GRAPHQL_ENDPOINT_AUTHORIZATION".to_string()),
-                    ),
-                ]),
-            },
-            introspection: Some(ConnectionConfigFile {
-                endpoint: ConfigValue::Value("".to_string()),
-                headers: BTreeMap::from_iter(vec![
-                    (
-                        "Content-Type".to_owned(),
-                        ConfigValue::Value("application/json".to_string()),
-                    ),
-                    (
-                        "Authorization".to_owned(),
-                        ConfigValue::ValueFromEnv("GRAPHQL_ENDPOINT_AUTHORIZATION".to_string()),
-                    ),
-                ]),
-            }),
-            request: Some(RequestConfig {
-                forward_headers: RequestConfig::default().forward_headers,
-                headers_argument: None,
-                headers_type_name: None,
-            }),
-            response: Some(ResponseConfig {
-                forward_headers: ResponseConfig::default().forward_headers,
-                headers_field: None,
-                response_field: None,
-                type_name_prefix: None,
-                type_name_suffix: None,
-            }),
+            execution: ConnectionConfigFile::default(),
+            introspection: ConnectionConfigFile::default(),
+            request: RequestConfig::default(),
+            response: ResponseConfig::default(),
         }
     }
 }
@@ -72,6 +37,24 @@ pub struct ConnectionConfigFile {
     pub endpoint: ConfigValue,
     #[serde(skip_serializing_if = "BTreeMap::is_empty", default)]
     pub headers: BTreeMap<String, ConfigValue>,
+}
+
+impl Default for ConnectionConfigFile {
+    fn default() -> Self {
+        Self {
+            endpoint: ConfigValue::Value("".to_string()),
+            headers: BTreeMap::from_iter(vec![
+                (
+                    "Content-Type".to_owned(),
+                    ConfigValue::Value("application/json".to_string()),
+                ),
+                (
+                    "Authorization".to_owned(),
+                    ConfigValue::ValueFromEnv("GRAPHQL_ENDPOINT_AUTHORIZATION".to_string()),
+                ),
+            ]),
+        }
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
@@ -131,6 +114,16 @@ impl Default for RequestConfig<String> {
     }
 }
 
+impl Default for RequestConfig<Option<String>> {
+    fn default() -> Self {
+        Self {
+            headers_argument: None,
+            headers_type_name: None,
+            forward_headers: vec!["*".to_owned()],
+        }
+    }
+}
+
 impl Default for ResponseConfig<String> {
     fn default() -> Self {
         Self {
@@ -138,6 +131,18 @@ impl Default for ResponseConfig<String> {
             response_field: "response".to_owned(),
             type_name_prefix: "_".to_owned(),
             type_name_suffix: "Response".to_owned(),
+            forward_headers: vec!["*".to_owned()],
+        }
+    }
+}
+
+impl Default for ResponseConfig<Option<String>> {
+    fn default() -> Self {
+        Self {
+            headers_field: None,
+            response_field: None,
+            type_name_prefix: None,
+            type_name_suffix: None,
             forward_headers: vec!["*".to_owned()],
         }
     }
