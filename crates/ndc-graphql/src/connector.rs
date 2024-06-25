@@ -164,13 +164,17 @@ impl Connector for GraphQLConnector {
         let execution_span =
             tracing::info_span!("Execute GraphQL Mutation", internal.visibility = "user");
 
-        let (headers, response) = execute_graphql::<serde_json::Value>(
+        let (headers, response) = execute_graphql::<IndexMap<String, serde_json::Value>>(
             &operation.query,
             operation.variables,
             &configuration.connection.endpoint,
             &operation.headers,
             &client,
-            &configuration.response.forward_headers,
+            &configuration
+                .response
+                .forward_headers
+                .clone()
+                .unwrap_or_default(),
         )
         .instrument(execution_span)
         .await
@@ -183,6 +187,8 @@ impl Connector for GraphQLConnector {
                         .map_err(|err| MutationError::Other(err.into()))?,
                 ))
             } else if let Some(mut data) = response.data {
+                let forward_response_headers = configuration.response.forward_headers.is_some();
+
                 let operation_results = request
                     .operations
                     .iter()
@@ -191,19 +197,22 @@ impl Connector for GraphQLConnector {
                         models::MutationOperation::Procedure { .. } => Ok({
                             let alias = format!("procedure_{index}");
                             let result = data
-                                .get_mut(alias)
+                                .get_mut(&alias)
                                 .map(|val| mem::replace(val, serde_json::Value::Null))
                                 .unwrap_or(serde_json::Value::Null);
-                            let response = BTreeMap::from_iter(vec![
-                                (
-                                    configuration.response.headers_field.to_string(),
-                                    serde_json::to_value(&headers)?,
-                                ),
-                                (configuration.response.response_field.to_string(), result),
-                            ]);
-                            MutationOperationResults::Procedure {
-                                result: serde_json::to_value(response)?,
-                            }
+                            let result = if forward_response_headers {
+                                serde_json::to_value(BTreeMap::from_iter(vec![
+                                    (
+                                        configuration.response.headers_field.to_string(),
+                                        serde_json::to_value(&headers)?,
+                                    ),
+                                    (configuration.response.response_field.to_string(), result),
+                                ]))?
+                            } else {
+                                result
+                            };
+
+                            MutationOperationResults::Procedure { result }
                         }),
                     })
                     .collect::<Result<Vec<_>, serde_json::Error>>()
@@ -242,7 +251,11 @@ impl Connector for GraphQLConnector {
             &configuration.connection.endpoint,
             &operation.headers,
             &client,
-            &configuration.response.forward_headers,
+            &configuration
+                .response
+                .forward_headers
+                .clone()
+                .unwrap_or_default(),
         )
         .instrument(execution_span)
         .await
@@ -256,14 +269,15 @@ impl Connector for GraphQLConnector {
                         .into(),
                 ))
             } else if let Some(data) = response.data {
-                let headers =
-                    serde_json::to_value(headers).map_err(|err| QueryError::Other(err.into()))?;
-                let data =
-                    serde_json::to_value(data).map_err(|err| QueryError::Other(err.into()))?;
+                let forward_response_headers = configuration.response.forward_headers.is_some();
 
-                Ok(JsonResponse::Value(models::QueryResponse(vec![RowSet {
-                    aggregates: None,
-                    rows: Some(vec![IndexMap::from_iter(vec![
+                let row = if forward_response_headers {
+                    let headers = serde_json::to_value(headers)
+                        .map_err(|err| QueryError::Other(err.into()))?;
+                    let data =
+                        serde_json::to_value(data).map_err(|err| QueryError::Other(err.into()))?;
+
+                    IndexMap::from_iter(vec![
                         (
                             configuration.response.headers_field.to_string(),
                             RowFieldValue(headers),
@@ -272,7 +286,14 @@ impl Connector for GraphQLConnector {
                             configuration.response.response_field.to_string(),
                             RowFieldValue(data),
                         ),
-                    ])]),
+                    ])
+                } else {
+                    data
+                };
+
+                Ok(JsonResponse::Value(models::QueryResponse(vec![RowSet {
+                    aggregates: None,
+                    rows: Some(vec![row]),
                 }])))
             } else {
                 Err(QueryError::UnprocessableContent(

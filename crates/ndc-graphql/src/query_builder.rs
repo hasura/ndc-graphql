@@ -34,54 +34,56 @@ pub fn build_mutation_document(
 ) -> Result<Operation, QueryBuilderError> {
     let mut variables = OperationVariables::new();
 
-    let mut request_headers = configuration.connection.headers.clone();
+    let mut request_headers = BTreeMap::new();
+    let mut items = vec![];
+
+    for (index, operation) in request.operations.iter().enumerate() {
+        match operation {
+            models::MutationOperation::Procedure {
+                name,
+                arguments,
+                fields,
+            } => {
+                let alias = format!("procedure_{index}");
+                let field_definition =
+                    configuration.schema.query_fields.get(name).ok_or_else(|| {
+                        QueryBuilderError::QueryFieldNotFound {
+                            field: name.to_owned(),
+                        }
+                    })?;
+
+                let (headers, procedure_arguments) =
+                    extract_headers(arguments, map_arg, configuration)?;
+
+                // note: duplicate headers get dropped here
+                // if there are multiple root fields, preset headers get set here once per field,
+                // with the last one persisting.
+                // this should not matter as headers should be identical anyways
+                request_headers.extend(headers.into_iter());
+
+                let item = selection_set_field(
+                    &alias,
+                    name,
+                    field_arguments(
+                        &procedure_arguments,
+                        |v| Ok(v.to_owned()),
+                        field_definition,
+                        &mut variables,
+                    )?,
+                    fields,
+                    field_definition,
+                    &mut variables,
+                    configuration,
+                )?;
+
+                items.push(item);
+            }
+        }
+    }
 
     let selection_set = SelectionSet {
         span: (pos(), pos()),
-        items: request
-            .operations
-            .iter()
-            .enumerate()
-            .map(|(index, operation)| match operation {
-                models::MutationOperation::Procedure {
-                    name,
-                    arguments,
-                    fields,
-                } => {
-                    let alias = format!("procedure_{index}");
-                    let field_definition =
-                        configuration.schema.query_fields.get(name).ok_or_else(|| {
-                            QueryBuilderError::QueryFieldNotFound {
-                                field: name.to_owned(),
-                            }
-                        })?;
-
-                    let (headers, procedure_arguments) =
-                        extract_headers(arguments, map_arg, configuration)?;
-
-                    for (name, header) in headers {
-                        // if headers are duplicated, the last to be inserted stays
-                        // todo: restrict what headers are forwarded here based on config
-                        request_headers.insert(name, header.to_string());
-                    }
-
-                    selection_set_field(
-                        &alias,
-                        name,
-                        field_arguments(
-                            &procedure_arguments,
-                            |v| Ok(v.to_owned()),
-                            field_definition,
-                            &mut variables,
-                        )?,
-                        fields,
-                        field_definition,
-                        &mut variables,
-                        configuration,
-                    )
-                }
-            })
-            .collect::<Result<_, _>>()?,
+        items,
     };
 
     let (values, variable_definitions) = variables.into_variable_definitions();
@@ -113,57 +115,69 @@ pub fn build_query_document(
     let (headers, request_arguments) =
         extract_headers(&request.arguments, map_query_arg, configuration)?;
 
-    // because all queries are commands, we can expect requests to always have this exact shape
+    let mut items = vec![];
+
+    for (alias, field) in request
+        .query
+        .fields
+        .as_ref()
+        .ok_or_else(|| QueryBuilderError::NoRequesQueryFields)?
+        .iter()
+    {
+        let (fields, arguments) = match field {
+            models::Field::Column {
+                column,
+                fields,
+                arguments,
+            } if column == "__value" => Ok((fields, arguments)),
+            models::Field::Column {
+                column,
+                fields: _,
+                arguments: _,
+            } => Err(QueryBuilderError::NotSupported(format!(
+                "Expected field with key __value, got {column}"
+            ))),
+            models::Field::Relationship { .. } => {
+                Err(QueryBuilderError::NotSupported("Relationships".to_string()))
+            }
+        }?;
+
+        if !arguments.is_empty() {
+            return Err(QueryBuilderError::Unexpected(
+                "Functions arguments should be passed to the collection, not the __value field"
+                    .to_string(),
+            ));
+        }
+
+        let field_definition = configuration
+            .schema
+            .query_fields
+            .get(&request.collection)
+            .ok_or_else(|| QueryBuilderError::QueryFieldNotFound {
+                field: request.collection.to_owned(),
+            })?;
+
+        let item = selection_set_field(
+            alias,
+            &request.collection,
+            field_arguments(
+                &request_arguments,
+                map_arg,
+                field_definition,
+                &mut variables,
+            )?,
+            fields,
+            field_definition,
+            &mut variables,
+            configuration,
+        )?;
+
+        items.push(item);
+    }
+
     let selection_set = SelectionSet {
         span: (pos(), pos()),
-        items: request
-            .query
-            .fields
-            .as_ref()
-            .ok_or_else(|| QueryBuilderError::NoRequesQueryFields)?
-            .iter()
-            .map(|(alias, field)| {
-                let (fields, arguments) = match field {
-                    models::Field::Column {
-                        column,
-                        fields,
-                        arguments,
-                    } if column == "__value" => Ok((fields, arguments)),
-                    models::Field::Column {
-                        column,
-                        fields: _,
-                        arguments: _,
-                    } => Err(QueryBuilderError::NotSupported(format!(
-                        "Expected field with key __value, got {column}"
-                    ))),
-                    models::Field::Relationship { .. } => {
-                        Err(QueryBuilderError::NotSupported("Relationships".to_string()))
-                    }
-                }?;
-
-                if !arguments.is_empty() {
-                    return Err(QueryBuilderError::Unexpected("Functions arguments should be passed to the collection, not the __value field".to_string()))
-                }
-
-                let field_definition = configuration.schema.query_fields.get(&request.collection).ok_or_else(|| QueryBuilderError::QueryFieldNotFound { field: request.collection.to_owned() })?;
-
-                selection_set_field(
-                    alias,
-                    &request.collection,
-                    field_arguments(
-                        &request_arguments,
-                        map_arg,
-                        field_definition,
-                        &mut variables,
-
-                    )?,
-                    fields,
-                    field_definition,
-                    &mut variables,
-                    configuration,
-                )
-            })
-            .collect::<Result<_, _>>()?,
+        items,
     };
 
     let (values, variable_definitions) = variables.into_variable_definitions();
@@ -188,6 +202,8 @@ pub fn build_query_document(
 type Headers = BTreeMap<String, String>;
 type Arguments = BTreeMap<String, serde_json::Value>;
 
+/// extract the headers argument if present and applicable
+/// returns the headers for this request, including base headers and forwarded headers
 fn extract_headers<A, M>(
     arguments: &BTreeMap<String, A>,
     map_argument: M,
@@ -197,7 +213,13 @@ where
     M: Fn(&A) -> Result<serde_json::Value, QueryBuilderError>,
 {
     let mut request_arguments = BTreeMap::new();
-    let mut headers = BTreeMap::new();
+    let mut headers = configuration.connection.headers.clone();
+
+    let patterns = configuration
+        .request
+        .forward_headers
+        .clone()
+        .unwrap_or_default();
 
     for (name, argument) in arguments {
         let value = map_argument(argument)?;
@@ -226,7 +248,7 @@ where
                                 ))
                             }
                             serde_json::Value::String(header) => {
-                                for pattern in &configuration.request.forward_headers {
+                                for pattern in &patterns {
                                     if glob_match(pattern, &name) {
                                         headers.insert(name, header);
                                         break;

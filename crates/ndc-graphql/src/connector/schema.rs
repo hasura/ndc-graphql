@@ -8,6 +8,9 @@ use ndc_sdk::models;
 use std::{collections::BTreeMap, iter};
 
 pub fn schema_response(configuration: &ServerConfig) -> models::SchemaResponse {
+    let forward_request_headers = configuration.request.forward_headers.is_some();
+    let forward_response_headers = configuration.response.forward_headers.is_some();
+
     let mut scalar_types: BTreeMap<_, _> = configuration
         .schema
         .definitions
@@ -39,14 +42,16 @@ pub fn schema_response(configuration: &ServerConfig) -> models::SchemaResponse {
         })
         .collect();
 
-    scalar_types.insert(
-        configuration.request.headers_type_name.to_owned(),
-        models::ScalarType {
-            representation: Some(models::TypeRepresentation::JSON),
-            aggregate_functions: BTreeMap::new(),
-            comparison_operators: BTreeMap::new(),
-        },
-    );
+    if forward_request_headers {
+        scalar_types.insert(
+            configuration.request.headers_type_name.to_owned(),
+            models::ScalarType {
+                representation: Some(models::TypeRepresentation::JSON),
+                aggregate_functions: BTreeMap::new(),
+                comparison_operators: BTreeMap::new(),
+            },
+        );
+    }
 
     let mut object_types: BTreeMap<_, _> = configuration
         .schema
@@ -109,20 +114,9 @@ pub fn schema_response(configuration: &ServerConfig) -> models::SchemaResponse {
     let mut functions = vec![];
 
     for (name, field) in &configuration.schema.query_fields {
-        let response_type_name = configuration.response.query_response_type_name(name);
-
-        object_types.insert(
-            response_type_name.clone(),
-            response_type(field, "function", name),
-        );
-
-        functions.push(models::FunctionInfo {
-            name: name.to_owned(),
-            description: field.description.to_owned(),
-            arguments: field
-                .arguments
-                .iter()
-                .map(map_argument)
+        let arguments = field.arguments.iter().map(map_argument);
+        let arguments = if forward_request_headers {
+            arguments
                 .chain(iter::once((
                     configuration.request.headers_argument.to_owned(),
                     models::ArgumentInfo {
@@ -132,30 +126,40 @@ pub fn schema_response(configuration: &ServerConfig) -> models::SchemaResponse {
                         },
                     },
                 )))
-                .collect(),
-            result_type: models::Type::Named {
+                .collect()
+        } else {
+            arguments.collect()
+        };
+
+        let result_type = if forward_response_headers {
+            let response_type_name = configuration.response.query_response_type_name(name);
+
+            object_types.insert(
+                response_type_name.clone(),
+                response_type(field, "function", name),
+            );
+
+            models::Type::Named {
                 name: response_type_name,
-            },
+            }
+        } else {
+            typeref_to_ndc_type(&field.r#type)
+        };
+
+        functions.push(models::FunctionInfo {
+            name: name.to_owned(),
+            description: field.description.to_owned(),
+            arguments,
+            result_type,
         });
     }
 
     let mut procedures = vec![];
 
     for (name, field) in &configuration.schema.mutation_fields {
-        let response_type_name = configuration.response.mutation_response_type_name(name);
-
-        object_types.insert(
-            response_type_name.clone(),
-            response_type(field, "procedure", name),
-        );
-
-        procedures.push(models::ProcedureInfo {
-            name: name.to_owned(),
-            description: field.description.to_owned(),
-            arguments: field
-                .arguments
-                .iter()
-                .map(map_argument)
+        let arguments = field.arguments.iter().map(map_argument);
+        let arguments = if forward_request_headers {
+            arguments
                 .chain(iter::once((
                     configuration.request.headers_argument.to_owned(),
                     models::ArgumentInfo {
@@ -165,10 +169,31 @@ pub fn schema_response(configuration: &ServerConfig) -> models::SchemaResponse {
                         },
                     },
                 )))
-                .collect(),
-            result_type: models::Type::Named {
+                .collect()
+        } else {
+            arguments.collect()
+        };
+
+        let result_type = if forward_response_headers {
+            let response_type_name = configuration.response.mutation_response_type_name(name);
+
+            object_types.insert(
+                response_type_name.clone(),
+                response_type(field, "procedure", name),
+            );
+
+            models::Type::Named {
                 name: response_type_name,
-            },
+            }
+        } else {
+            typeref_to_ndc_type(&field.r#type)
+        };
+
+        procedures.push(models::ProcedureInfo {
+            name: name.to_owned(),
+            description: field.description.to_owned(),
+            arguments,
+            result_type,
         });
     }
 

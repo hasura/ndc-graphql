@@ -71,7 +71,7 @@ pub struct RequestConfig<T> {
     /// List of headers to from the request
     /// Defaults to ["*"], AKA all headers
     /// Supports glob patterns eg. "X-Hasura-*"
-    pub forward_headers: Vec<String>,
+    pub forward_headers: Option<Vec<String>>,
 }
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase")]
@@ -93,7 +93,7 @@ pub struct ResponseConfig<T> {
     /// List of headers to from the response
     /// Defaults to ["*"], AKA all headers
     /// Supports glob patterns eg. "X-Hasura-*"
-    pub forward_headers: Vec<String>,
+    pub forward_headers: Option<Vec<String>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
@@ -109,7 +109,7 @@ impl Default for RequestConfig<String> {
         Self {
             headers_argument: "_headers".to_owned(),
             headers_type_name: "_HeaderMap".to_owned(),
-            forward_headers: vec!["*".to_owned()],
+            forward_headers: Some(vec!["*".to_owned()]),
         }
     }
 }
@@ -119,7 +119,7 @@ impl Default for RequestConfig<Option<String>> {
         Self {
             headers_argument: None,
             headers_type_name: None,
-            forward_headers: vec!["*".to_owned()],
+            forward_headers: Some(vec!["*".to_owned()]),
         }
     }
 }
@@ -131,7 +131,7 @@ impl Default for ResponseConfig<String> {
             response_field: "response".to_owned(),
             type_name_prefix: "_".to_owned(),
             type_name_suffix: "Response".to_owned(),
-            forward_headers: vec!["*".to_owned()],
+            forward_headers: Some(vec!["*".to_owned()]),
         }
     }
 }
@@ -143,7 +143,7 @@ impl Default for ResponseConfig<Option<String>> {
             response_field: None,
             type_name_prefix: None,
             type_name_suffix: None,
-            forward_headers: vec!["*".to_owned()],
+            forward_headers: Some(vec!["*".to_owned()]),
         }
     }
 }
@@ -157,7 +157,13 @@ impl From<RequestConfig<Option<String>>> for RequestConfig<String> {
             headers_type_name: value
                 .headers_type_name
                 .unwrap_or_else(|| Self::default().headers_type_name),
-            forward_headers: value.forward_headers,
+            forward_headers: value.forward_headers.and_then(|forward_headers| {
+                if forward_headers.is_empty() {
+                    None
+                } else {
+                    Some(forward_headers)
+                }
+            }),
         }
     }
 }
@@ -176,7 +182,13 @@ impl From<ResponseConfig<Option<String>>> for ResponseConfig<String> {
             type_name_suffix: value
                 .type_name_suffix
                 .unwrap_or_else(|| Self::default().type_name_suffix),
-            forward_headers: value.forward_headers,
+            forward_headers: value.forward_headers.and_then(|forward_headers| {
+                if forward_headers.is_empty() {
+                    None
+                } else {
+                    Some(forward_headers)
+                }
+            }),
         }
     }
 }
