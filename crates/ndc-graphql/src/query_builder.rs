@@ -249,7 +249,7 @@ where
                             }
                             serde_json::Value::String(header) => {
                                 for pattern in &patterns {
-                                    if glob_match(pattern, &name) {
+                                    if glob_match(&pattern.to_lowercase(), &name.to_lowercase()) {
                                         headers.insert(name, header);
                                         break;
                                     }

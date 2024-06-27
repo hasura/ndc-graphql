@@ -35,7 +35,7 @@ pub async fn execute_graphql<T: serde::de::DeserializeOwned>(
         .iter()
         .filter_map(|(name, value)| {
             for pattern in return_headers {
-                if glob_match(pattern, name.as_str()) {
+                if glob_match(&pattern.to_lowercase(), &name.as_str().to_lowercase()) {
                     return Some((
                         name.to_string(),
                         value.to_str().unwrap_or_default().to_string(),
