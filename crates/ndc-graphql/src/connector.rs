@@ -1,11 +1,10 @@
-use std::{collections::BTreeMap, mem, path::Path};
-
+use self::{configuration::read_configuration, state::ServerState};
+use crate::query_builder::{build_mutation_document, build_query_document};
 use async_trait::async_trait;
 use common::{
     client::{execute_graphql, GraphQLRequest},
     config::ServerConfig,
 };
-use graphql_parser::{parse_schema, schema::Document};
 use indexmap::IndexMap;
 use ndc_sdk::{
     connector::{
@@ -17,12 +16,9 @@ use ndc_sdk::{
         self, CapabilitiesResponse, LeafCapability, MutationOperationResults, RowFieldValue, RowSet,
     },
 };
-use schema::schema_from_graphql_document;
+use schema::schema_response;
+use std::{collections::BTreeMap, mem, path::Path};
 use tracing::Instrument;
-
-use crate::query_builder::{build_mutation_document, build_query_document};
-
-use self::{configuration::read_configuration, state::ServerState};
 
 mod configuration;
 mod schema;
@@ -39,7 +35,7 @@ impl ConnectorSetup for GraphQLConnector {
         &self,
         configuration_dir: impl AsRef<Path> + Send,
     ) -> Result<<Self as Connector>::Configuration, ParseError> {
-        read_configuration(&configuration_dir.as_ref().to_path_buf()).await
+        read_configuration(configuration_dir.as_ref()).await
     }
 
     async fn try_init_state(
@@ -47,7 +43,7 @@ impl ConnectorSetup for GraphQLConnector {
         configuration: &<Self as Connector>::Configuration,
         _metrics: &mut prometheus::Registry,
     ) -> Result<<Self as Connector>::State, InitializationError> {
-        Ok(ServerState::new(&configuration))
+        Ok(ServerState::new(configuration))
     }
 }
 
@@ -95,11 +91,7 @@ impl Connector for GraphQLConnector {
     async fn get_schema(
         configuration: &Self::Configuration,
     ) -> Result<JsonResponse<models::SchemaResponse>, SchemaError> {
-        let schema_document = parse_schema(&configuration.schema_string)
-            .map_err(|err| SchemaError::Other(err.to_string().into()))?;
-        Ok(JsonResponse::Value(schema_from_graphql_document(
-            &schema_document,
-        )))
+        Ok(JsonResponse::Value(schema_response(configuration)))
     }
 
     async fn query_explain(
@@ -107,23 +99,22 @@ impl Connector for GraphQLConnector {
         _state: &Self::State,
         request: models::QueryRequest,
     ) -> Result<JsonResponse<models::ExplainResponse>, ExplainError> {
-        let schema_document = tracing::info_span!(
-            "Parse GraphQL Schema Document",
-            internal.visibility = "user"
-        )
-        .in_scope(|| -> Result<Document<String>, _> { parse_schema(&configuration.schema_string) })
-        .map_err(|err| ExplainError::Other(err.to_string().into()))?;
+        let operation = tracing::info_span!("Build Query Document", internal.visibility = "user")
+            .in_scope(|| build_query_document(&request, configuration))?;
 
-        let (document, variables) =
-            tracing::info_span!("Build Query Document", internal.visibility = "user")
-                .in_scope(|| build_query_document(&request, &schema_document))?;
-
-        let query = serde_json::to_string_pretty(&GraphQLRequest::new(&document, &variables))
-            .map_err(|err| ExplainError::InvalidRequest(err.to_string()))?;
+        let query = serde_json::to_string_pretty(&GraphQLRequest::new(
+            &operation.query,
+            &operation.variables,
+        ))
+        .map_err(|err| ExplainError::InvalidRequest(err.to_string()))?;
 
         let details = BTreeMap::from_iter(vec![
-            ("SQL Query".to_string(), document.to_owned()),
+            ("SQL Query".to_string(), operation.query),
             ("Execution Plan".to_string(), query),
+            (
+                "Headers".to_string(),
+                serde_json::to_string(&operation.headers).expect("should convert headers to json"),
+            ),
         ]);
 
         Ok(JsonResponse::Value(models::ExplainResponse { details }))
@@ -134,22 +125,23 @@ impl Connector for GraphQLConnector {
         _state: &Self::State,
         request: models::MutationRequest,
     ) -> Result<JsonResponse<models::ExplainResponse>, ExplainError> {
-        let schema_document = tracing::info_span!(
-            "Parse GraphQL Schema Document",
-            internal.visibility = "user"
-        )
-        .in_scope(|| -> Result<Document<String>, _> { parse_schema(&configuration.schema_string) })
-        .map_err(|err| ExplainError::Other(err.to_string().into()))?;
-        let (document, variables) =
+        let operation =
             tracing::info_span!("Build Mutation Document", internal.visibility = "user")
-                .in_scope(|| build_mutation_document(&request, &schema_document))?;
+                .in_scope(|| build_mutation_document(&request, configuration))?;
 
-        let query = serde_json::to_string_pretty(&GraphQLRequest::new(&document, &variables))
-            .map_err(|err| ExplainError::InvalidRequest(err.to_string()))?;
+        let query = serde_json::to_string_pretty(&GraphQLRequest::new(
+            &operation.query,
+            &operation.variables,
+        ))
+        .map_err(|err| ExplainError::InvalidRequest(err.to_string()))?;
 
         let details = BTreeMap::from_iter(vec![
-            ("SQL Query".to_string(), document.to_owned()),
+            ("SQL Query".to_string(), operation.query),
             ("Execution Plan".to_string(), query),
+            (
+                "Headers".to_string(),
+                serde_json::to_string(&operation.headers).expect("should convert headers to json"),
+            ),
         ]);
 
         Ok(JsonResponse::Value(models::ExplainResponse { details }))
@@ -160,30 +152,29 @@ impl Connector for GraphQLConnector {
         state: &Self::State,
         request: models::MutationRequest,
     ) -> Result<JsonResponse<models::MutationResponse>, MutationError> {
-        let schema_document = tracing::info_span!(
-            "Parse GraphQL Schema Document",
-            internal.visibility = "user"
-        )
-        .in_scope(|| -> Result<Document<String>, _> { parse_schema(&configuration.schema_string) })
-        .map_err(|err| MutationError::Other(err.to_string().into()))?;
-
-        let (document, variables) =
+        let operation =
             tracing::info_span!("Build Mutation Document", internal.visibility = "user")
-                .in_scope(|| build_mutation_document(&request, &schema_document))?;
+                .in_scope(|| build_mutation_document(&request, configuration))?;
 
         let client = state
-            .client(&configuration)
+            .client(configuration)
             .await
             .map_err(|err| MutationError::Other(err.to_string().into()))?;
 
         let execution_span =
             tracing::info_span!("Execute GraphQL Mutation", internal.visibility = "user");
 
-        let response = execute_graphql::<serde_json::Value>(
-            &document.to_string(),
-            variables,
+        let (headers, response) = execute_graphql::<IndexMap<String, serde_json::Value>>(
+            &operation.query,
+            operation.variables,
+            &configuration.connection.endpoint,
+            &operation.headers,
             &client,
-            &configuration.connection,
+            &configuration
+                .response
+                .forward_headers
+                .clone()
+                .unwrap_or_default(),
         )
         .instrument(execution_span)
         .await
@@ -193,27 +184,39 @@ impl Connector for GraphQLConnector {
             if let Some(errors) = response.errors {
                 Err(MutationError::InvalidRequest(
                     serde_json::to_string(&errors)
-                        .map_err(|err| MutationError::Other(err.into()))?
-                        .into(),
+                        .map_err(|err| MutationError::Other(err.into()))?,
                 ))
             } else if let Some(mut data) = response.data {
+                let forward_response_headers = configuration.response.forward_headers.is_some();
+
                 let operation_results = request
                     .operations
                     .iter()
                     .enumerate()
                     .map(|(index, operation)| match operation {
-                        models::MutationOperation::Procedure { .. } => {
+                        models::MutationOperation::Procedure { .. } => Ok({
                             let alias = format!("procedure_{index}");
-                            // data object keys will only get consumed once, avoid unecessary cloning
                             let result = data
-                                .get_mut(alias)
+                                .get_mut(&alias)
                                 .map(|val| mem::replace(val, serde_json::Value::Null))
                                 .unwrap_or(serde_json::Value::Null);
+                            let result = if forward_response_headers {
+                                serde_json::to_value(BTreeMap::from_iter(vec![
+                                    (
+                                        configuration.response.headers_field.to_string(),
+                                        serde_json::to_value(&headers)?,
+                                    ),
+                                    (configuration.response.response_field.to_string(), result),
+                                ]))?
+                            } else {
+                                result
+                            };
 
                             MutationOperationResults::Procedure { result }
-                        }
+                        }),
                     })
-                    .collect();
+                    .collect::<Result<Vec<_>, serde_json::Error>>()
+                    .map_err(|err| MutationError::Other(err.into()))?;
 
                 Ok(JsonResponse::Value(models::MutationResponse {
                     operation_results,
@@ -231,30 +234,28 @@ impl Connector for GraphQLConnector {
         state: &Self::State,
         request: models::QueryRequest,
     ) -> Result<JsonResponse<models::QueryResponse>, QueryError> {
-        let schema_document = tracing::info_span!(
-            "Parse GraphQL Schema Document",
-            internal.visibility = "user"
-        )
-        .in_scope(|| -> Result<Document<String>, _> { parse_schema(&configuration.schema_string) })
-        .map_err(|err| QueryError::Other(err.to_string().into()))?;
-
-        let (document, variables) =
-            tracing::info_span!("Build Query Document", internal.visibility = "user")
-                .in_scope(|| build_query_document(&request, &schema_document))?;
+        let operation = tracing::info_span!("Build Query Document", internal.visibility = "user")
+            .in_scope(|| build_query_document(&request, configuration))?;
 
         let client = state
-            .client(&configuration)
+            .client(configuration)
             .await
             .map_err(|err| QueryError::Other(err.to_string().into()))?;
 
         let execution_span =
             tracing::info_span!("Execute GraphQL Query", internal.visibility = "user");
 
-        let response = execute_graphql::<IndexMap<String, RowFieldValue>>(
-            &document.to_string(),
-            variables,
+        let (headers, response) = execute_graphql::<IndexMap<String, RowFieldValue>>(
+            &operation.query,
+            operation.variables,
+            &configuration.connection.endpoint,
+            &operation.headers,
             &client,
-            &configuration.connection,
+            &configuration
+                .response
+                .forward_headers
+                .clone()
+                .unwrap_or_default(),
         )
         .instrument(execution_span)
         .await
@@ -268,9 +269,31 @@ impl Connector for GraphQLConnector {
                         .into(),
                 ))
             } else if let Some(data) = response.data {
+                let forward_response_headers = configuration.response.forward_headers.is_some();
+
+                let row = if forward_response_headers {
+                    let headers = serde_json::to_value(headers)
+                        .map_err(|err| QueryError::Other(err.into()))?;
+                    let data =
+                        serde_json::to_value(data).map_err(|err| QueryError::Other(err.into()))?;
+
+                    IndexMap::from_iter(vec![
+                        (
+                            configuration.response.headers_field.to_string(),
+                            RowFieldValue(headers),
+                        ),
+                        (
+                            configuration.response.response_field.to_string(),
+                            RowFieldValue(data),
+                        ),
+                    ])
+                } else {
+                    data
+                };
+
                 Ok(JsonResponse::Value(models::QueryResponse(vec![RowSet {
                     aggregates: None,
-                    rows: Some(vec![data]),
+                    rows: Some(vec![row]),
                 }])))
             } else {
                 Err(QueryError::UnprocessableContent(

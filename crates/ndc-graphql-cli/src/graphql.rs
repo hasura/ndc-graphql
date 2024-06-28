@@ -20,15 +20,17 @@ mod introspection;
 pub async fn execute_graphql_introspection(
     connection: &ConnectionConfig,
 ) -> Result<graphql_client::Response<Introspection>, Box<dyn Error>> {
-    let client = get_http_client(&connection)?;
+    let client = get_http_client(connection)?;
 
     let introspection_query = include_str!("./graphql/introspection_query.graphql");
 
-    let introspection = execute_graphql::<Introspection>(
-        &introspection_query,
+    let (_, introspection) = execute_graphql::<Introspection>(
+        introspection_query,
         BTreeMap::new(),
+        &connection.endpoint,
+        &connection.headers,
         &client,
-        &connection,
+        &vec![],
     )
     .await?;
 
@@ -41,7 +43,7 @@ fn pos() -> Pos {
 }
 
 fn is_graphql_introspection_type(name: &str) -> bool {
-    vec![
+    [
         "__Schema",
         "__Type",
         "__TypeKind",
@@ -105,7 +107,7 @@ pub fn schema_from_introspection(introspection: Introspection) -> Document<'stat
                                 description: arg.description,
                                 name: arg.name,
                                 value_type: input_type(arg.r#type),
-                                default_value: arg.default_value.map(|s| Value::String(s)),
+                                default_value: arg.default_value.map(Value::String),
                                 directives: vec![],
                             })
                             .collect(),
@@ -128,7 +130,7 @@ pub fn schema_from_introspection(introspection: Introspection) -> Document<'stat
                             description: field.description,
                             name: field.name,
                             value_type: input_type(field.r#type),
-                            default_value: field.default_value.map(|v| Value::String(v)),
+                            default_value: field.default_value.map(Value::String),
                             directives: vec![],
                         })
                         .collect(),
@@ -176,7 +178,7 @@ pub fn schema_from_introspection(introspection: Introspection) -> Document<'stat
                                     description: arg.description,
                                     name: arg.name,
                                     value_type: input_type(arg.r#type),
-                                    default_value: arg.default_value.map(|s| Value::String(s)),
+                                    default_value: arg.default_value.map(Value::String),
                                     directives: vec![],
                                 })
                                 .collect(),
@@ -211,7 +213,7 @@ pub fn schema_from_introspection(introspection: Introspection) -> Document<'stat
                     description: arg.description,
                     name: arg.name,
                     value_type: input_type(arg.r#type),
-                    default_value: arg.default_value.map(|s| Value::String(s)),
+                    default_value: arg.default_value.map(Value::String),
                     directives: vec![],
                 })
                 .collect(),
