@@ -6,7 +6,7 @@ Intro.
 * What is it for?
 * What are its limitations
 
-# Usage
+## Usage
 
 * Referencing from the Hub
 * Plugin
@@ -15,7 +15,14 @@ Intro.
 
 ## Execution
 
+* Architecture diagram
+* 
+
 ## Schemas
+
+## Authorization Use-Cases
+
+## Limitations
 
 ## Roadmap
 
