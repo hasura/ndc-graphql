@@ -12,15 +12,35 @@ majority of V2 queries/mutations.
 
 **Current Limitations Include**
 
-* Support for interfaces and unions is not currently available so schemas using these features are not fully supported.
+* Support for interfaces and unions is not currently available so schemas using
+  these features are not fully supported
 * The V2 and V3 projects must share an auth provider in order to support JWT query authorization
+* Errors returned by the connector will be formatted differently
 
 ## Usage
 
-* Referencing from the Hub
-* Plugin
-* Configuration
-* OpenDD Configuration
+The high-level steps for working with the GraphQL connector follows
+the same pattern as any connector:
+
+* Add the connector
+* Configure the connector
+* Integrate into your supergraph
+* Configure in your supergraph
+
+The main focus wrt. the GraphQL connector will be:
+
+* Configuring the introspection role
+* Configuring the header passthrough behaviour
+* Configuring the argument preset and response header behaviour in the connector link
+* Replicating specific permissions in models
+
+### Configuring the introspection role
+
+
+
+### Configuring the header passthrough behaviour
+### Configuring the argument preset and response header behaviour in the connector link
+### Replicating specific permissions in models
 
 ## Execution
 
