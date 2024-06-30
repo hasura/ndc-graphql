@@ -1,10 +1,19 @@
 # GraphQL Native Data Connector for Hasura DDN
 
-Intro.
+This GraphQL connector is intended to provide support for integrating Hasura V2
+projects into Hasura V3 projects as subgraphs. In addition to this immediate
+feature, the connector can connect many other GraphQL schemas similar to the
+"Remote Schema" feature in Hasura V2.
 
-* What is the connector?
-* What is it for?
-* What are its limitations
+This is implemented by providing a connector that translates the root-fields
+of a GraphQL schema to NDC commands (function/procedures). Recent support for
+field arguments and header forwarding allow the connector to represent the
+majority of V2 queries/mutations.
+
+**Current Limitations Include**
+
+* Support for interfaces and unions is not currently available so schemas using these features are not fully supported.
+* The V2 and V3 projects must share an auth provider in order to support JWT query authorization
 
 ## Usage
 
