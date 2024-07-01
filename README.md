@@ -168,10 +168,18 @@ flowchart LR
     CLI -->|Configuration| Connector
 ```
 
-* Architecture diagram
-* Command pattern
-* Field Arguments
-* Header forwarding - forward / reverse
+The connector is configured in plugin mode, then run in execution mode.
+
+Requests are made via NDC commands to the connector rather than collections.
+This simplifies implementation and acts as a proxy more than a model.
+Field Arguments are leveraged in commands to allow mirroring the GraphQL queries
+executed by the user.
+
+Header forwarding is implemented as additional command arguments and wired
+from headers to the argument by the engine via the new `ArgumentPresets`
+feature.
+
+TODO: Link docs.
 
 ## Schemas
 
