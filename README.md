@@ -43,13 +43,103 @@ Likewise, when using the connector to connect to a Hasura V2 project, you can se
 
 ### Add the connector
 
+The connector has been designed to work best in its own subgraph. While it is possible to
+use in an existing subgraph, we recommend [creating a subgraph](https://hasura.io/docs/3.0/getting-started/init-subgraph)
+for the purposes of connecting to a GraphQL schema with this connector.
+Once you are operating within a subgraph you can add the GraphQL connector:
+
+```sh
+ddn subgraph init app
+cd app
+ddn connector init graphql --hub-connector hasura/graphql
+```
 
 
 ### Configuring the introspection role
+
+Once the connector has been added it will expose its configuration in
+`config/configuration.json`. You should update some values in this config before
+performing introspection.
+
+The configuration Is split into request/connection/introspection sections.
+You should update the introspection of the configuration to have the
+`x-hasura-admin-secret` and `x-hasura-role` headers set in order to allow
+the introspection request to be executed.
+
+```json
+{
+  ...
+  "introspection": {
+    "endpoint": {
+      "value": "https://my-hasura-v2-service/v1/graphql"
+    },
+    "headers": {
+      "X-Hasura-Admin-Secret": {
+        "value": "my-super-secret-admin-secret"
+      },
+      "Content-Type": {
+        "value": "application/json"
+      }
+    }
+  }
+}
+```
+
+Without an explicit role set this will use the admin role to fetch the schema, which
+may or may not be appropriate for your application!
+
+### Performing Introspection
+
+Once the connector introspection configuration is updated, you can perform an update
+in order to fetch the schema for use and then add the connector link:
+
+```sh
+# Benoit?
+ddn connector introspect
+ddn connector-link update graphql --add-all-resources
+```
+
 ### Configuring the header passthrough behaviour
-### Configuring the argument preset and response header behaviour in the connector link
+
+The connector link will probably need to be updated to pass through headers.
+
+This is done with the following metadata configuration:
+
+```yaml
+kind: DataConnectorLink
+version: v1
+definition:
+  name: graphql
+  url:
+    readWriteUrls:
+      read:
+        valueFromEnv: APP_GRAPHQL_READ_URL
+      write:
+        valueFromEnv: APP_GRAPHQL_WRITE_URL
+  schema:
+    # This is read from the connector schema configuration
+  argumentPresets:
+    - argument: headers
+      value:
+        httpHeaders:
+          forward:
+            - X-Hasura-Admin-Secret
+            - Authorization
+          additional: {}
+```
+
+You may also want to configuring the response header behaviour at this point if you
+need to have response headers passed back to the client.
+
 ### Integrate into your supergraph
-### Configure in your supergraph
+
+Track the associated commands (functions/procedures) in your supergraph:
+
+```sh
+# Benoit?
+ddn-staging connector-link update graphql --add-all-resources
+```
+
 ### Replicating specific permissions in models
 
 ## Execution
