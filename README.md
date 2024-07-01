@@ -183,8 +183,30 @@ TODO: Link docs.
 
 ## Schemas
 
-* Selection of schema in plugin
-* Issues with "only-one-schema" and work arounds
+One limitation of the current state of the connector is that it can only serve
+a single schema. While requests can adopt any role that the auth behaviour of
+the V2 instance (provided the same JWT auth provider is used) if the schema
+changes per-role then this won't be reflected in the Hasura engine's schema
+without additional permissions being configured.
+
+As such the current recommended pattern is to select a single "application user"
+schema to use for your application and perform the connector configuration
+introspection using this user role.
+
+If admin or additional roles are required for non application use then this can be
+done directly with the V2 instance without having to expose it via the connector.
+
+Additional application roles can be added via multiple instances of the connector
+with different roles used for introspection, however this has the limitation of
+requiring distinct namespaces which may not be ideal.
+
+Finally if you need to share a namespace but have different roles you can currently
+just expose the admin schema and have each role connect and issue their requests
+with the correct role with permissions enforced correctly at runtime, but the 
+schema not reflecting the correct restrictive permissions at development time.
+
+In future we wish to be able to replicate the correct permissions in the engine
+assisted by tooling which will resolve these issues.
 
 ## Authorization Use-Cases
 
