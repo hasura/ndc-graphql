@@ -34,12 +34,22 @@ The main focus wrt. the GraphQL connector will be:
 * Configuring the argument preset and response header behaviour in the connector link
 * Replicating specific permissions in models
 
+All of the following steps assume you are working within an existing Hasura V3 project.
+Please see [the V3 documentation](https://hasura.io/docs/3.0/getting-started/init-subgraph) for
+information about getting started with Hasura V3.
+
+Likewise, when using the connector to connect to a Hasura V2 project, you can see the
+[V2 documentation](https://hasura.io/docs/latest/index/) for information about Hasura V2.
+
+### Add the connector
+
+
+
 ### Configuring the introspection role
-
-
-
 ### Configuring the header passthrough behaviour
 ### Configuring the argument preset and response header behaviour in the connector link
+### Integrate into your supergraph
+### Configure in your supergraph
 ### Replicating specific permissions in models
 
 ## Execution
