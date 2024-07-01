@@ -142,6 +142,14 @@ ddn-staging connector-link update graphql --add-all-resources
 
 ### Replicating specific permissions in models
 
+While this may be sufficient if your schema and role matches,
+if you wish to have additionally restrictive permissions imposed you may
+do so at the model level with [the Hasura V3 permissions system](https://hasura.io/docs/3.0/supergraph-modeling/permissions).
+
+### Removing namespacing
+
+While this may be sufficient 
+
 ## Execution
 
 * Architecture diagram
