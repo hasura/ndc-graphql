@@ -50,10 +50,8 @@ Once you are operating within a subgraph you can add the GraphQL connector:
 
 ```sh
 ddn subgraph init app
-cd app
 ddn connector init graphql --hub-connector hasura/graphql
 ```
-
 
 ### Configuring the introspection role
 
@@ -94,10 +92,10 @@ Once the connector introspection configuration is updated, you can perform an up
 in order to fetch the schema for use and then add the connector link:
 
 ```sh
-# Benoit?
-ddn connector introspect
-ddn connector-link update graphql --add-all-resources
+ddn connector introspect --connector graphql # Names have to match?
+ddn connector-link add graphql # Pick another name?
 ```
+
 
 ### Configuring the header passthrough behaviour
 
@@ -136,15 +134,18 @@ need to have response headers passed back to the client.
 Track the associated commands (functions/procedures) in your supergraph:
 
 ```sh
-# Benoit?
 ddn-staging connector-link update graphql --add-all-resources
 ```
+
+If you just need to update your existing connector you can run the update command again.
+
 
 ### Replicating specific permissions in models
 
 While this may be sufficient if your schema and role matches,
 if you wish to have additionally restrictive permissions imposed you may
 do so at the model level with [the Hasura V3 permissions system](https://hasura.io/docs/3.0/supergraph-modeling/permissions).
+
 
 ### Removing namespacing
 
@@ -154,6 +155,7 @@ to alther the subgraph namspacing configuration in order to return the API
 the one that matches the original upstream GraphQL source.
 
 TODO: See docs.
+
 
 ## Execution
 
@@ -180,6 +182,7 @@ from headers to the argument by the engine via the new `ArgumentPresets`
 feature.
 
 TODO: Link docs.
+
 
 ## Schemas
 
@@ -208,9 +211,11 @@ schema not reflecting the correct restrictive permissions at development time.
 In future we wish to be able to replicate the correct permissions in the engine
 assisted by tooling which will resolve these issues.
 
+
 ## Authorization Use-Cases
 
 There are several ways we anticipate users may wish to integrate upstream GraphQL schemas.
+
 
 ### Admin secret mode
 
@@ -225,6 +230,7 @@ This may be useful for prototyping or development, but it is dangerous for sever
 * Auditing requests may be more difficult
 * Requests may inadvertantly or deliberately interact with data that the application user
   should not be able to access or modify
+
 
 ### Shared JWT provider mode
 
@@ -241,11 +247,13 @@ the V2 instance.
 
 TODO: See JWT TTL slack docs.
 
+
 ### Independent auth scenario
 
 Users may with to have seperate providers for V3 Engine and V2 Upstream source.
 
 This is not currently supported, however, we would like to add support for this in future.
+
 
 ## Limitations
 
@@ -267,6 +275,7 @@ Here is a summary of the known limitations of the connector
 * Error formatting
   - The format of errors from the connector does not currently match V2 error formatting
   - No "partial error" or "multiple errors" responses
+
 
 ## Development
 
