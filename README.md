@@ -210,21 +210,67 @@ assisted by tooling which will resolve these issues.
 
 ## Authorization Use-Cases
 
-* Admin secret mode - Dangerous needs V3 Permissions
-* Shared JWT provider mode - Timeout scenario
-* Independent auth scenario - Not supported
+There are several ways we anticipate users may wish to integrate upstream GraphQL schemas.
+
+### Admin secret mode
+
+Since arbitrary headers can be configured as presets in the connector, you may choose
+to set the admin-secret or pre-shared key. This will allow the engine to make upstream
+requests via the connector without having to deal with any user-level auth concerns.
+
+This may be useful for prototyping or development, but it is dangerous for several reasons:
+
+* Credentials for the V2 instance need to be saved
+* The V2 instance acts on behalf of the configured user instead of the application user
+* Auditing requests may be more difficult
+* Requests may inadvertantly or deliberately interact with data that the application user
+  should not be able to access or modify
+
+### Shared JWT provider mode
+
+This is the recommended execution mode.
+
+The JWT provider / authenticator is shared between the V2 and V3 instance and as such
+all requests are able to be understood sematically by both instances. While
+permissions can be configured explicitly in V3, they will automatically also be enforced
+by the V2 instance as per its configuration.
+
+One consideration to make here is that the JWT TTL slack should take into account execution
+time in case a request times out after receipt by V3 engine but before receipt from
+the V2 instance.
+
+TODO: See JWT TTL slack docs.
+
+### Independent auth scenario
+
+Users may with to have seperate providers for V3 Engine and V2 Upstream source.
+
+This is not currently supported, however, we would like to add support for this in future.
 
 ## Limitations
 
-* Special header mapping - multiple set-cookie's etc.
-* Pattern matching
-* Pulling items out of session?
+Here is a summary of the known limitations of the connector
 
-## Roadmap
-
-Future Auth scenario support
+* Response headers only allow at most one header per name
+  - For example you may only use one `Set-Cookie` response header
+* Pattern matching in request header forwarding configuration
+  - This uses simple glob patterns
+  - More advanced matching and extraction is not currently supported
+* Pulling items out of session
+  - Entire headers can be forwarded
+  - Currently no session parsing and refined mappings are supported
+* Seperate auth providers
+  - Either pre-shared credentials, or shared auth providers are supported
+  - Seperate providers for engine and upstream are not currently supported
+* Role based schemas
+  - Only a single schema is supported
+* Error formatting
+  - The format of errors from the connector does not currently match V2 error formatting
+  - No "partial error" or "multiple errors" responses
 
 ## Development
+
+TODO: Benoit? Do we have a new refresh.sh? Should we even document this here?
 
 * Running the connector with Docker compose loop
 * Provided resources
