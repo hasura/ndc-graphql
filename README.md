@@ -148,9 +148,25 @@ do so at the model level with [the Hasura V3 permissions system](https://hasura.
 
 ### Removing namespacing
 
-While this may be sufficient 
+While integrating the connector may be sufficient for building new applications,
+if you wish to preserve API behaviour for existing V2 applications you may wish
+to alther the subgraph namspacing configuration in order to return the API
+the one that matches the original upstream GraphQL source.
+
+TODO: See docs.
 
 ## Execution
+
+```mermaid
+flowchart LR
+    User ---|GraphQLRequest| Engine
+    Engine ---|NDCRequest| Connector
+    Connector ---|GrqphQLRequest| UpstreamGQL
+    Admin --- CLI
+    CLI --- Plugin
+    Plugin ---|Introspection| UpstreamGQL
+    CLI -->|Configuration| Connector
+```
 
 * Architecture diagram
 * Command pattern
