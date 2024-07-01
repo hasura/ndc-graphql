@@ -180,4 +180,6 @@ Future Auth scenario support
 
 ## Development
 
-Running the connector with Docker compose loop.
+* Running the connector with Docker compose loop
+* Provided resources
+* `refresh.sh` script
