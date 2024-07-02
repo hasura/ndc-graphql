@@ -321,7 +321,9 @@ One consideration to make here is that the JWT TTL slack should take into accoun
 time in case a request times out after receipt by V3 engine but before receipt from
 the V2 instance.
 
-TODO: See JWT TTL slack docs.
+If the `exp` JWT claim and client behaviour are not set up to ensure that this scenario
+doesn't occur then you *could* use `ClockSkew` configuration in order to account for the
+latency between the V3 and V2 instances.
 
 
 ### Independent auth scenario
@@ -355,11 +357,3 @@ Here is a summary of the known limitations of the connector
   - This should not be required when it is provided by argument presets
   - This is a bug which will be addressed in future
 
-
-## Development
-
-TODO: Benoit? Do we have a new refresh.sh? Should we even document this here?
-
-* Running the connector with Docker compose loop
-* Provided resources
-* `refresh.sh` script
