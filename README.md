@@ -105,6 +105,11 @@ You should update the introspection of the configuration to have the
 `x-hasura-admin-secret` and `x-hasura-role` headers set in order to allow
 the introspection request to be executed.
 
+You may wish to provide a pre-baked value for `x-hasura-role` if you want
+to have introspection occur as the desired role, or more interestingly,
+if you wish to have requests execute under a role with no forwarded
+auth credentials required.
+
 ```json
 {
   ...
