@@ -16,6 +16,7 @@ majority of V2 queries/mutations.
   these features are not fully supported
 * The V2 and V3 projects must share an auth provider in order to support JWT query authorization
 * Errors returned by the connector will be formatted differently
+* `_headers` argument needs to be removed from commands by hand
 
 ## Usage
 
@@ -53,6 +54,46 @@ ddn subgraph init app
 ddn connector init graphql --hub-connector hasura/graphql
 ```
 
+<details>
+<summary>An example of a full connector configuration.</summary>
+
+```json
+{
+  "$schema": "configuration.schema.json",
+  "execution": {
+    "endpoint": {
+      "value": "https://my-app.hasura.app/v1/graphql"
+    },
+    "headers": {
+      "Content-Type": {
+        "value": "application/json"
+      }
+    }
+  },
+  "introspection": {
+    "endpoint": {
+      "value": "https://my-app.hasura.app/v1/graphql"
+    },
+    "headers": {
+      "X-Hasura-Admin-Secret": {
+        "value": "hunter2"
+      },
+      "Content-Type": {
+        "value": "application/json"
+      }
+    }
+  },
+  "request": {
+    "headersArgument": "_headers",
+    "forwardHeaders": [
+      "Authorization"
+    ]
+  },
+  "response": {}
+}
+```
+</details>
+
 ### Configuring the introspection role
 
 Once the connector has been added it will expose its configuration in
@@ -85,6 +126,34 @@ the introspection request to be executed.
 
 Without an explicit role set this will use the admin role to fetch the schema, which
 may or may not be appropriate for your application!
+
+### Configuring the Execution Role
+
+You may also configure the connector for execution (i.e. GraphQL request) time behaviour.
+This could include pointing to a different instance, forwarding different headers,
+returning different response headers, etc.
+
+You may also set the headers argument name, which by default will be `_headers`.
+
+```json
+{
+  ...
+  "execution": {
+    "endpoint": {
+      "value": "https://my-hasura-v2-service/v1/graphql"
+    },
+    "headers": {
+      "Content-Type": {
+        "value": "application/json"
+      }
+    }
+  },
+  "request": {
+    "headersArgument": "_headers",
+    "forwardHeaders": [ "Authorization" ]
+  }
+}
+```
 
 ### Performing Introspection
 
@@ -129,6 +198,11 @@ definition:
 You may also want to configuring the response header behaviour at this point if you
 need to have response headers passed back to the client.
 
+If the connector is "pre-baked" in that it does not require any request credentials
+to use, then you may omit the header forwarding entirely. This may be appropriate
+if there is a public readonly instance of Hasura available for use.
+
+
 ### Integrate into your supergraph
 
 Track the associated commands (functions/procedures) in your supergraph:
@@ -138,6 +212,11 @@ ddn-staging connector-link update graphql --add-all-resources
 ```
 
 If you just need to update your existing connector you can run the update command again.
+
+This will add/update the commands defined in the subgraph metadata defined in `metadata/graphql/commands`. Currently you will want to remove the `headers` argument defined in these commands
+as this will be supplied automatically by the argument presets.
+
+TODO: Provide example of command metadata.
 
 
 ### Replicating specific permissions in models
@@ -272,6 +351,9 @@ Here is a summary of the known limitations of the connector
 * Error formatting
   - The format of errors from the connector does not currently match V2 error formatting
   - No "partial error" or "multiple errors" responses
+* Tooling adds a `headers` argument to commands
+  - This should not be required when it is provided by argument presets
+  - This is a bug which will be addressed in future
 
 
 ## Development
