@@ -178,10 +178,7 @@ Field Arguments are leveraged in commands to allow mirroring the GraphQL queries
 executed by the user.
 
 Header forwarding is implemented as additional command arguments and wired
-from headers to the argument by the engine via the new `ArgumentPresets`
-feature.
-
-TODO: Link docs.
+from headers to the argument by the engine via [the new `ArgumentPresets` feature](https://hasura.io/docs/3.0/supergraph-modeling/permissions/#modelpermissions-argumentpreset).
 
 
 ## Schemas
