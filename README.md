@@ -285,7 +285,33 @@ if you wish to preserve API behaviour for existing V2 applications you may wish
 to alther the subgraph namspacing configuration in order to return the API
 the one that matches the original upstream GraphQL source.
 
-TODO: See docs.
+You can remove the namespace for a subgraph as per the following example
+of a supergraph configuratgion metadata:
+
+```yaml
+kind: Supergraph
+version: v1
+definition:
+  project: 
+  supergraph_globals:
+    generator:
+      rootPath: ./supergraph
+    envFile: ./supergraph/.env.supergraph
+    includePaths:
+      - ./supergraph/auth-config.hml
+      - ./supergraph/compatibility-config.hml
+      - ./supergraph/graphql-config.hml
+  subgraphs:
+    app:
+      generator:
+        rootPath: app/metadata
+      envFile: app/.env.app
+      namingConvention: "no-mod"
+      includePaths:
+        - app
+```
+
+Note the `namingConvention` field!
 
 
 ## Execution
@@ -339,36 +365,8 @@ schema not reflecting the correct restrictive permissions at development time.
 In future we wish to be able to replicate the correct permissions in the engine
 assisted by tooling which will resolve these issues.
 
-### Changing or Removing the Namespace for a GraphQL connector Subgraph
-
-You can remove the namespace for a subgraph as per the following example
-of a supergraph configuratgion metadata:
-
-```yaml
-kind: Supergraph
-version: v1
-definition:
-  project: 
-  supergraph_globals:
-    generator:
-      rootPath: ./supergraph
-    envFile: ./supergraph/.env.supergraph
-    includePaths:
-      - ./supergraph/auth-config.hml
-      - ./supergraph/compatibility-config.hml
-      - ./supergraph/graphql-config.hml
-  subgraphs:
-    app:
-      generator:
-        rootPath: app/metadata
-      envFile: app/.env.app
-      namingConvention: "no-mod"
-      includePaths:
-        - app
-```
-
-Note the `namingConvention` field!
-
+See the [Removing namespacing](#removing-namespacing) section for more details
+on removing default namespacing for fields and types.
 
 ## Authorization Use-Cases
 
