@@ -216,7 +216,54 @@ If you just need to update your existing connector you can run the update comman
 This will add/update the commands defined in the subgraph metadata defined in `metadata/graphql/commands`. Currently you will want to remove the `headers` argument defined in these commands
 as this will be supplied automatically by the argument presets.
 
-TODO: Provide example of command metadata.
+An example of a generated command metadata snippet:
+
+```yaml
+---
+kind: Command
+version: v1
+definition:
+  name: Child
+  outputType: ChildQueryResponse!
+  arguments:
+    - name: headers # REMOVE
+      type: HeaderMap! # REMOVE
+    - name: distinctOn
+      type: "[ChildSelectColumn!]"
+      description: distinct select on columns
+    - name: limit
+      type: Int
+      description: limit the number of rows returned
+    - name: offset
+      type: Int
+      description: skip the first n rows. Use only with order_by
+    - name: orderBy
+      type: "[ChildOrderBy!]"
+      description: sort the rows by one or more columns
+    - name: where
+      type: ChildBoolExp
+      description: filter the rows returned
+  source:
+    dataConnectorName: graphql
+    dataConnectorCommand:
+      function: child
+    argumentMapping:
+      headers: _headers # REMOVE
+      distinctOn: distinct_on
+      limit: limit
+      offset: offset
+      orderBy: order_by
+      where: where
+  graphql:
+    rootFieldName: app_child
+    rootFieldKind: Query
+  description: 'fetch data from the table: "child"'
+```
+
+**Note: You will currently need to remove the references to the header argument
+      if it is being included through the argument presets feature!
+      See the `# REMOVE` comments. You will encounter a build error if you
+      forget to do this.**
 
 
 ### Replicating specific permissions in models
