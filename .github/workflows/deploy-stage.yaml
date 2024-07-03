@@ -213,7 +213,7 @@ jobs:
       - name: create a draft release
         uses: ncipollo/release-action@v1
         with:
-          draft: true
+          draft: false
           tag: v${{ steps.get-version.outputs.tagged_version }}
           body: ${{ steps.changelog-reader.outputs.changes }}
           artifacts: release/artifacts/*
