@@ -4,7 +4,6 @@ packagingDefinition:
 supportedEnvironmentVariables:
 commands:
   update: hasura-ndc-graphql update
-  init: hasura-ndc-graphql init
 cliPlugin:
   name: ndc-graphql
   version: "${CLI_VERSION}"

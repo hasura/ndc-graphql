@@ -1,4 +1,4 @@
-name: graphql
+name: ndc-graphql
 version: "${CLI_VERSION}"
 shortDescription: "CLI plugin for Hasura ndc-graphql"
 homepage: https://hasura.io/connectors/graphql
