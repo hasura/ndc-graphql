@@ -50,8 +50,8 @@ for the purposes of connecting to a GraphQL schema with this connector.
 Once you are operating within a subgraph you can add the GraphQL connector:
 
 ```sh
-ddn subgraph init app
-ddn connector init graphql --hub-connector hasura/graphql
+ddn subgraph init app --dir app --target-supergraph supergraph.local.yaml --target-supergraph supergraph.cloud.yaml
+ddn connector init graphql --subgraph ./app/subgraph.yaml --add-to-compose-file compose.yaml --configure-port 8081 --hub-connector hasura/graphql
 ```
 
 <details>
@@ -166,8 +166,14 @@ Once the connector introspection configuration is updated, you can perform an up
 in order to fetch the schema for use and then add the connector link:
 
 ```sh
-ddn connector introspect --connector graphql # Names have to match?
-ddn connector-link add graphql # Pick another name?
+ddn connector introspect --connector ./app/connector/graphql/connector.local.yaml
+ddn connector-link add graphql --configure-host http://local.hasura.dev:8081 --subgraph app/subgraph.yaml --target-env-file app/.env.app.local
+```
+
+At this point you will want to have your connector running locally if you are performing local development:
+
+```sh
+docker compose up -d --build app_graphql
 ```
 
 
@@ -213,7 +219,7 @@ if there is a public readonly instance of Hasura available for use.
 Track the associated commands (functions/procedures) in your supergraph:
 
 ```sh
-ddn-staging connector-link update graphql --add-all-resources
+ddn-staging connector-link update graphql --subgraph app/subgraph.yaml --env-file app/.env.app.local --add-all-resources
 ```
 
 If you just need to update your existing connector you can run the update command again.
@@ -269,6 +275,22 @@ definition:
       if it is being included through the argument presets feature!
       See the `# REMOVE` comments. You will encounter a build error if you
       forget to do this.**
+
+### Testing your Supergraph
+
+You can then build and test your supergraph:
+
+```sh
+ddn supergraph build local --supergraph supergraph.local.yaml --output-dir engine --env-file=app:./app/.env.app.local
+```
+
+Running services locally with docker:
+
+```sh
+docker compose up -d --build
+```
+
+See your docker compose file for information on exposed service ports.
 
 
 ### Replicating specific permissions in models
