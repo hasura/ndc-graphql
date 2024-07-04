@@ -94,6 +94,9 @@ ddn connector init graphql --subgraph ./app/subgraph.yaml --add-to-compose-file 
 ```
 </details>
 
+**Note: Any literal `"value"` in the configuration can be replaced with `"valueFromEnv"` in order to read from environments.**
+
+
 ### Configuring the introspection role
 
 Once the connector has been added it will expose its configuration in
