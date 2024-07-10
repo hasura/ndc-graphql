@@ -109,7 +109,7 @@ impl Default for RequestConfig<String> {
         Self {
             headers_argument: "_headers".to_owned(),
             headers_type_name: "_HeaderMap".to_owned(),
-            forward_headers: Some(vec!["*".to_owned()]),
+            forward_headers: Some(vec!["Authorization".to_owned(), "X-Hasura-*".to_owned()]),
         }
     }
 }
@@ -131,7 +131,7 @@ impl Default for ResponseConfig<String> {
             response_field: "response".to_owned(),
             type_name_prefix: "_".to_owned(),
             type_name_suffix: "Response".to_owned(),
-            forward_headers: Some(vec!["*".to_owned()]),
+            forward_headers: Some(vec!["Set-Cookie".to_owned()]),
         }
     }
 }
@@ -143,7 +143,7 @@ impl Default for ResponseConfig<Option<String>> {
             response_field: None,
             type_name_prefix: None,
             type_name_suffix: None,
-            forward_headers: Some(vec!["*".to_owned()]),
+            forward_headers: Some(vec!["Set-Cookie".to_owned()]),
         }
     }
 }
