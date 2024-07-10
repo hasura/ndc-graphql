@@ -284,7 +284,7 @@ definition:
 You can then build and test your supergraph:
 
 ```sh
-ddn supergraph build local --supergraph supergraph.local.yaml --output-dir engine --env-file=app:./app/.env.app.local
+ddn supergraph build local --supergraph supergraph.local.yaml --output-dir engine --subgraph-env-file=app:./app/.env.app.local
 ```
 
 Running services locally with docker:
