@@ -287,12 +287,6 @@ You can then build and test your supergraph:
 ddn supergraph build local --supergraph supergraph.local.yaml --output-dir engine --subgraph-env-file=app:./app/.env.app.local
 ```
 
-Running services locally with docker:
-
-```sh
-docker compose up -d --build
-```
-
 See your docker compose file for information on exposed service ports.
 
 
