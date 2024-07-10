@@ -222,7 +222,7 @@ if there is a public readonly instance of Hasura available for use.
 Track the associated commands (functions/procedures) in your supergraph:
 
 ```sh
-ddn-staging connector-link update graphql --subgraph app/subgraph.yaml --env-file app/.env.app.local --add-all-resources
+ddn connector-link update graphql --subgraph app/subgraph.yaml --env-file app/.env.app.local --add-all-resources
 ```
 
 If you just need to update your existing connector you can run the update command again.
