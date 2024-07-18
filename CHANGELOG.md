@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.1]
+
+- Forward errors from underlying source to users using 422 status code
+- Change default configuration to not include header forwarding
+- Handle error when unknown field argument is used
+
 ## [0.1.0]
 
 - Initial Release
