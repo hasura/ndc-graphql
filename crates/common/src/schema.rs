@@ -1,10 +1,12 @@
-use crate::config_file::{RequestConfig, ResponseConfig};
+use crate::config::{RequestConfig, ResponseConfig};
 use graphql_parser::schema;
 use std::{collections::BTreeMap, fmt::Display};
 
 #[derive(Debug, Clone)]
 pub struct SchemaDefinition {
+    pub query_type_name: Option<String>,
     pub query_fields: BTreeMap<String, ObjectFieldDefinition>,
+    pub mutation_type_name: Option<String>,
     pub mutation_fields: BTreeMap<String, ObjectFieldDefinition>,
     pub definitions: BTreeMap<String, TypeDef>,
 }
@@ -12,8 +14,8 @@ pub struct SchemaDefinition {
 impl SchemaDefinition {
     pub fn new(
         schema_document: &schema::Document<'_, String>,
-        request_config: &RequestConfig<String>,
-        response_config: &ResponseConfig<String>,
+        request_config: &RequestConfig,
+        response_config: &ResponseConfig,
     ) -> Result<Self, SchemaDefinitionError> {
         let schema_definition = schema_document
             .definitions
@@ -165,7 +167,9 @@ impl SchemaDefinition {
 
         Ok(Self {
             query_fields,
+            query_type_name: schema_definition.query.to_owned(),
             mutation_fields,
+            mutation_type_name: schema_definition.mutation.to_owned(),
             definitions,
         })
     }

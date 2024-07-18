@@ -150,11 +150,7 @@ impl Connector for GraphQLConnector {
             &configuration.connection.endpoint,
             &operation.headers,
             &client,
-            &configuration
-                .response
-                .forward_headers
-                .clone()
-                .unwrap_or_default(),
+            &configuration.response.forward_headers,
         )
         .instrument(execution_span)
         .await
@@ -165,7 +161,7 @@ impl Connector for GraphQLConnector {
                 Err(MutationError::new_unprocessable_content(&errors[0].message)
                     .with_details(serde_json::json!({ "errors": errors })))
             } else if let Some(mut data) = response.data {
-                let forward_response_headers = configuration.response.forward_headers.is_some();
+                let forward_response_headers = !configuration.response.forward_headers.is_empty();
 
                 let operation_results = request
                     .operations
@@ -226,11 +222,7 @@ impl Connector for GraphQLConnector {
             &configuration.connection.endpoint,
             &operation.headers,
             &client,
-            &configuration
-                .response
-                .forward_headers
-                .clone()
-                .unwrap_or_default(),
+            &configuration.response.forward_headers,
         )
         .instrument(execution_span)
         .await
@@ -241,7 +233,7 @@ impl Connector for GraphQLConnector {
                 Err(QueryError::new_unprocessable_content(&errors[0].message)
                     .with_details(serde_json::json!({ "errors": errors })))
             } else if let Some(data) = response.data {
-                let forward_response_headers = configuration.response.forward_headers.is_some();
+                let forward_response_headers = !configuration.response.forward_headers.is_empty();
 
                 let row = if forward_response_headers {
                     let headers = serde_json::to_value(headers).map_err(QueryError::new)?;

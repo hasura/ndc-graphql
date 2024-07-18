@@ -8,8 +8,8 @@ use ndc_sdk::models;
 use std::{collections::BTreeMap, iter};
 
 pub fn schema_response(configuration: &ServerConfig) -> models::SchemaResponse {
-    let forward_request_headers = configuration.request.forward_headers.is_some();
-    let forward_response_headers = configuration.response.forward_headers.is_some();
+    let forward_request_headers = !configuration.request.forward_headers.is_empty();
+    let forward_response_headers = !configuration.response.forward_headers.is_empty();
 
     let mut scalar_types: BTreeMap<_, _> = configuration
         .schema

@@ -10,14 +10,14 @@ pub const CONFIG_SCHEMA_FILE_NAME: &str = "configuration.schema.json";
 pub struct ServerConfigFile {
     #[serde(rename = "$schema")]
     pub json_schema: String,
+    /// Connection Configuration for introspection
+    pub introspection: ConnectionConfigFile,
     /// Connection configuration for query execution
     pub execution: ConnectionConfigFile,
-    /// Optional Connection Configuration for introspection
-    pub introspection: ConnectionConfigFile,
     /// Optional configuration for requests
-    pub request: RequestConfig<Option<String>>,
+    pub request: RequestConfigFile,
     /// Optional configuration for responses
-    pub response: ResponseConfig<Option<String>>,
+    pub response: ResponseConfigFile,
 }
 
 impl Default for ServerConfigFile {
@@ -26,8 +26,8 @@ impl Default for ServerConfigFile {
             json_schema: CONFIG_SCHEMA_FILE_NAME.to_owned(),
             execution: ConnectionConfigFile::default(),
             introspection: ConnectionConfigFile::default(),
-            request: RequestConfig::default(),
-            response: ResponseConfig::default(),
+            request: RequestConfigFile::default(),
+            response: ResponseConfigFile::default(),
         }
     }
 }
@@ -43,56 +43,60 @@ impl Default for ConnectionConfigFile {
     fn default() -> Self {
         Self {
             endpoint: ConfigValue::Value("".to_string()),
-            headers: BTreeMap::from_iter(vec![
-                (
-                    "Content-Type".to_owned(),
-                    ConfigValue::Value("application/json".to_string()),
-                ),
-                (
-                    "Authorization".to_owned(),
-                    ConfigValue::ValueFromEnv("GRAPHQL_ENDPOINT_AUTHORIZATION".to_string()),
-                ),
-            ]),
+            headers: BTreeMap::from_iter(vec![(
+                "Authorization".to_owned(),
+                ConfigValue::ValueFromEnv("GRAPHQL_ENDPOINT_AUTHORIZATION".to_string()),
+            )]),
         }
     }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase")]
-pub struct RequestConfig<T> {
+pub struct RequestConfigFile {
     /// Name of the headers argument
     /// Must not conflict with any arguments of root fields in the target schema
     /// Defaults to "_headers", set to a different value if there is a conflict
-    pub headers_argument: T,
+    #[serde(skip_serializing_if = "Option::is_none", default)]
+    pub headers_argument: Option<String>,
     /// Name of the headers argument type
     /// Must not conflict with other types in the target schema
     /// Defaults to "_HeaderMap", set to a different value if there is a conflict
-    pub headers_type_name: T,
+    #[serde(skip_serializing_if = "Option::is_none", default)]
+    pub headers_type_name: Option<String>,
     /// List of headers to from the request
-    /// Defaults to ["*"], AKA all headers
+    /// Defaults to [], AKA no headers/disabled
     /// Supports glob patterns eg. "X-Hasura-*"
+    /// Enabling this requires additional configuration on the ddn side, see docs for more
+    #[serde(skip_serializing_if = "Option::is_none", default)]
     pub forward_headers: Option<Vec<String>>,
 }
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase")]
-pub struct ResponseConfig<T> {
+pub struct ResponseConfigFile {
     /// Name of the headers field in the response type
     /// Defaults to "headers"
-    pub headers_field: T,
+    #[serde(skip_serializing_if = "Option::is_none", default)]
+    pub headers_field: Option<String>,
     /// Name of the response field in the response type
     /// Defaults to "response"
-    pub response_field: T,
+    #[serde(skip_serializing_if = "Option::is_none", default)]
+    pub response_field: Option<String>,
     /// Prefix for response type names
     /// Defaults to "_"
     /// Generated response type names must be unique once prefix and suffix are applied
-    pub type_name_prefix: T,
+    #[serde(skip_serializing_if = "Option::is_none", default)]
+    pub type_name_prefix: Option<String>,
     /// Suffix for response type names
     /// Defaults to "Response"
     /// Generated response type names must be unique once prefix and suffix are applied
-    pub type_name_suffix: T,
+    #[serde(skip_serializing_if = "Option::is_none", default)]
+    pub type_name_suffix: Option<String>,
     /// List of headers to from the response
-    /// Defaults to ["*"], AKA all headers
+    /// Defaults to [], AKA no headers/disabled
     /// Supports glob patterns eg. "X-Hasura-*"
+    /// Enabling this requires additional configuration on the ddn side, see docs for more
+    #[serde(skip_serializing_if = "Option::is_none", default)]
     pub forward_headers: Option<Vec<String>>,
 }
 
@@ -104,91 +108,24 @@ pub enum ConfigValue {
     ValueFromEnv(String),
 }
 
-impl Default for RequestConfig<String> {
-    fn default() -> Self {
-        Self {
-            headers_argument: "_headers".to_owned(),
-            headers_type_name: "_HeaderMap".to_owned(),
-            forward_headers: Some(vec!["Authorization".to_owned(), "X-Hasura-*".to_owned()]),
-        }
-    }
-}
-
-impl Default for RequestConfig<Option<String>> {
+impl Default for RequestConfigFile {
     fn default() -> Self {
         Self {
             headers_argument: None,
             headers_type_name: None,
-            forward_headers: Some(vec!["*".to_owned()]),
+            forward_headers: Some(vec![]),
         }
     }
 }
 
-impl Default for ResponseConfig<String> {
-    fn default() -> Self {
-        Self {
-            headers_field: "headers".to_owned(),
-            response_field: "response".to_owned(),
-            type_name_prefix: "_".to_owned(),
-            type_name_suffix: "Response".to_owned(),
-            forward_headers: Some(vec!["Set-Cookie".to_owned()]),
-        }
-    }
-}
-
-impl Default for ResponseConfig<Option<String>> {
+impl Default for ResponseConfigFile {
     fn default() -> Self {
         Self {
             headers_field: None,
             response_field: None,
             type_name_prefix: None,
             type_name_suffix: None,
-            forward_headers: Some(vec!["Set-Cookie".to_owned()]),
-        }
-    }
-}
-
-impl From<RequestConfig<Option<String>>> for RequestConfig<String> {
-    fn from(value: RequestConfig<Option<String>>) -> Self {
-        RequestConfig {
-            headers_argument: value
-                .headers_argument
-                .unwrap_or_else(|| Self::default().headers_argument),
-            headers_type_name: value
-                .headers_type_name
-                .unwrap_or_else(|| Self::default().headers_type_name),
-            forward_headers: value.forward_headers.and_then(|forward_headers| {
-                if forward_headers.is_empty() {
-                    None
-                } else {
-                    Some(forward_headers)
-                }
-            }),
-        }
-    }
-}
-impl From<ResponseConfig<Option<String>>> for ResponseConfig<String> {
-    fn from(value: ResponseConfig<Option<String>>) -> Self {
-        ResponseConfig {
-            headers_field: value
-                .headers_field
-                .unwrap_or_else(|| Self::default().headers_field),
-            response_field: value
-                .response_field
-                .unwrap_or_else(|| Self::default().response_field),
-            type_name_prefix: value
-                .type_name_prefix
-                .unwrap_or_else(|| Self::default().type_name_prefix),
-            type_name_suffix: value
-                .type_name_suffix
-                .unwrap_or_else(|| Self::default().type_name_suffix),
-            forward_headers: value.forward_headers.and_then(|forward_headers| {
-                if forward_headers.is_empty() {
-                    None
-                } else {
-                    Some(forward_headers)
-                }
-            }),
+            forward_headers: Some(vec![]),
         }
     }
 }
