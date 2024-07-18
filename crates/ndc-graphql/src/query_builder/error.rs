@@ -38,17 +38,17 @@ impl std::error::Error for QueryBuilderError {}
 
 impl From<QueryBuilderError> for QueryError {
     fn from(value: QueryBuilderError) -> Self {
-        QueryError::InvalidRequest(value.to_string())
+        QueryError::new_invalid_request(&value)
     }
 }
 impl From<QueryBuilderError> for MutationError {
     fn from(value: QueryBuilderError) -> Self {
-        MutationError::InvalidRequest(value.to_string())
+        MutationError::new_invalid_request(&value)
     }
 }
 impl From<QueryBuilderError> for ExplainError {
     fn from(value: QueryBuilderError) -> Self {
-        ExplainError::InvalidRequest(value.to_string())
+        ExplainError::new_invalid_request(&value)
     }
 }
 

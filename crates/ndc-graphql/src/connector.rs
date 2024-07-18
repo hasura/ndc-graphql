@@ -1,4 +1,4 @@
-use self::{configuration::read_configuration, state::ServerState};
+use self::state::ServerState;
 use crate::query_builder::{build_mutation_document, build_query_document};
 use async_trait::async_trait;
 use common::{
@@ -8,8 +8,8 @@ use common::{
 use indexmap::IndexMap;
 use ndc_sdk::{
     connector::{
-        Connector, ConnectorSetup, ExplainError, FetchMetricsError, HealthError,
-        InitializationError, MutationError, ParseError, QueryError, SchemaError,
+        Connector, ExplainError, FetchMetricsError, HealthError, MutationError, QueryError,
+        SchemaError,
     },
     json_response::JsonResponse,
     models::{
@@ -17,35 +17,14 @@ use ndc_sdk::{
     },
 };
 use schema::schema_response;
-use std::{collections::BTreeMap, mem, path::Path};
+use std::{collections::BTreeMap, mem};
 use tracing::Instrument;
-
-mod configuration;
 mod schema;
+pub mod setup;
 mod state;
 
 #[derive(Debug, Default, Clone)]
 pub struct GraphQLConnector;
-
-#[async_trait]
-impl ConnectorSetup for GraphQLConnector {
-    type Connector = Self;
-
-    async fn parse_configuration(
-        &self,
-        configuration_dir: impl AsRef<Path> + Send,
-    ) -> Result<<Self as Connector>::Configuration, ParseError> {
-        read_configuration(configuration_dir.as_ref()).await
-    }
-
-    async fn try_init_state(
-        &self,
-        configuration: &<Self as Connector>::Configuration,
-        _metrics: &mut prometheus::Registry,
-    ) -> Result<<Self as Connector>::State, InitializationError> {
-        Ok(ServerState::new(configuration))
-    }
-}
 
 #[async_trait]
 impl Connector for GraphQLConnector {
@@ -75,6 +54,7 @@ impl Connector for GraphQLConnector {
                     variables: None,
                     explain: Some(LeafCapability {}),
                     nested_fields: models::NestedFieldCapabilities {
+                        aggregates: None,
                         filter_by: None,
                         order_by: None,
                     },
@@ -106,7 +86,7 @@ impl Connector for GraphQLConnector {
             &operation.query,
             &operation.variables,
         ))
-        .map_err(|err| ExplainError::InvalidRequest(err.to_string()))?;
+        .map_err(ExplainError::new)?;
 
         let details = BTreeMap::from_iter(vec![
             ("SQL Query".to_string(), operation.query),
@@ -133,7 +113,7 @@ impl Connector for GraphQLConnector {
             &operation.query,
             &operation.variables,
         ))
-        .map_err(|err| ExplainError::InvalidRequest(err.to_string()))?;
+        .map_err(ExplainError::new)?;
 
         let details = BTreeMap::from_iter(vec![
             ("SQL Query".to_string(), operation.query),
@@ -159,7 +139,7 @@ impl Connector for GraphQLConnector {
         let client = state
             .client(configuration)
             .await
-            .map_err(|err| MutationError::Other(err.to_string().into()))?;
+            .map_err(MutationError::new)?;
 
         let execution_span =
             tracing::info_span!("Execute GraphQL Mutation", internal.visibility = "user");
@@ -170,24 +150,18 @@ impl Connector for GraphQLConnector {
             &configuration.connection.endpoint,
             &operation.headers,
             &client,
-            &configuration
-                .response
-                .forward_headers
-                .clone()
-                .unwrap_or_default(),
+            &configuration.response.forward_headers,
         )
         .instrument(execution_span)
         .await
-        .map_err(|err| MutationError::Other(err.to_string().into()))?;
+        .map_err(MutationError::new)?;
 
         tracing::info_span!("Process Response").in_scope(|| {
             if let Some(errors) = response.errors {
-                Err(MutationError::InvalidRequest(
-                    serde_json::to_string(&errors)
-                        .map_err(|err| MutationError::Other(err.into()))?,
-                ))
+                Err(MutationError::new_unprocessable_content(&errors[0].message)
+                    .with_details(serde_json::json!({ "errors": errors })))
             } else if let Some(mut data) = response.data {
-                let forward_response_headers = configuration.response.forward_headers.is_some();
+                let forward_response_headers = !configuration.response.forward_headers.is_empty();
 
                 let operation_results = request
                     .operations
@@ -216,14 +190,14 @@ impl Connector for GraphQLConnector {
                         }),
                     })
                     .collect::<Result<Vec<_>, serde_json::Error>>()
-                    .map_err(|err| MutationError::Other(err.into()))?;
+                    .map_err(MutationError::new)?;
 
                 Ok(JsonResponse::Value(models::MutationResponse {
                     operation_results,
                 }))
             } else {
-                Err(MutationError::UnprocessableContent(
-                    "No data or errors in response".into(),
+                Err(MutationError::new_unprocessable_content(
+                    &"No data or errors in response",
                 ))
             }
         })
@@ -237,10 +211,7 @@ impl Connector for GraphQLConnector {
         let operation = tracing::info_span!("Build Query Document", internal.visibility = "user")
             .in_scope(|| build_query_document(&request, configuration))?;
 
-        let client = state
-            .client(configuration)
-            .await
-            .map_err(|err| QueryError::Other(err.to_string().into()))?;
+        let client = state.client(configuration).await.map_err(QueryError::new)?;
 
         let execution_span =
             tracing::info_span!("Execute GraphQL Query", internal.visibility = "user");
@@ -251,31 +222,22 @@ impl Connector for GraphQLConnector {
             &configuration.connection.endpoint,
             &operation.headers,
             &client,
-            &configuration
-                .response
-                .forward_headers
-                .clone()
-                .unwrap_or_default(),
+            &configuration.response.forward_headers,
         )
         .instrument(execution_span)
         .await
-        .map_err(|err| QueryError::Other(err.to_string().into()))?;
+        .map_err(QueryError::new)?;
 
         tracing::info_span!("Process Response").in_scope(|| {
             if let Some(errors) = response.errors {
-                Err(QueryError::Other(
-                    serde_json::to_string(&errors)
-                        .map_err(|err| QueryError::Other(err.into()))?
-                        .into(),
-                ))
+                Err(QueryError::new_unprocessable_content(&errors[0].message)
+                    .with_details(serde_json::json!({ "errors": errors })))
             } else if let Some(data) = response.data {
-                let forward_response_headers = configuration.response.forward_headers.is_some();
+                let forward_response_headers = !configuration.response.forward_headers.is_empty();
 
                 let row = if forward_response_headers {
-                    let headers = serde_json::to_value(headers)
-                        .map_err(|err| QueryError::Other(err.into()))?;
-                    let data =
-                        serde_json::to_value(data).map_err(|err| QueryError::Other(err.into()))?;
+                    let headers = serde_json::to_value(headers).map_err(QueryError::new)?;
+                    let data = serde_json::to_value(data).map_err(QueryError::new)?;
 
                     IndexMap::from_iter(vec![
                         (
@@ -296,8 +258,8 @@ impl Connector for GraphQLConnector {
                     rows: Some(vec![row]),
                 }])))
             } else {
-                Err(QueryError::UnprocessableContent(
-                    "No data or errors in response".into(),
+                Err(QueryError::new_unprocessable_content(
+                    &"No data or errors in response",
                 ))
             }
         })

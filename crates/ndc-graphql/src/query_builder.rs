@@ -37,6 +37,12 @@ pub fn build_mutation_document(
     let mut request_headers = BTreeMap::new();
     let mut items = vec![];
 
+    let mutation_type_name = configuration
+        .schema
+        .mutation_type_name
+        .as_ref()
+        .ok_or(QueryBuilderError::NoMutationType)?;
+
     for (index, operation) in request.operations.iter().enumerate() {
         match operation {
             models::MutationOperation::Procedure {
@@ -69,6 +75,8 @@ pub fn build_mutation_document(
                         |v| Ok(v.to_owned()),
                         field_definition,
                         &mut variables,
+                        name,
+                        &mutation_type_name,
                     )?,
                     fields,
                     field_definition,
@@ -116,6 +124,12 @@ pub fn build_query_document(
         extract_headers(&request.arguments, map_query_arg, configuration)?;
 
     let mut items = vec![];
+
+    let query_type_name = configuration
+        .schema
+        .query_type_name
+        .as_ref()
+        .ok_or(QueryBuilderError::NoQueryType)?;
 
     for (alias, field) in request
         .query
@@ -165,6 +179,8 @@ pub fn build_query_document(
                 map_arg,
                 field_definition,
                 &mut variables,
+                &request.collection,
+                &query_type_name,
             )?,
             fields,
             field_definition,
@@ -215,11 +231,7 @@ where
     let mut request_arguments = BTreeMap::new();
     let mut headers = configuration.connection.headers.clone();
 
-    let patterns = configuration
-        .request
-        .forward_headers
-        .clone()
-        .unwrap_or_default();
+    let patterns = &configuration.request.forward_headers;
 
     for (name, argument) in arguments {
         let value = map_argument(argument)?;
@@ -248,7 +260,7 @@ where
                                 ))
                             }
                             serde_json::Value::String(header) => {
-                                for pattern in &patterns {
+                                for pattern in patterns {
                                     if glob_match(&pattern.to_lowercase(), &name.to_lowercase()) {
                                         headers.insert(name, header);
                                         break;
@@ -280,7 +292,7 @@ fn selection_set_field<'a>(
             let items = fields
                 .iter()
                 .map(|(alias, field)| {
-                    let (name, fields, arguments) = match field {
+                    let (field_name, fields, arguments) = match field {
                         models::Field::Column {
                             column,
                             fields,
@@ -293,31 +305,35 @@ fn selection_set_field<'a>(
                         }
                     };
 
+                    let object_name = field_definition.r#type.name();
+
                     // subfield selection should only exist on object types
-                    let field_definition =
-                        match configuration
-                            .schema
-                            .definitions
-                            .get(field_definition.r#type.name())
-                        {
-                            Some(TypeDef::Object {
-                                fields,
-                                description: _,
-                            }) => fields.get(name).ok_or_else(|| {
-                                QueryBuilderError::ObjectFieldNotFound {
-                                    object: field_definition.r#type.name().to_owned(),
-                                    field: name.to_owned(),
-                                }
-                            }),
-                            Some(_) | None => Err(QueryBuilderError::ObjectTypeNotFound(
-                                field_definition.r#type.name().to_owned(),
-                            )),
-                        }?;
+                    let field_definition = match configuration.schema.definitions.get(object_name) {
+                        Some(TypeDef::Object {
+                            fields,
+                            description: _,
+                        }) => fields.get(field_name).ok_or_else(|| {
+                            QueryBuilderError::ObjectFieldNotFound {
+                                object: field_definition.r#type.name().to_owned(),
+                                field: field_name.to_owned(),
+                            }
+                        }),
+                        Some(_) | None => Err(QueryBuilderError::ObjectTypeNotFound(
+                            field_definition.r#type.name().to_owned(),
+                        )),
+                    }?;
 
                     selection_set_field(
                         alias,
-                        name,
-                        field_arguments(arguments, map_query_arg, field_definition, variables)?,
+                        field_name,
+                        field_arguments(
+                            arguments,
+                            map_query_arg,
+                            field_definition,
+                            variables,
+                            field_name,
+                            object_name,
+                        )?,
                         fields,
                         field_definition,
                         variables,
@@ -354,6 +370,8 @@ fn field_arguments<'a, A, M>(
     map_argument: M,
     field_definition: &ObjectFieldDefinition,
     variables: &mut OperationVariables,
+    field_name: &str,
+    object_name: &str,
 ) -> Result<Vec<(String, Value<'a, String>)>, QueryBuilderError>
 where
     M: Fn(&A) -> Result<serde_json::Value, QueryBuilderError>,
@@ -361,7 +379,15 @@ where
     arguments
         .iter()
         .map(|(name, arg)| {
-            let input_type = &field_definition.arguments.get(name).unwrap().r#type;
+            let input_type = &field_definition
+                .arguments
+                .get(name)
+                .ok_or(QueryBuilderError::ArgumentNotFound {
+                    object: object_name.to_owned(),
+                    field: field_name.to_owned(),
+                    argument: name.to_owned(),
+                })?
+                .r#type;
 
             let value = map_argument(arg)?;
 
@@ -396,8 +422,7 @@ mod test {
     use std::collections::BTreeMap;
 
     use common::{
-        config::{ConnectionConfig, ServerConfig},
-        config_file::{RequestConfig, ResponseConfig},
+        config::{ConnectionConfig, RequestConfig, ResponseConfig, ServerConfig},
         schema::SchemaDefinition,
     };
     use graphql_parser;
@@ -430,7 +455,10 @@ mod test {
           
         "#;
         let schema_document = graphql_parser::parse_schema(schema_string)?;
-        let request_config = RequestConfig::default();
+        let request_config = RequestConfig {
+            forward_headers: vec!["Authorization".to_string()],
+            ..RequestConfig::default()
+        };
         let response_config = ResponseConfig::default();
 
         let schema = SchemaDefinition::new(&schema_document, &request_config, &response_config)?;

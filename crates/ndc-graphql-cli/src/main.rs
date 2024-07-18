@@ -220,7 +220,13 @@ async fn update_config(
     let response = execute_graphql_introspection(&connection).await?;
 
     // todo: handle graphql errors!
-    let introspection = response.data.expect("Successful introspection");
+    if let Some(errors) = response.errors {
+        return Err(format!("Introspection error: {}", serde_json::to_string(&errors)?).into());
+    }
+
+    let introspection = response
+        .data
+        .expect("Introspection without error should have data");
 
     let schema_document = schema_from_introspection(introspection);
 

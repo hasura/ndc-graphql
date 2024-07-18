@@ -1,13 +1,19 @@
 use crate::config::ConnectionConfig;
 use glob_match::glob_match;
+use reqwest::header::{HeaderMap, HeaderValue, CONTENT_TYPE};
 use serde::Serialize;
 use std::{collections::BTreeMap, error::Error, fmt::Debug};
 
 pub fn get_http_client(
     _connection_config: &ConnectionConfig,
 ) -> Result<reqwest::Client, Box<dyn std::error::Error>> {
-    // todo: we could make client come preconfigured with some headers such as for username and password?
-    let client = reqwest::Client::builder().build()?;
+    let mut headers = HeaderMap::new();
+    headers.insert(CONTENT_TYPE, HeaderValue::from_static("application/json"));
+
+    let client = reqwest::Client::builder()
+        .default_headers(headers)
+        .build()?;
+
     Ok(client)
 }
 
