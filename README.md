@@ -1,24 +1,90 @@
-# GraphQL Native Data Connector for Hasura DDN
+# Hasura GraphQL Connector
 
-This GraphQL connector is intended to provide support for integrating Hasura V2
-projects into Hasura V3 projects as subgraphs. In addition to this immediate
-feature, the connector can connect many other GraphQL schemas similar to the
-"Remote Schema" feature in Hasura V2.
+<a href="https://hasura.io/"><img src="./GraphQL_Logo.png" align="right" width="200"></a>
 
-This is implemented by providing a connector that translates the root-fields
-of a GraphQL schema to NDC commands (function/procedures). Recent support for
-field arguments and header forwarding allow the connector to represent the
-majority of V2 queries/mutations.
+[![Docs](https://img.shields.io/badge/docs-v3.x-brightgreen.svg?style=flat)](https://hasura.io/docs/3.0/connectors/postgresql)
+[![Latest release](https://img.shields.io/github/v/release/hasura/ndc-graphql)](https://github.com/hasura/ndc-graphql/releases/latest)
+[![License](https://img.shields.io/badge/license-Apache--2.0-purple.svg?style=flat)](LICENSE.txt)
+[![ndc-hub](https://img.shields.io/badge/ndc--hub-graphql-pink.svg?style=flat)](https://hasura.io/connectors/graphql)
 
-**Current Limitations Include**
+The Hasura GraphQL Connector allows for connecting to a GraphQL API and bringing it into Hasura DDN supergraph as a single unified API. It can also be used to bring in your current Hasura v2 graphQL API into Hasura DDN and our recommended approach is to create a new subgraph for the v2 API.
 
-* Support for interfaces and unions is not currently available so schemas using
-  these features are not fully supported
+For Hasura v2 users, this functionality is the replacement of [remote schemas](https://hasura.io/docs/latest/remote-schemas/overview/) functionality in v3 (DDN).
+
+This connector is built using the [Rust Native Data Connector SDK](https://github.com/hasura/ndc-hub#rusk-sdk) and implements the [Native Data Connector Spec](https://github.com/hasura/ndc-spec).
+
+The connector translates the root-fields of a GraphQL schema to NDC [functions](https://hasura.github.io/ndc-spec/specification/schema/functions.html) and [procedures](https://hasura.github.io/ndc-spec/specification/schema/procedures.html). This results in your GraphQL root-fields being exposed as [commands](https://hasura.io/docs/3.0/supergraph-modeling/commands) in the Hasura supergraph. This simplifies implementation and acts as a proxy more than a [model](https://hasura.io/docs/3.0/supergraph-modeling/models).
+
+The recent support for field arguments and header forwarding on [Hasura v3 engine](https://github.com/hasura/graphql-engine/tree/master/v3) allow the connector to represent the majority of queries and mutations.
+
+```mermaid
+flowchart LR
+    User ---|GraphQLRequest| Engine
+    Engine ---|NDCRequest| Connector
+    Connector ---|GrqphQLRequest| UpstreamGQL
+    Admin --- CLI
+    CLI --- Plugin
+    Plugin ---|Introspection| UpstreamGQL
+    CLI -->|Configuration| Connector
+```
+
+The connector is configured in plugin mode, then run in execution mode.
+
+Header forwarding is implemented as additional command arguments and wired
+from headers to the argument by the engine via [the new `ArgumentPresets` feature](https://hasura.io/docs/3.0/supergraph-modeling/permissions/#modelpermissions-argumentpreset).
+
+- [Connector information in the Hasura Hub](https://hasura.io/connectors/graphql)
+- [Hasura V3 Documentation](https://hasura.io/docs/3.0)
+
+## Features
+
+Below, you'll find a matrix of all supported features for the PostgreSQL connector:
+
+| Feature                | Supported | Notes |
+| ---------------------- | --------- | ----- |
+| Queries                | ✅        | All features that v3 engine currently supports
+| Mutations              | ✅        |
+| Header Passthrough     | ✅        | Entire headers can be forwarded
+| Subscriptions          | ❌        |
+| Unions                 | ❌        | Can be brought in via scalar types
+| Interfaces             | ❌        |
+| Relay API              | ❌        |
+| Directives             | ❌        | @cached, Apollo directives
+
+#### Other Considerations and limitations
+
 * The V2 and V3 projects must share an auth provider in order to support JWT query authorization
-* Errors returned by the connector will be formatted differently
+  - Either pre-shared credentials, or shared auth providers are supported
+  - Seperate providers for engine and upstream are not currently supported
+* Error formatting
+  - The format of errors from the connector does not currently match V2 error formatting
+  - No "partial error" or "multiple errors" responses
 * `_headers` argument needs to be removed from commands by hand
+    - This should not be required when it is provided by argument presets
+  - This is a bug which will be addressed in future
+* Role based schemas
+  - Only a single schema is supported. 
+  - We recommend creating different subgraphs for different roles.
+* Pulling items out of session - Currently no session parsing and refined mappings are supported
+* Pattern matching in request header forwarding configuration
+  - This uses simple glob patterns
+  - More advanced matching and extraction is not currently supported
+* Response headers only allow at most one header per name
+  - For example you may only use one `Set-Cookie` response header
 
-## Usage
+## Before you get Started
+
+[Prerequisites or recommended steps before using the connector.]
+
+1. The [DDN CLI](https://hasura.io/docs/3.0/cli/installation) and [Docker](https://docs.docker.com/engine/install/) installed
+2. A [supergraph](https://hasura.io/docs/3.0/getting-started/init-supergraph)
+3. A [subgraph](https://hasura.io/docs/3.0/getting-started/init-subgraph)
+<!-- TODO: add anything connector-specific here -->
+
+The steps below explain how to Initialize and configure a connector for local development. You can learn how to deploy a connector — after it's been configured — [here](https://hasura.io/docs/3.0/getting-started/deployment/deploy-a-connector).
+
+
+## Using the GraphQL Connector
 
 The high-level steps for working with the GraphQL connector follows
 the same pattern as any connector:
@@ -28,25 +94,23 @@ the same pattern as any connector:
 * Integrate into your supergraph
 * Configure in your supergraph
 
-The main focus wrt. the GraphQL connector will be:
+The main focus with respect to the GraphQL connector will be:
 
 * Configuring the introspection role
 * Configuring the header passthrough behaviour
 * Configuring the argument preset and response header behaviour in the connector link
 * Replicating specific permissions in models
 
-All of the following steps assume you are working within an existing Hasura V3 project.
-Please see [the V3 documentation](https://hasura.io/docs/3.0/getting-started/init-subgraph) for
-information about getting started with Hasura V3.
+### Authenticate your CLI session
 
-Likewise, when using the connector to connect to a Hasura V2 project, you can see the
-[V2 documentation](https://hasura.io/docs/latest/index/) for information about Hasura V2.
+```bash
+ddn auth login
+```
 
 ### Add the connector
 
 The connector has been designed to work best in its own subgraph. While it is possible to
-use in an existing subgraph, we recommend [creating a subgraph](https://hasura.io/docs/3.0/getting-started/init-subgraph)
-for the purposes of connecting to a GraphQL schema with this connector.
+use in an existing subgraph, we recommend [creating a subgraph](https://hasura.io/docs/3.0/getting-started/init-subgraph)for the purposes of connecting to a GraphQL schema with this connector.
 Once you are operating within a subgraph you can add the GraphQL connector:
 
 ```sh
@@ -103,7 +167,7 @@ Once the connector has been added it will expose its configuration in
 `config/configuration.json`. You should update some values in this config before
 performing introspection.
 
-The configuration Is split into request/connection/introspection sections.
+The configuration is split into request/connection/introspection sections.
 You should update the introspection of the configuration to have the
 `x-hasura-admin-secret` and `x-hasura-role` headers set in order to allow
 the introspection request to be executed.
@@ -132,8 +196,7 @@ auth credentials required.
 }
 ```
 
-Without an explicit role set this will use the admin role to fetch the schema, which
-may or may not be appropriate for your application!
+Without an explicit role set this will use the admin role to fetch the schema, which may or may not be appropriate for your application!
 
 ### Configuring the Execution Role
 
@@ -333,30 +396,6 @@ definition:
 Note the `namingConvention` field!
 
 
-## Execution
-
-```mermaid
-flowchart LR
-    User ---|GraphQLRequest| Engine
-    Engine ---|NDCRequest| Connector
-    Connector ---|GrqphQLRequest| UpstreamGQL
-    Admin --- CLI
-    CLI --- Plugin
-    Plugin ---|Introspection| UpstreamGQL
-    CLI -->|Configuration| Connector
-```
-
-The connector is configured in plugin mode, then run in execution mode.
-
-Requests are made via NDC commands to the connector rather than collections.
-This simplifies implementation and acts as a proxy more than a model.
-Field Arguments are leveraged in commands to allow mirroring the GraphQL queries
-executed by the user.
-
-Header forwarding is implemented as additional command arguments and wired
-from headers to the argument by the engine via [the new `ArgumentPresets` feature](https://hasura.io/docs/3.0/supergraph-modeling/permissions/#modelpermissions-argumentpreset).
-
-
 ## Schemas
 
 One limitation of the current state of the connector is that it can only serve
@@ -430,29 +469,3 @@ latency between the V3 and V2 instances.
 Users may with to have seperate providers for V3 Engine and V2 Upstream source.
 
 This is not currently supported, however, we would like to add support for this in future.
-
-
-## Limitations
-
-Here is a summary of the known limitations of the connector
-
-* Response headers only allow at most one header per name
-  - For example you may only use one `Set-Cookie` response header
-* Pattern matching in request header forwarding configuration
-  - This uses simple glob patterns
-  - More advanced matching and extraction is not currently supported
-* Pulling items out of session
-  - Entire headers can be forwarded
-  - Currently no session parsing and refined mappings are supported
-* Seperate auth providers
-  - Either pre-shared credentials, or shared auth providers are supported
-  - Seperate providers for engine and upstream are not currently supported
-* Role based schemas
-  - Only a single schema is supported
-* Error formatting
-  - The format of errors from the connector does not currently match V2 error formatting
-  - No "partial error" or "multiple errors" responses
-* Tooling adds a `headers` argument to commands
-  - This should not be required when it is provided by argument presets
-  - This is a bug which will be addressed in future
-
