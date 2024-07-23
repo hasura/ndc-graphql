@@ -9,7 +9,7 @@
 
 The Hasura GraphQL Connector allows for connecting to a GraphQL API and bringing it into Hasura DDN supergraph as a single unified API. It can also be used to bring in your current Hasura v2 graphQL API into Hasura DDN and our recommended approach is to create a new subgraph for the v2 API.
 
-For Hasura v2 users, this fucnctionality is the replacement of [remote schemas](https://hasura.io/docs/latest/remote-schemas/overview/) functionality in v3 (DDN).
+For Hasura v2 users, this functionality is the replacement of [remote schemas](https://hasura.io/docs/latest/remote-schemas/overview/) functionality in v3 (DDN).
 
 This connector is built using the [Rust Native Data Connector SDK](https://github.com/hasura/ndc-hub#rusk-sdk) and implements the [Native Data Connector Spec](https://github.com/hasura/ndc-spec).
 
