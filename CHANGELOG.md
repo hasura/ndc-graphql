@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.2]
+
+- Fix issue where we looked for mutation fields in the query type, making all mutations fail
+
 ## [0.1.1]
 
 - Forward errors from underlying source to users using 422 status code
