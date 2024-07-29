@@ -52,11 +52,13 @@ pub fn build_mutation_document(
             } => {
                 let alias = format!("procedure_{index}");
                 let field_definition =
-                    configuration.schema.query_fields.get(name).ok_or_else(|| {
-                        QueryBuilderError::QueryFieldNotFound {
+                    configuration
+                        .schema
+                        .mutation_fields
+                        .get(name)
+                        .ok_or_else(|| QueryBuilderError::MutationFieldNotFound {
                             field: name.to_owned(),
-                        }
-                    })?;
+                        })?;
 
                 let (headers, procedure_arguments) =
                     extract_headers(arguments, map_arg, configuration)?;
