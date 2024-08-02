@@ -47,7 +47,7 @@ impl Connector for GraphQLConnector {
 
     async fn get_capabilities() -> JsonResponse<models::CapabilitiesResponse> {
         JsonResponse::Value(CapabilitiesResponse {
-            version: "^0.1.1".to_string(),
+            version: "0.1.4".to_string(),
             capabilities: models::Capabilities {
                 query: models::QueryCapabilities {
                     aggregates: None,

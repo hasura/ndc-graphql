@@ -2,5 +2,5 @@
 members = ["crates/ndc-graphql", "crates/ndc-graphql-cli", "crates/common"]
 resolver = "2"
 
-package.version = "0.1.2"
+package.version = "0.1.3"
 package.edition = "2021"
