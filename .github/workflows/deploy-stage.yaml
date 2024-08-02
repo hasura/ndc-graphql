@@ -210,7 +210,7 @@ jobs:
           version: ${{ steps.get-version.outputs.tagged_version }}
           path: ./CHANGELOG.md
 
-      - name: create a draft release
+      - name: create a release
         uses: ncipollo/release-action@v1
         with:
           draft: false
