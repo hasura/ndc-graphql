@@ -38,7 +38,7 @@ from headers to the argument by the engine via [the new `ArgumentPresets` featur
 
 ## Features
 
-Below, you'll find a matrix of all supported features for the PostgreSQL connector:
+Below, you'll find a matrix of all supported features for the GraphQL connector:
 
 | Feature                | Supported | Notes |
 | ---------------------- | --------- | ----- |
