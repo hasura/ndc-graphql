@@ -1,0 +1,112 @@
+{
+    "$schema": "_query_request.schema.json",
+    "collection": "Album_by_pk",
+    "variables": [
+        {
+            "AlbumId": 1,
+            "TracksWhere": {
+                "TrackId": {
+                    "_gte": 1
+                }
+            }
+        },
+        {
+            "AlbumId": 2,
+            "TracksWhere": {
+                "TrackId": {
+                    "_gte": 2
+                }
+            }
+        },
+        {
+            "AlbumId": 3,
+            "TracksWhere": {
+                "TrackId": {
+                    "_gte": 3
+                }
+            }
+        }
+    ],
+    "query": {
+        "fields": {
+            "__value": {
+                "type": "column",
+                "column": "__value",
+                "fields": {
+                    "type": "object",
+                    "fields": {
+                        "AlbumId": {
+                            "type": "column",
+                            "column": "AlbumId",
+                            "fields": null
+                        },
+                        "Title": {
+                            "type": "column",
+                            "column": "Title",
+                            "fields": null
+                        },
+                        "Artist": {
+                            "type": "column",
+                            "column": "Artist",
+                            "fields": {
+                                "type": "object",
+                                "fields": {
+                                    "ArtistId": {
+                                        "type": "column",
+                                        "column": "ArtistId",
+                                        "fields": null
+                                    },
+                                    "Name": {
+                                        "type": "column",
+                                        "column": "Name",
+                                        "fields": null
+                                    }
+                                }
+                            }
+                        },
+                        "Tracks": {
+                            "type": "column",
+                            "column": "Tracks",
+                            "fields": {
+                                "type": "array",
+                                "fields": {
+                                    "type": "object",
+                                    "fields": {
+                                        "TrackId": {
+                                            "type": "column",
+                                            "column": "TrackId",
+                                            "fields": null
+                                        },
+                                        "Name": {
+                                            "type": "column",
+                                            "column": "Name",
+                                            "fields": null
+                                        },
+                                        "UnitPrice": {
+                                            "type": "column",
+                                            "column": "UnitPrice",
+                                            "fields": null
+                                        }
+                                    }
+                                }
+                            },
+                            "arguments": {
+                                "where": {
+                                    "type": "variable",
+                                    "name": "TracksWhere"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "arguments": {
+        "AlbumId": {
+            "type": "variable",
+            "name": "AlbumId"
+        }
+    },
+    "collection_relationships": {}
+}

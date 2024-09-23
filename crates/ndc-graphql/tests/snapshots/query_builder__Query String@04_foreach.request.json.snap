@@ -1,0 +1,46 @@
+---
+source: crates/ndc-graphql/tests/query_builder.rs
+expression: operation.query
+input_file: crates/ndc-graphql/tests/config-3/queries/04_foreach.request.json
+---
+query($q1_arg_1_AlbumId: Int!, $q1_arg_2_where: Track_bool_exp, $q2_arg_1_AlbumId: Int!, $q2_arg_2_where: Track_bool_exp, $q3_arg_1_AlbumId: Int!, $q3_arg_2_where: Track_bool_exp) {
+  q1__value: Album_by_pk(AlbumId: $q1_arg_1_AlbumId) {
+    AlbumId
+    Title
+    Artist {
+      ArtistId
+      Name
+    }
+    Tracks(where: $q1_arg_2_where) {
+      TrackId
+      Name
+      UnitPrice
+    }
+  }
+  q2__value: Album_by_pk(AlbumId: $q2_arg_1_AlbumId) {
+    AlbumId
+    Title
+    Artist {
+      ArtistId
+      Name
+    }
+    Tracks(where: $q2_arg_2_where) {
+      TrackId
+      Name
+      UnitPrice
+    }
+  }
+  q3__value: Album_by_pk(AlbumId: $q3_arg_1_AlbumId) {
+    AlbumId
+    Title
+    Artist {
+      ArtistId
+      Name
+    }
+    Tracks(where: $q3_arg_2_where) {
+      TrackId
+      Name
+      UnitPrice
+    }
+  }
+}

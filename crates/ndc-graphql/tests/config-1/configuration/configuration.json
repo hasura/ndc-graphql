@@ -1,0 +1,25 @@
+{
+  "$schema": "configuration.schema.json",
+  "introspection": {
+    "endpoint": {
+      "valueFromEnv": "GRAPHQL_ENDPOINT"
+    },
+    "headers": {
+      "x-hasura-admin-secret": {
+        "valueFromEnv": "GRAPHQL_ENDPOINT_SECRET"
+      }
+    }
+  },
+  "execution": {
+    "endpoint": {
+      "valueFromEnv": "GRAPHQL_ENDPOINT"
+    },
+    "headers": {
+      "Authorization": {
+        "value": "Bearer <token>"
+      }
+    }
+  },
+  "request": {},
+  "response": {}
+}

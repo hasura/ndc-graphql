@@ -1,0 +1,6 @@
+---
+source: crates/ndc-graphql/tests/query_builder.rs
+expression: operation.headers
+input_file: crates/ndc-graphql/tests/config-3/mutations/02_multiple_operations.request.json
+---
+Authorization: Bearer <token>

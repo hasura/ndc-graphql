@@ -1,0 +1,11 @@
+---
+source: crates/ndc-graphql/tests/query_builder.rs
+expression: operation.query
+input_file: crates/ndc-graphql/tests/config-3/mutations/01_single_operation.request.json
+---
+mutation($arg_1__set: Album_set_input, $arg_2_pk_columns: Album_pk_columns_input!) {
+  procedure_0: update_Album_by_pk(_set: $arg_1__set, pk_columns: $arg_2_pk_columns) {
+    AlbumId
+    Title
+  }
+}

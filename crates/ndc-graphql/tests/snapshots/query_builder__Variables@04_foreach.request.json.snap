@@ -1,0 +1,25 @@
+---
+source: crates/ndc-graphql/tests/query_builder.rs
+expression: operation.variables
+input_file: crates/ndc-graphql/tests/config-3/queries/04_foreach.request.json
+---
+{
+  "q1_arg_1_AlbumId": 1,
+  "q1_arg_2_where": {
+    "TrackId": {
+      "_gte": 1
+    }
+  },
+  "q2_arg_1_AlbumId": 2,
+  "q2_arg_2_where": {
+    "TrackId": {
+      "_gte": 2
+    }
+  },
+  "q3_arg_1_AlbumId": 3,
+  "q3_arg_2_where": {
+    "TrackId": {
+      "_gte": 3
+    }
+  }
+}

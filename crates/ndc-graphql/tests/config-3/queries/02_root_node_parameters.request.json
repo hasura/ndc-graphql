@@ -1,0 +1,116 @@
+{
+    "$schema": "_query_request.schema.json",
+    "collection": "Album",
+    "query": {
+        "fields": {
+            "__value": {
+                "type": "column",
+                "column": "__value",
+                "fields": {
+                    "type": "array",
+                    "fields": {
+                        "type": "object",
+                        "fields": {
+                            "AlbumId": {
+                                "type": "column",
+                                "column": "AlbumId",
+                                "fields": null
+                            },
+                            "Title": {
+                                "type": "column",
+                                "column": "Title",
+                                "fields": null
+                            },
+                            "Artist": {
+                                "type": "column",
+                                "column": "Artist",
+                                "fields": {
+                                    "type": "object",
+                                    "fields": {
+                                        "ArtistId": {
+                                            "type": "column",
+                                            "column": "ArtistId",
+                                            "fields": null
+                                        },
+                                        "Name": {
+                                            "type": "column",
+                                            "column": "Name",
+                                            "fields": null
+                                        }
+                                    }
+                                }
+                            },
+                            "Tracks": {
+                                "type": "column",
+                                "column": "Tracks",
+                                "fields": {
+                                    "type": "array",
+                                    "fields": {
+                                        "type": "object",
+                                        "fields": {
+                                            "TrackId": {
+                                                "type": "column",
+                                                "column": "TrackId",
+                                                "fields": null
+                                            },
+                                            "Name": {
+                                                "type": "column",
+                                                "column": "Name",
+                                                "fields": null
+                                            },
+                                            "UnitPrice": {
+                                                "type": "column",
+                                                "column": "UnitPrice",
+                                                "fields": null
+                                            },
+                                            "MediaType": {
+                                                "type": "column",
+                                                "column": "MediaType",
+                                                "fields": {
+                                                    "type": "object",
+                                                    "fields": {
+                                                        "Name": {
+                                                            "type": "column",
+                                                            "column": "Name",
+                                                            "fields": null
+                                                        },
+                                                        "MediaTypeId": {
+                                                            "type": "column",
+                                                            "column": "MediaTypeId",
+                                                            "fields": null
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "arguments": {
+        "limit": {
+            "type": "literal",
+            "value": 20
+        },
+        "where": {
+            "type": "literal",
+            "value": {
+                "AlbumId": {
+                    "_gt": 5
+                }
+            }
+        },
+        "_forwarded_headers": {
+            "type": "literal",
+            "value": {
+                "Authorization": "Bearer <token>"
+            }
+        }
+    },
+    "collection_relationships": {}
+}
