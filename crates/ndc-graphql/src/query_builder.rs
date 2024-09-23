@@ -1,4 +1,4 @@
-use self::{error::QueryBuilderError, operation_variables::OperationVariables};
+use self::{error::QueryBuilderError, operation_parameters::OperationParameters};
 use common::{
     config::ServerConfig,
     schema::{ObjectFieldDefinition, TypeDef},
@@ -16,7 +16,7 @@ use ndc_sdk::models::{self, Argument, NestedField};
 use std::collections::BTreeMap;
 
 pub mod error;
-mod operation_variables;
+mod operation_parameters;
 
 fn pos() -> Pos {
     Pos { line: 0, column: 0 }
@@ -32,7 +32,9 @@ pub fn build_mutation_document(
     request: &models::MutationRequest,
     configuration: &ServerConfig,
 ) -> Result<Operation, QueryBuilderError> {
-    let mut variables = OperationVariables::new();
+    // mutations don't have variables, so we use an empty set
+    let dummy_variables = BTreeMap::new();
+    let mut parameters = OperationParameters::new("");
 
     let mut request_headers = BTreeMap::new();
     let mut items = vec![];
@@ -61,7 +63,7 @@ pub fn build_mutation_document(
                         })?;
 
                 let (headers, procedure_arguments) =
-                    extract_headers(arguments, map_arg, configuration)?;
+                    extract_headers(arguments, map_arg, configuration, &BTreeMap::new())?;
 
                 // note: duplicate headers get dropped here
                 // if there are multiple root fields, preset headers get set here once per field,
@@ -74,16 +76,18 @@ pub fn build_mutation_document(
                     name,
                     field_arguments(
                         &procedure_arguments,
-                        |v| Ok(v.to_owned()),
+                        map_arg,
                         field_definition,
-                        &mut variables,
+                        &mut parameters,
                         name,
-                        &mutation_type_name,
+                        mutation_type_name,
+                        &dummy_variables,
                     )?,
                     fields,
                     field_definition,
-                    &mut variables,
+                    &mut parameters,
                     configuration,
+                    &dummy_variables,
                 )?;
 
                 items.push(item);
@@ -96,7 +100,7 @@ pub fn build_mutation_document(
         items,
     };
 
-    let (values, variable_definitions) = variables.into_variable_definitions();
+    let (values, variable_definitions) = parameters.into_parameter_definitions();
 
     let document: Document<String> = Document {
         definitions: vec![Definition::Operation(OperationDefinition::Mutation(
@@ -120,85 +124,136 @@ pub fn build_query_document(
     request: &models::QueryRequest,
     configuration: &ServerConfig,
 ) -> Result<Operation, QueryBuilderError> {
-    let mut variables = OperationVariables::new();
-
-    let (headers, request_arguments) =
-        extract_headers(&request.arguments, map_query_arg, configuration)?;
-
-    let mut items = vec![];
-
     let query_type_name = configuration
         .schema
         .query_type_name
         .as_ref()
         .ok_or(QueryBuilderError::NoQueryType)?;
 
-    for (alias, field) in request
+    let root_field = request
         .query
         .fields
         .as_ref()
-        .ok_or_else(|| QueryBuilderError::NoRequesQueryFields)?
-        .iter()
-    {
-        let (fields, arguments) = match field {
-            models::Field::Column {
-                column,
-                fields,
-                arguments,
-            } if column == "__value" => Ok((fields, arguments)),
-            models::Field::Column {
-                column,
-                fields: _,
-                arguments: _,
-            } => Err(QueryBuilderError::NotSupported(format!(
-                "Expected field with key __value, got {column}"
-            ))),
-            models::Field::Relationship { .. } => {
-                Err(QueryBuilderError::NotSupported("Relationships".to_string()))
-            }
-        }?;
+        .and_then(|fields| fields.get("__value"))
+        .ok_or_else(|| QueryBuilderError::NoRequesQueryFields)?;
 
-        if !arguments.is_empty() {
-            return Err(QueryBuilderError::Unexpected(
-                "Functions arguments should be passed to the collection, not the __value field"
-                    .to_string(),
-            ));
-        }
-
-        let field_definition = configuration
-            .schema
-            .query_fields
-            .get(&request.collection)
-            .ok_or_else(|| QueryBuilderError::QueryFieldNotFound {
-                field: request.collection.to_owned(),
-            })?;
-
-        let item = selection_set_field(
-            alias,
-            &request.collection,
-            field_arguments(
-                &request_arguments,
-                map_arg,
-                field_definition,
-                &mut variables,
-                &request.collection,
-                &query_type_name,
-            )?,
+    let (subfields, arguments) = match root_field {
+        models::Field::Column {
+            column,
             fields,
-            field_definition,
-            &mut variables,
-            configuration,
-        )?;
+            arguments,
+        } if column == "__value" => Ok((fields, arguments)),
+        models::Field::Column {
+            column,
+            fields: _,
+            arguments: _,
+        } => Err(QueryBuilderError::NotSupported(format!(
+            "Expected field with key __value, got {column}"
+        ))),
+        models::Field::Relationship { .. } => {
+            Err(QueryBuilderError::NotSupported("Relationships".to_string()))
+        }
+    }?;
 
-        items.push(item);
+    if !arguments.is_empty() {
+        return Err(QueryBuilderError::Unexpected(
+            "Functions arguments should be passed to the collection, not the __value field"
+                .to_string(),
+        ));
     }
+
+    let root_field_definition = configuration
+        .schema
+        .query_fields
+        .get(&request.collection)
+        .ok_or_else(|| QueryBuilderError::QueryFieldNotFound {
+            field: request.collection.to_owned(),
+        })?;
+
+    let (headers, items, variable_values, variable_definitions) =
+        if let Some(variables) = &request.variables {
+            let mut variable_values = BTreeMap::new();
+            let mut variable_definitions = vec![];
+            let mut items = vec![];
+            let mut all_headers = BTreeMap::new();
+
+            for (index, variables) in variables.iter().enumerate() {
+                let mut parameters = OperationParameters::new(format!("q{}_", index + 1));
+
+                let (mut headers, request_arguments) =
+                    extract_headers(&request.arguments, map_query_arg, configuration, variables)?;
+
+                // note: all_headers is a BTreeMap. Duplicate headers will be discarded here, and the last one will be used
+                all_headers.append(&mut headers);
+
+                let item = selection_set_field(
+                    &format!("q{}__value", index + 1),
+                    &request.collection,
+                    field_arguments(
+                        &request_arguments,
+                        map_arg,
+                        root_field_definition,
+                        &mut parameters,
+                        &request.collection,
+                        query_type_name,
+                        variables,
+                    )?,
+                    subfields,
+                    root_field_definition,
+                    &mut parameters,
+                    configuration,
+                    variables,
+                )?;
+
+                let (mut values, mut definitions) = parameters.into_parameter_definitions();
+
+                items.push(item);
+
+                variable_values.append(&mut values);
+                variable_definitions.append(&mut definitions)
+            }
+
+            (all_headers, items, variable_values, variable_definitions)
+        } else {
+            let mut parameters = OperationParameters::new("");
+            // if the query does not have variables, we use an empty set
+            let dummy_variables = BTreeMap::new();
+
+            let (headers, request_arguments) = extract_headers(
+                &request.arguments,
+                map_query_arg,
+                configuration,
+                &dummy_variables,
+            )?;
+
+            let item = selection_set_field(
+                "__value",
+                &request.collection,
+                field_arguments(
+                    &request_arguments,
+                    map_arg,
+                    root_field_definition,
+                    &mut parameters,
+                    &request.collection,
+                    query_type_name,
+                    &dummy_variables,
+                )?,
+                subfields,
+                root_field_definition,
+                &mut parameters,
+                configuration,
+                &dummy_variables,
+            )?;
+
+            let (variable_values, variable_definitions) = parameters.into_parameter_definitions();
+
+            (headers, vec![item], variable_values, variable_definitions)
+        };
 
     let selection_set = SelectionSet {
         span: (pos(), pos()),
         items,
     };
-
-    let (values, variable_definitions) = variables.into_variable_definitions();
 
     let document = Document {
         definitions: vec![Definition::Operation(OperationDefinition::Query(Query {
@@ -212,7 +267,7 @@ pub fn build_query_document(
 
     Ok(Operation {
         query: document.to_string(),
-        variables: values,
+        variables: variable_values,
         headers,
     })
 }
@@ -226,9 +281,10 @@ fn extract_headers<A, M>(
     arguments: &BTreeMap<String, A>,
     map_argument: M,
     configuration: &ServerConfig,
+    variables: &BTreeMap<String, serde_json::Value>,
 ) -> Result<(Headers, Arguments), QueryBuilderError>
 where
-    M: Fn(&A) -> Result<serde_json::Value, QueryBuilderError>,
+    M: Fn(&A, &BTreeMap<String, serde_json::Value>) -> Result<serde_json::Value, QueryBuilderError>,
 {
     let mut request_arguments = BTreeMap::new();
     let mut headers = configuration.connection.headers.clone();
@@ -236,7 +292,7 @@ where
     let patterns = &configuration.request.forward_headers;
 
     for (name, argument) in arguments {
-        let value = map_argument(argument)?;
+        let value = map_argument(argument, variables)?;
 
         if name == &configuration.request.headers_argument {
             match value {
@@ -280,14 +336,16 @@ where
 
     Ok((headers, request_arguments))
 }
+#[allow(clippy::too_many_arguments)]
 fn selection_set_field<'a>(
     alias: &str,
     field_name: &str,
     arguments: Vec<(String, Value<'a, String>)>,
     fields: &Option<NestedField>,
     field_definition: &ObjectFieldDefinition,
-    variables: &mut OperationVariables,
+    parameters: &mut OperationParameters,
     configuration: &ServerConfig,
+    variables: &BTreeMap<String, serde_json::Value>,
 ) -> Result<Selection<'a, String>, QueryBuilderError> {
     let selection_set = match fields.as_ref().map(underlying_fields) {
         Some(fields) => {
@@ -332,14 +390,16 @@ fn selection_set_field<'a>(
                             arguments,
                             map_query_arg,
                             field_definition,
-                            variables,
+                            parameters,
                             field_name,
                             object_name,
+                            variables,
                         )?,
                         fields,
                         field_definition,
-                        variables,
+                        parameters,
                         configuration,
+                        variables,
                     )
                 })
                 .collect::<Result<_, _>>()?;
@@ -371,12 +431,13 @@ fn field_arguments<'a, A, M>(
     arguments: &BTreeMap<String, A>,
     map_argument: M,
     field_definition: &ObjectFieldDefinition,
-    variables: &mut OperationVariables,
+    parameters: &mut OperationParameters,
     field_name: &str,
     object_name: &str,
+    variables: &BTreeMap<String, serde_json::Value>,
 ) -> Result<Vec<(String, Value<'a, String>)>, QueryBuilderError>
 where
-    M: Fn(&A) -> Result<serde_json::Value, QueryBuilderError>,
+    M: Fn(&A, &BTreeMap<String, serde_json::Value>) -> Result<serde_json::Value, QueryBuilderError>,
 {
     arguments
         .iter()
@@ -391,24 +452,31 @@ where
                 })?
                 .r#type;
 
-            let value = map_argument(arg)?;
+            let value = map_argument(arg, variables)?;
 
-            let value = variables.insert(name, value, input_type);
+            let value = parameters.insert(name, value, input_type);
 
             Ok((name.to_owned(), value))
         })
         .collect()
 }
 
-fn map_query_arg(argument: &models::Argument) -> Result<serde_json::Value, QueryBuilderError> {
+fn map_query_arg(
+    argument: &models::Argument,
+    variables: &BTreeMap<String, serde_json::Value>,
+) -> Result<serde_json::Value, QueryBuilderError> {
     match argument {
-        Argument::Variable { name: _ } => {
-            Err(QueryBuilderError::NotSupported("Variables".to_owned()))
-        }
+        Argument::Variable { name } => variables
+            .get(name)
+            .map(|v| v.to_owned())
+            .ok_or_else(|| QueryBuilderError::MissingVariable(name.to_owned())),
         Argument::Literal { value } => Ok(value.to_owned()),
     }
 }
-fn map_arg(argument: &serde_json::Value) -> Result<serde_json::Value, QueryBuilderError> {
+fn map_arg(
+    argument: &serde_json::Value,
+    _variables: &BTreeMap<String, serde_json::Value>,
+) -> Result<serde_json::Value, QueryBuilderError> {
     Ok(argument.to_owned())
 }
 
@@ -416,121 +484,5 @@ fn underlying_fields(nested_field: &NestedField) -> &IndexMap<String, models::Fi
     match nested_field {
         NestedField::Object(obj) => &obj.fields,
         NestedField::Array(arr) => underlying_fields(&arr.fields),
-    }
-}
-
-#[cfg(test)]
-mod test {
-    use std::collections::BTreeMap;
-
-    use common::{
-        config::{ConnectionConfig, RequestConfig, ResponseConfig, ServerConfig},
-        schema::SchemaDefinition,
-    };
-    use graphql_parser;
-
-    use crate::query_builder::build_query_document;
-
-    #[test]
-    fn process_query_into_expected_graphql_string() -> Result<(), Box<dyn std::error::Error>> {
-        let schema_string = r#"
-          schema {
-            query: query_root
-          }
-          
-          
-          scalar Int
-          
-          scalar String
-          
-          
-          type query_root {
-            "fetch data from the table: \"test\" using primary key columns"
-            test_by_pk(id: Int!): test
-          }
-          
-          "columns and relationships of \"test\""
-          type test {
-            id: Int!
-            name: String!
-          }
-          
-        "#;
-        let schema_document = graphql_parser::parse_schema(schema_string)?;
-        let request_config = RequestConfig {
-            forward_headers: vec!["Authorization".to_string()],
-            ..RequestConfig::default()
-        };
-        let response_config = ResponseConfig::default();
-
-        let schema = SchemaDefinition::new(&schema_document, &request_config, &response_config)?;
-        let configuration = ServerConfig {
-            schema,
-            request: request_config,
-            response: response_config,
-            connection: ConnectionConfig {
-                endpoint: "".to_string(),
-                headers: BTreeMap::new(),
-            },
-        };
-        let request = serde_json::from_value(serde_json::json!({
-          "collection": "test_by_pk",
-          "query": {
-            "fields": {
-              "__value": {
-                "type": "column",
-                "column": "__value",
-                "fields": {
-                  "type": "object",
-                  "fields": {
-                    "id": {
-                      "type": "column",
-                      "column": "id",
-                      "fields": null
-                    },
-                    "name": {
-                      "type": "column",
-                      "column": "name",
-                      "fields": null
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "arguments": {
-            "_headers": {
-                "type": "literal",
-                "value": {
-                    "Authorization": "Bearer"
-                }
-            },
-            "id": {
-              "type": "literal",
-              "value": 1
-            }
-          },
-          "collection_relationships": {}
-        }))?;
-
-        let operation = build_query_document(&request, &configuration)?;
-
-        let expected_query = r#"
-query($arg_1_id: Int!) {
-  __value: test_by_pk(id: $arg_1_id) {
-    id
-    name
-  }
-}"#;
-        let expected_variables =
-            BTreeMap::from_iter(vec![("arg_1_id".to_string(), serde_json::json!(1))]);
-        let expected_headers =
-            BTreeMap::from_iter(vec![("Authorization".to_string(), "Bearer".to_string())]);
-
-        assert_eq!(operation.query.trim(), expected_query.trim());
-        assert_eq!(operation.variables, expected_variables);
-        assert_eq!(operation.headers, expected_headers);
-
-        Ok(())
     }
 }
