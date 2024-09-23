@@ -1,9 +1,3 @@
-use std::{
-    env,
-    error::Error,
-    path::{Path, PathBuf},
-};
-
 use clap::{Parser, Subcommand, ValueEnum};
 use common::{
     config::ConnectionConfig,
@@ -14,10 +8,14 @@ use common::{
 };
 use graphql::{execute_graphql_introspection, schema_from_introspection};
 use graphql_parser::schema;
+use ndc_graphql_cli::graphql;
 use schemars::schema_for;
+use std::{
+    env,
+    error::Error,
+    path::{Path, PathBuf},
+};
 use tokio::fs;
-
-mod graphql;
 
 #[derive(Parser)]
 struct CliArgs {
@@ -219,7 +217,6 @@ async fn update_config(
 
     let response = execute_graphql_introspection(&connection).await?;
 
-    // todo: handle graphql errors!
     if let Some(errors) = response.errors {
         return Err(format!("Introspection error: {}", serde_json::to_string(&errors)?).into());
     }
