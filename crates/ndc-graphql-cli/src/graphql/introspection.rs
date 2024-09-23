@@ -54,7 +54,6 @@ pub struct Directive {
     pub description: Option<String>,
     pub locations: Vec<DirectiveLocation>,
     pub args: Vec<InputValue>,
-    pub is_repeatable: Option<bool>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -100,7 +99,7 @@ pub struct Interface {
     pub name: String,
     pub description: Option<String>,
     pub fields: Vec<Field>,
-    pub interfaces: Vec<NamedTypeRef>,
+    pub interfaces: Option<Vec<NamedTypeRef>>,
     pub possible_types: Vec<NamedTypeRef>,
 }
 #[derive(Debug, Serialize, Deserialize)]
