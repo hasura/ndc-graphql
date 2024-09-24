@@ -2,6 +2,10 @@ packagingDefinition:
   type: PrebuiltDockerImage
   dockerImage: "${DOCKER_IMAGE}"
 supportedEnvironmentVariables:
+  - name: GRAPHQL_ENDPOINT
+    description: The GraphQL Endpoint
+    defaultValue: ""
+    required: true
 commands:
   update: hasura-ndc-graphql update
 cliPlugin:
@@ -11,5 +15,4 @@ dockerComposeWatch:
   - path: ./
     target: /etc/connector
     action: sync+restart
-
-
+documentationPage: https://hasura.info/graphql-getting-started

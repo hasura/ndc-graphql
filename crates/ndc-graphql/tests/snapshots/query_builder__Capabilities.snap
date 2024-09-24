@@ -1,0 +1,12 @@
+---
+source: crates/ndc-graphql/tests/query_builder.rs
+expression: capabilities()
+---
+version: 0.1.4
+capabilities:
+  query:
+    variables: {}
+    explain: {}
+    nested_fields: {}
+  mutation:
+    explain: {}

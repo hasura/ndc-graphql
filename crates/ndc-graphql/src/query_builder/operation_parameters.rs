@@ -6,16 +6,18 @@ use graphql_parser::{
     Pos,
 };
 
-pub struct OperationVariables {
-    variables: BTreeMap<String, (serde_json::Value, TypeRef)>,
-    variable_index: u32,
+pub struct OperationParameters {
+    namespace: String,
+    parameters: BTreeMap<String, (serde_json::Value, TypeRef)>,
+    parameter_index: u32,
 }
 
-impl<'c> OperationVariables {
-    pub fn new() -> Self {
+impl<'c> OperationParameters {
+    pub fn new<S: Into<String>>(namespace: S) -> Self {
         Self {
-            variables: BTreeMap::new(),
-            variable_index: 1,
+            namespace: namespace.into(),
+            parameters: BTreeMap::new(),
+            parameter_index: 1,
         }
     }
     pub fn insert(
@@ -24,15 +26,15 @@ impl<'c> OperationVariables {
         value: serde_json::Value,
         r#type: &TypeRef,
     ) -> Value<'c, String> {
-        let name = format!("arg_{}_{}", self.variable_index, name);
-        self.variable_index += 1;
+        let name = format!("{}arg_{}_{}", self.namespace, self.parameter_index, name);
+        self.parameter_index += 1;
 
-        self.variables
+        self.parameters
             .insert(name.clone(), (value, r#type.to_owned()));
 
         Value::Variable(name)
     }
-    pub fn into_variable_definitions(
+    pub fn into_parameter_definitions(
         self,
     ) -> (
         BTreeMap<String, serde_json::Value>,
@@ -48,7 +50,7 @@ impl<'c> OperationVariables {
             }
         }
         let (values, definitions) = self
-            .variables
+            .parameters
             .into_iter()
             .map(|(alias, (value, typeref))| {
                 (

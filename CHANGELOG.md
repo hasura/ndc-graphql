@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- Implement foreach capability. Instead of producing multiple parallel requests, we produce a single, larger request to send to the target endpoint.
+- Fix bug where introspection including interfaces would fail to parse in some circumstances
+- Config now defaults to asking for a `GRAPHQL_ENDPOINT` env var
+- Fix a bug where default values were not parsed as graphql values, and instead used as string literals
+
 ## [0.1.3]
 
 - Fix incorrect version being returned by capabilities

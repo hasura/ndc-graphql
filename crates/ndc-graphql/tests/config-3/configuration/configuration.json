@@ -1,0 +1,30 @@
+{
+  "$schema": "configuration.schema.json",
+  "introspection": {
+    "endpoint": {
+      "valueFromEnv": "GRAPHQL_ENDPOINT"
+    },
+    "headers": {
+      "x-hasura-admin-secret": {
+        "valueFromEnv": "GRAPHQL_ENDPOINT_SECRET"
+      }
+    }
+  },
+  "execution": {
+    "endpoint": {
+      "valueFromEnv": "GRAPHQL_ENDPOINT"
+    },
+    "headers": {}
+  },
+  "request": {
+    "forwardHeaders": [
+      "Authorization"
+    ],
+    "headersArgument": "_forwarded_headers"
+  },
+  "response": {
+    "forwardHeaders": [
+      "Set-Cookie"
+    ]
+  }
+}

@@ -42,11 +42,8 @@ pub struct ConnectionConfigFile {
 impl Default for ConnectionConfigFile {
     fn default() -> Self {
         Self {
-            endpoint: ConfigValue::Value("".to_string()),
-            headers: BTreeMap::from_iter(vec![(
-                "Authorization".to_owned(),
-                ConfigValue::ValueFromEnv("GRAPHQL_ENDPOINT_AUTHORIZATION".to_string()),
-            )]),
+            endpoint: ConfigValue::ValueFromEnv("GRAPHQL_ENDPOINT".to_string()),
+            headers: BTreeMap::new(),
         }
     }
 }

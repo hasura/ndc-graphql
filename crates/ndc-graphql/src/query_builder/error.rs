@@ -32,6 +32,7 @@ pub enum QueryBuilderError {
     },
     MisshapenHeadersArgument(serde_json::Value),
     Unexpected(String),
+    MissingVariable(String),
 }
 
 impl std::error::Error for QueryBuilderError {}
@@ -102,6 +103,7 @@ impl Display for QueryBuilderError {
             QueryBuilderError::MisshapenHeadersArgument(headers) => {
                 write!(f, "Misshapen headers argument: {}", headers)
             }
+            QueryBuilderError::MissingVariable(name) => write!(f, "Missing variable {name}"),
         }
     }
 }

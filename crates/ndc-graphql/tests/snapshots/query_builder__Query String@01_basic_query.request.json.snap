@@ -1,0 +1,24 @@
+---
+source: crates/ndc-graphql/tests/query_builder.rs
+expression: operation.query
+input_file: crates/ndc-graphql/tests/config-3/queries/01_basic_query.request.json
+---
+query {
+  __value: Album {
+    AlbumId
+    Title
+    Artist {
+      ArtistId
+      Name
+    }
+    Tracks {
+      TrackId
+      Name
+      UnitPrice
+      MediaType {
+        Name
+        MediaTypeId
+      }
+    }
+  }
+}

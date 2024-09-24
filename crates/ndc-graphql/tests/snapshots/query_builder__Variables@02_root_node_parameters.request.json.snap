@@ -1,0 +1,13 @@
+---
+source: crates/ndc-graphql/tests/query_builder.rs
+expression: operation.variables
+input_file: crates/ndc-graphql/tests/config-3/queries/02_root_node_parameters.request.json
+---
+{
+  "arg_1_limit": 20,
+  "arg_2_where": {
+    "AlbumId": {
+      "_gt": 5
+    }
+  }
+}

@@ -5,7 +5,7 @@ use common::{
     config::ConnectionConfig,
 };
 use graphql_parser::{
-    query::{Type, Value},
+    query::{self, OperationDefinition, Selection, Type, Value},
     schema::{
         Definition, DirectiveDefinition, DirectiveLocation, Document, EnumType, EnumValue, Field,
         InputObjectType, InputValue, InterfaceType, ObjectType, ScalarType, SchemaDefinition,
@@ -15,7 +15,7 @@ use graphql_parser::{
 };
 
 use self::introspection::{InputTypeRef, Introspection, OutputTypeRef};
-mod introspection;
+pub mod introspection;
 
 pub async fn execute_graphql_introspection(
     connection: &ConnectionConfig,
@@ -107,7 +107,7 @@ pub fn schema_from_introspection(introspection: Introspection) -> Document<'stat
                                 description: arg.description,
                                 name: arg.name,
                                 value_type: input_type(arg.r#type),
-                                default_value: arg.default_value.map(Value::String),
+                                default_value: arg.default_value.map(parse_value),
                                 directives: vec![],
                             })
                             .collect(),
@@ -130,7 +130,7 @@ pub fn schema_from_introspection(introspection: Introspection) -> Document<'stat
                             description: field.description,
                             name: field.name,
                             value_type: input_type(field.r#type),
-                            default_value: field.default_value.map(Value::String),
+                            default_value: field.default_value.map(parse_value),
                             directives: vec![],
                         })
                         .collect(),
@@ -159,6 +159,7 @@ pub fn schema_from_introspection(introspection: Introspection) -> Document<'stat
                     name: interface.name,
                     implements_interfaces: interface
                         .interfaces
+                        .unwrap_or_default()
                         .into_iter()
                         .map(|i| i.name)
                         .collect(),
@@ -178,7 +179,7 @@ pub fn schema_from_introspection(introspection: Introspection) -> Document<'stat
                                     description: arg.description,
                                     name: arg.name,
                                     value_type: input_type(arg.r#type),
-                                    default_value: arg.default_value.map(Value::String),
+                                    default_value: arg.default_value.map(parse_value),
                                     directives: vec![],
                                 })
                                 .collect(),
@@ -217,7 +218,7 @@ pub fn schema_from_introspection(introspection: Introspection) -> Document<'stat
                     directives: vec![],
                 })
                 .collect(),
-            repeatable: directive.is_repeatable.unwrap_or(false),
+            repeatable: false,
             locations: directive
                 .locations
                 .iter()
@@ -260,6 +261,53 @@ pub fn schema_from_introspection(introspection: Introspection) -> Document<'stat
     }
 
     graphql_parser::schema::Document { definitions }
+}
+
+fn parse_value(value: String) -> Value<'static, String> {
+    // to parse a value using graphql parser, we build a dummy query
+    // this is a hack but it works, and this is not performance critical
+    let query_string = format!(r#"query {{ field(value: {value}) }}"#);
+
+    // We've just built the query, so we can make some assumptions about the shape of the resulting AST.
+    // We're also assuming that the value can be parsed successfully.
+    // Since this is the CLI plugin, we can pannic if our assumptions are incorrect
+    let document = graphql_parser::parse_query::<'_, String>(&query_string)
+        .expect("Default value should be a valid graphql value");
+    let operation = &document.definitions[0];
+    let query = match operation {
+        query::Definition::Operation(operation) => match operation {
+            OperationDefinition::Query(query) => query,
+            _ => panic!("Expected Query Operation Definition"),
+        },
+        _ => panic!("Expected Operation Definition"),
+    };
+    let field = match &query.selection_set.items[0] {
+        Selection::Field(field) => field,
+        _ => panic!("Expected field selection"),
+    };
+    let argument = &field.arguments[0];
+    let (_name, value) = argument;
+
+    value.into_static().to_owned()
+}
+
+#[test]
+fn test_parse_value() {
+    let values = vec![
+        "[ENUM_1, ENUM_2]",
+        "1.234",
+        r#""String""#,
+        r#"{object: "property"}"#,
+    ];
+
+    for value in values {
+        let parsed_value = parse_value(value.to_string());
+        assert_eq!(
+            value,
+            parsed_value.to_string(),
+            "GraphQL value {value} should be parsed correctly"
+        )
+    }
 }
 
 fn input_type(input: InputTypeRef) -> Type<'static, String> {

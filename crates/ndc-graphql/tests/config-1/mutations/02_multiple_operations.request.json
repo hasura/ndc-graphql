@@ -1,0 +1,59 @@
+{
+    "operations": [
+        {
+            "type": "procedure",
+            "name": "update_Album_by_pk",
+            "arguments": {
+                "_set": {
+                    "ArtistId": 1
+                },
+                "pk_columns": {
+                    "AlbumId": 1
+                }
+            },
+            "fields": {
+                "type": "object",
+                "fields": {
+                    "AlbumId": {
+                        "type": "column",
+                        "column": "AlbumId",
+                        "fields": null
+                    },
+                    "Title": {
+                        "type": "column",
+                        "column": "Title",
+                        "fields": null
+                    }
+                }
+            }
+        },
+        {
+            "type": "procedure",
+            "name": "update_Album_by_pk",
+            "arguments": {
+                "_set": {
+                    "ArtistId": 1
+                },
+                "pk_columns": {
+                    "AlbumId": 1
+                }
+            },
+            "fields": {
+                "type": "object",
+                "fields": {
+                    "AlbumId": {
+                        "type": "column",
+                        "column": "AlbumId",
+                        "fields": null
+                    },
+                    "Title": {
+                        "type": "column",
+                        "column": "Title",
+                        "fields": null
+                    }
+                }
+            }
+        }
+    ],
+    "collection_relationships": {}
+}

@@ -54,7 +54,7 @@ impl GraphQLConnectorSetup {
     pub fn new(environment: HashMap<String, String>) -> Self {
         Self { environment }
     }
-    async fn read_configuration(
+    pub async fn read_configuration(
         &self,
         configuration_dir: impl AsRef<Path> + Send,
     ) -> Result<ServerConfig, ParseError> {

@@ -1,0 +1,24 @@
+---
+source: crates/ndc-graphql/tests/query_builder.rs
+expression: operation.query
+input_file: crates/ndc-graphql/tests/config-3/queries/02_root_node_parameters.request.json
+---
+query($arg_1_limit: Int, $arg_2_where: Album_bool_exp) {
+  __value: Album(limit: $arg_1_limit, where: $arg_2_where) {
+    AlbumId
+    Title
+    Artist {
+      ArtistId
+      Name
+    }
+    Tracks {
+      TrackId
+      Name
+      UnitPrice
+      MediaType {
+        Name
+        MediaTypeId
+      }
+    }
+  }
+}

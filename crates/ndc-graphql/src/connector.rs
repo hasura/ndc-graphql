@@ -12,14 +12,13 @@ use ndc_sdk::{
         SchemaError,
     },
     json_response::JsonResponse,
-    models::{
-        self, CapabilitiesResponse, LeafCapability, MutationOperationResults, RowFieldValue, RowSet,
-    },
+    models,
 };
 use schema::schema_response;
 use std::{collections::BTreeMap, mem};
-use tracing::Instrument;
-mod schema;
+use tracing::{Instrument, Level};
+pub mod capabilities;
+pub mod schema;
 pub mod setup;
 mod state;
 
@@ -46,26 +45,7 @@ impl Connector for GraphQLConnector {
     }
 
     async fn get_capabilities() -> JsonResponse<models::CapabilitiesResponse> {
-        JsonResponse::Value(CapabilitiesResponse {
-            version: "0.1.4".to_string(),
-            capabilities: models::Capabilities {
-                query: models::QueryCapabilities {
-                    aggregates: None,
-                    variables: None,
-                    explain: Some(LeafCapability {}),
-                    nested_fields: models::NestedFieldCapabilities {
-                        aggregates: None,
-                        filter_by: None,
-                        order_by: None,
-                    },
-                },
-                mutation: models::MutationCapabilities {
-                    transactional: None,
-                    explain: Some(LeafCapability {}),
-                },
-                relationships: None,
-            },
-        })
+        JsonResponse::Value(capabilities::capabilities())
     }
 
     async fn get_schema(
@@ -132,6 +112,13 @@ impl Connector for GraphQLConnector {
         state: &Self::State,
         request: models::MutationRequest,
     ) -> Result<JsonResponse<models::MutationResponse>, MutationError> {
+        #[cfg(debug_assertions)]
+        {
+            // this block only present in debug builds, to avoid leaking sensitive information
+            let request_string = serde_json::to_string(&request).map_err(MutationError::new)?;
+            tracing::event!(Level::DEBUG, "Incoming IR" = request_string);
+        }
+
         let operation =
             tracing::info_span!("Build Mutation Document", internal.visibility = "user")
                 .in_scope(|| build_mutation_document(&request, configuration))?;
@@ -186,7 +173,7 @@ impl Connector for GraphQLConnector {
                                 result
                             };
 
-                            MutationOperationResults::Procedure { result }
+                            models::MutationOperationResults::Procedure { result }
                         }),
                     })
                     .collect::<Result<Vec<_>, serde_json::Error>>()
@@ -208,6 +195,13 @@ impl Connector for GraphQLConnector {
         state: &Self::State,
         request: models::QueryRequest,
     ) -> Result<JsonResponse<models::QueryResponse>, QueryError> {
+        #[cfg(debug_assertions)]
+        {
+            // this block only present in debug builds, to avoid leaking sensitive information
+            let request_string = serde_json::to_string(&request).map_err(QueryError::new)?;
+            tracing::event!(Level::DEBUG, "Incoming IR" = request_string);
+        }
+
         let operation = tracing::info_span!("Build Query Document", internal.visibility = "user")
             .in_scope(|| build_query_document(&request, configuration))?;
 
@@ -216,7 +210,7 @@ impl Connector for GraphQLConnector {
         let execution_span =
             tracing::info_span!("Execute GraphQL Query", internal.visibility = "user");
 
-        let (headers, response) = execute_graphql::<IndexMap<String, RowFieldValue>>(
+        let (headers, response) = execute_graphql::<IndexMap<String, models::RowFieldValue>>(
             &operation.query,
             operation.variables,
             &configuration.connection.endpoint,
@@ -242,21 +236,23 @@ impl Connector for GraphQLConnector {
                     IndexMap::from_iter(vec![
                         (
                             configuration.response.headers_field.to_string(),
-                            RowFieldValue(headers),
+                            models::RowFieldValue(headers),
                         ),
                         (
                             configuration.response.response_field.to_string(),
-                            RowFieldValue(data),
+                            models::RowFieldValue(data),
                         ),
                     ])
                 } else {
                     data
                 };
 
-                Ok(JsonResponse::Value(models::QueryResponse(vec![RowSet {
-                    aggregates: None,
-                    rows: Some(vec![row]),
-                }])))
+                Ok(JsonResponse::Value(models::QueryResponse(vec![
+                    models::RowSet {
+                        aggregates: None,
+                        rows: Some(vec![row]),
+                    },
+                ])))
             } else {
                 Err(QueryError::new_unprocessable_content(
                     &"No data or errors in response",
