@@ -14,7 +14,7 @@ use common::{
 use graphql::{execute_graphql_introspection, schema_from_introspection};
 use graphql_parser::schema;
 use ndc_graphql_cli::graphql;
-use ndc_sdk::models;
+use ndc_models as models;
 use schemars::schema_for;
 use serde::Serialize;
 use std::{

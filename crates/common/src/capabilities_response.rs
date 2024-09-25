@@ -1,4 +1,4 @@
-use ndc_sdk::models;
+use ndc_models as models;
 
 pub fn capabilities_response() -> models::CapabilitiesResponse {
     models::CapabilitiesResponse {

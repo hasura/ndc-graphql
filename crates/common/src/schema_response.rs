@@ -5,7 +5,7 @@ use crate::config::{
     },
     RequestConfig, ResponseConfig,
 };
-use ndc_sdk::models;
+use ndc_models as models;
 use std::{collections::BTreeMap, iter};
 
 pub fn schema_response(
