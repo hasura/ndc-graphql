@@ -8,6 +8,7 @@ supportedEnvironmentVariables:
     required: true
 commands:
   update: hasura-ndc-graphql update
+  printSchemaAndCapabilities: hasura-ndc-graphql print-schema-and-capabilities
 cliPlugin:
   name: ndc-graphql
   version: "${CLI_VERSION}"

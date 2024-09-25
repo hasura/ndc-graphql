@@ -1,9 +1,9 @@
 use super::{state::ServerState, GraphQLConnector};
 use async_trait::async_trait;
-use common::{
-    config::{ConnectionConfig, ServerConfig},
+use common::config::{
     config_file::{ConfigValue, ServerConfigFile, CONFIG_FILE_NAME, SCHEMA_FILE_NAME},
     schema::SchemaDefinition,
+    ConnectionConfig, ServerConfig,
 };
 use graphql_parser::parse_schema;
 use ndc_sdk::connector::{

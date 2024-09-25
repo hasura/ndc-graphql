@@ -1,6 +1,6 @@
 use ndc_sdk::models;
 
-pub fn capabilities() -> models::CapabilitiesResponse {
+pub fn capabilities_response() -> models::CapabilitiesResponse {
     models::CapabilitiesResponse {
         version: "0.1.4".to_string(),
         capabilities: models::Capabilities {

@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix bug where introspection including interfaces would fail to parse in some circumstances
 - Config now defaults to asking for a `GRAPHQL_ENDPOINT` env var
 - Fix a bug where default values were not parsed as graphql values, and instead used as string literals
+- CLI: Implement `print-schema-and-capabilities` command, allowing local dev to update config & schema without starting a connector instance
 
 ## [0.1.3]
 

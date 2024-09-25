@@ -1,10 +1,9 @@
+use common::capabilities_response::capabilities_response;
 use common::config::ServerConfig;
-use common::config_file::ServerConfigFile;
+use common::{config::config_file::ServerConfigFile, schema_response::schema_response};
 use insta::{assert_json_snapshot, assert_snapshot, assert_yaml_snapshot, glob};
 use ndc_graphql::{
-    connector::{
-        capabilities::capabilities, schema::schema_response, setup::GraphQLConnectorSetup,
-    },
+    connector::setup::GraphQLConnectorSetup,
     query_builder::{build_mutation_document, build_query_document},
 };
 use ndc_sdk::models;
@@ -98,12 +97,16 @@ async fn test_build_graphql_mutation() {
 async fn test_generated_schema() {
     for config in ["config-1", "config-2", "config-3"] {
         let configuration = read_configuration(config).await;
-        let schema = schema_response(&configuration);
+        let schema = schema_response(
+            &configuration.schema,
+            &configuration.request,
+            &configuration.response,
+        );
         assert_yaml_snapshot!(format!("{config} NDC Schema"), schema);
     }
 }
 
 #[test]
 fn test_capabilities() {
-    assert_yaml_snapshot!("Capabilities", capabilities())
+    assert_yaml_snapshot!("Capabilities", capabilities_response())
 }

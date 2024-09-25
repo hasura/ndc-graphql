@@ -1,24 +1,27 @@
-use common::{
-    config::ServerConfig,
+use crate::config::{
     schema::{
-        InputObjectFieldDefinition, ObjectFieldArgumentDefinition, ObjectFieldDefinition, TypeRef,
+        InputObjectFieldDefinition, ObjectFieldArgumentDefinition, ObjectFieldDefinition,
+        SchemaDefinition, TypeDef, TypeRef,
     },
+    RequestConfig, ResponseConfig,
 };
 use ndc_sdk::models;
 use std::{collections::BTreeMap, iter};
 
-pub fn schema_response(configuration: &ServerConfig) -> models::SchemaResponse {
-    let forward_request_headers = !configuration.request.forward_headers.is_empty();
-    let forward_response_headers = !configuration.response.forward_headers.is_empty();
+pub fn schema_response(
+    schema: &SchemaDefinition,
+    request: &RequestConfig,
+    response: &ResponseConfig,
+) -> models::SchemaResponse {
+    let forward_request_headers = !request.forward_headers.is_empty();
+    let forward_response_headers = !response.forward_headers.is_empty();
 
-    let mut scalar_types: BTreeMap<_, _> = configuration
-        .schema
+    let mut scalar_types: BTreeMap<_, _> = schema
         .definitions
         .iter()
         .filter_map(|(name, typedef)| match typedef {
-            common::schema::TypeDef::Object { .. }
-            | common::schema::TypeDef::InputObject { .. } => None,
-            common::schema::TypeDef::Scalar { description: _ } => Some((
+            TypeDef::Object { .. } | TypeDef::InputObject { .. } => None,
+            TypeDef::Scalar { description: _ } => Some((
                 name.to_owned(),
                 models::ScalarType {
                     representation: None,
@@ -26,7 +29,7 @@ pub fn schema_response(configuration: &ServerConfig) -> models::SchemaResponse {
                     comparison_operators: BTreeMap::new(),
                 },
             )),
-            common::schema::TypeDef::Enum {
+            TypeDef::Enum {
                 values,
                 description: _,
             } => Some((
@@ -44,7 +47,7 @@ pub fn schema_response(configuration: &ServerConfig) -> models::SchemaResponse {
 
     if forward_request_headers {
         scalar_types.insert(
-            configuration.request.headers_type_name.to_owned(),
+            request.headers_type_name.to_owned(),
             models::ScalarType {
                 representation: Some(models::TypeRepresentation::JSON),
                 aggregate_functions: BTreeMap::new(),
@@ -53,13 +56,12 @@ pub fn schema_response(configuration: &ServerConfig) -> models::SchemaResponse {
         );
     }
 
-    let mut object_types: BTreeMap<_, _> = configuration
-        .schema
+    let mut object_types: BTreeMap<_, _> = schema
         .definitions
         .iter()
         .filter_map(|(name, typedef)| match typedef {
-            common::schema::TypeDef::Scalar { .. } | common::schema::TypeDef::Enum { .. } => None,
-            common::schema::TypeDef::Object {
+            TypeDef::Scalar { .. } | TypeDef::Enum { .. } => None,
+            TypeDef::Object {
                 fields,
                 description,
             } => Some((
@@ -69,7 +71,7 @@ pub fn schema_response(configuration: &ServerConfig) -> models::SchemaResponse {
                     fields: fields.iter().map(map_object_field).collect(),
                 },
             )),
-            common::schema::TypeDef::InputObject {
+            TypeDef::InputObject {
                 fields,
                 description,
             } => Some((
@@ -90,17 +92,17 @@ pub fn schema_response(configuration: &ServerConfig) -> models::SchemaResponse {
                 )),
                 fields: BTreeMap::from_iter(vec![
                     (
-                        configuration.response.headers_field.to_owned(),
+                        response.headers_field.to_owned(),
                         models::ObjectField {
                             description: None,
                             r#type: models::Type::Named {
-                                name: configuration.request.headers_type_name.to_owned(),
+                                name: request.headers_type_name.to_owned(),
                             },
                             arguments: BTreeMap::new(),
                         },
                     ),
                     (
-                        configuration.response.response_field.to_owned(),
+                        response.response_field.to_owned(),
                         models::ObjectField {
                             description: None,
                             r#type: typeref_to_ndc_type(&field.r#type),
@@ -113,16 +115,16 @@ pub fn schema_response(configuration: &ServerConfig) -> models::SchemaResponse {
 
     let mut functions = vec![];
 
-    for (name, field) in &configuration.schema.query_fields {
+    for (name, field) in &schema.query_fields {
         let arguments = field.arguments.iter().map(map_argument);
         let arguments = if forward_request_headers {
             arguments
                 .chain(iter::once((
-                    configuration.request.headers_argument.to_owned(),
+                    request.headers_argument.to_owned(),
                     models::ArgumentInfo {
                         description: None,
                         argument_type: models::Type::Named {
-                            name: configuration.request.headers_type_name.to_owned(),
+                            name: request.headers_type_name.to_owned(),
                         },
                     },
                 )))
@@ -132,7 +134,7 @@ pub fn schema_response(configuration: &ServerConfig) -> models::SchemaResponse {
         };
 
         let result_type = if forward_response_headers {
-            let response_type_name = configuration.response.query_response_type_name(name);
+            let response_type_name = response.query_response_type_name(name);
 
             object_types.insert(
                 response_type_name.clone(),
@@ -156,16 +158,16 @@ pub fn schema_response(configuration: &ServerConfig) -> models::SchemaResponse {
 
     let mut procedures = vec![];
 
-    for (name, field) in &configuration.schema.mutation_fields {
+    for (name, field) in &schema.mutation_fields {
         let arguments = field.arguments.iter().map(map_argument);
         let arguments = if forward_request_headers {
             arguments
                 .chain(iter::once((
-                    configuration.request.headers_argument.to_owned(),
+                    request.headers_argument.to_owned(),
                     models::ArgumentInfo {
                         description: None,
                         argument_type: models::Type::Named {
-                            name: configuration.request.headers_type_name.to_owned(),
+                            name: request.headers_type_name.to_owned(),
                         },
                     },
                 )))
@@ -175,7 +177,7 @@ pub fn schema_response(configuration: &ServerConfig) -> models::SchemaResponse {
         };
 
         let result_type = if forward_response_headers {
-            let response_type_name = configuration.response.mutation_response_type_name(name);
+            let response_type_name = response.mutation_response_type_name(name);
 
             object_types.insert(
                 response_type_name.clone(),

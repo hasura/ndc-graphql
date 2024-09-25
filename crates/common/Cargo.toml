@@ -4,9 +4,13 @@ version.workspace = true
 edition.workspace = true
 
 [dependencies]
+async-trait = "0.1.78"
 glob-match = "0.2.1"
 graphql_client = "0.14.0"
 graphql-parser = "0.4.0"
+ndc-sdk = { git = "https://github.com/hasura/ndc-sdk-rs", tag = "v0.1.5", package = "ndc-sdk", features = [
+    "rustls",
+], default-features = false }
 reqwest = { version = "0.12.3", features = [
     "json",
     "rustls-tls",
@@ -14,3 +18,4 @@ reqwest = { version = "0.12.3", features = [
 schemars = "0.8.16"
 serde = { version = "1.0.197", features = ["derive"] }
 serde_json = "1.0.114"
+tokio = "1.36.0"

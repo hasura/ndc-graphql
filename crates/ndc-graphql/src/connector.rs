@@ -2,8 +2,10 @@ use self::state::ServerState;
 use crate::query_builder::{build_mutation_document, build_query_document};
 use async_trait::async_trait;
 use common::{
+    capabilities_response::capabilities_response,
     client::{execute_graphql, GraphQLRequest},
     config::ServerConfig,
+    schema_response::schema_response,
 };
 use indexmap::IndexMap;
 use ndc_sdk::{
@@ -14,11 +16,8 @@ use ndc_sdk::{
     json_response::JsonResponse,
     models,
 };
-use schema::schema_response;
 use std::{collections::BTreeMap, mem};
 use tracing::{Instrument, Level};
-pub mod capabilities;
-pub mod schema;
 pub mod setup;
 mod state;
 
@@ -45,13 +44,17 @@ impl Connector for GraphQLConnector {
     }
 
     async fn get_capabilities() -> JsonResponse<models::CapabilitiesResponse> {
-        JsonResponse::Value(capabilities::capabilities())
+        JsonResponse::Value(capabilities_response())
     }
 
     async fn get_schema(
         configuration: &Self::Configuration,
     ) -> Result<JsonResponse<models::SchemaResponse>, SchemaError> {
-        Ok(JsonResponse::Value(schema_response(configuration)))
+        Ok(JsonResponse::Value(schema_response(
+            &configuration.schema,
+            &configuration.request,
+            &configuration.response,
+        )))
     }
 
     async fn query_explain(

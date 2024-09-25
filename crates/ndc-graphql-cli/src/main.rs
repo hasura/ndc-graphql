@@ -1,15 +1,22 @@
 use clap::{Parser, Subcommand, ValueEnum};
 use common::{
-    config::ConnectionConfig,
-    config_file::{
-        ConfigValue, ServerConfigFile, CONFIG_FILE_NAME, CONFIG_SCHEMA_FILE_NAME, SCHEMA_FILE_NAME,
+    capabilities_response::capabilities_response,
+    config::{
+        config_file::{
+            ConfigValue, ServerConfigFile, CONFIG_FILE_NAME, CONFIG_SCHEMA_FILE_NAME,
+            SCHEMA_FILE_NAME,
+        },
+        schema::SchemaDefinition,
+        ConnectionConfig,
     },
-    schema::SchemaDefinition,
+    schema_response::schema_response,
 };
 use graphql::{execute_graphql_introspection, schema_from_introspection};
 use graphql_parser::schema;
 use ndc_graphql_cli::graphql;
+use ndc_sdk::models;
 use schemars::schema_for;
+use serde::Serialize;
 use std::{
     env,
     error::Error,
@@ -64,6 +71,7 @@ enum Command {
     Update {},
     Validate {},
     Watch {},
+    PrintSchemaAndCapabilities {},
 }
 
 #[derive(Clone, ValueEnum)]
@@ -75,6 +83,12 @@ enum LogLevel {
     Info,
     Debug,
     Trace,
+}
+
+#[derive(Serialize)]
+struct SchemaAndCapabilities {
+    schema: models::SchemaResponse,
+    capabilities: models::CapabilitiesResponse,
 }
 
 #[tokio::main]
@@ -109,6 +123,31 @@ async fn main() -> Result<(), Box<dyn Error>> {
         }
         Command::Watch {} => {
             todo!("implement watch command")
+        }
+        Command::PrintSchemaAndCapabilities {} => {
+            let config_file = read_config_file(&context_path)
+                .await?
+                .ok_or_else(|| format!("Could not find {CONFIG_FILE_NAME}"))?;
+            let schema_document = read_schema_file(&context_path)
+                .await?
+                .ok_or_else(|| format!("Could not find {SCHEMA_FILE_NAME}"))?;
+
+            let request_config = config_file.request.into();
+            let response_config = config_file.response.into();
+
+            let schema =
+                SchemaDefinition::new(&schema_document, &request_config, &response_config)?;
+
+            let schema_and_capabilities = SchemaAndCapabilities {
+                schema: schema_response(&schema, &request_config, &response_config),
+                capabilities: capabilities_response(),
+            };
+
+            println!(
+                "{}",
+                serde_json::to_string(&schema_and_capabilities)
+                    .expect("Schema and capabilities should serialize to JSON")
+            )
         }
     }
 

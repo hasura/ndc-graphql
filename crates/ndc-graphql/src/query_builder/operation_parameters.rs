@@ -1,6 +1,6 @@
 use std::collections::BTreeMap;
 
-use common::schema::TypeRef;
+use common::config::schema::TypeRef;
 use graphql_parser::{
     query::{Type, Value, VariableDefinition},
     Pos,

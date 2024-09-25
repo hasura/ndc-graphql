@@ -1,9 +1,8 @@
+use config_file::{RequestConfigFile, ResponseConfigFile};
+use schema::SchemaDefinition;
 use std::collections::BTreeMap;
-
-use crate::{
-    config_file::{RequestConfigFile, ResponseConfigFile},
-    schema::SchemaDefinition,
-};
+pub mod config_file;
+pub mod schema;
 
 #[derive(Debug, Clone)]
 pub struct ServerConfig {

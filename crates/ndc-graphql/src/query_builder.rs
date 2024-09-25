@@ -1,7 +1,7 @@
 use self::{error::QueryBuilderError, operation_parameters::OperationParameters};
-use common::{
-    config::ServerConfig,
+use common::config::{
     schema::{ObjectFieldDefinition, TypeDef},
+    ServerConfig,
 };
 use glob_match::glob_match;
 use graphql_parser::{
