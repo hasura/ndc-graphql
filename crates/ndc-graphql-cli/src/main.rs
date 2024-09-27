@@ -72,6 +72,7 @@ enum Command {
     Validate {},
     Watch {},
     PrintSchemaAndCapabilities {},
+    UpgradeConfiguration {},
 }
 
 #[derive(Clone, ValueEnum)]
@@ -149,7 +150,10 @@ async fn main() -> Result<(), Box<dyn Error>> {
                     .expect("Schema and capabilities should serialize to JSON")
             )
         }
-    }
+        Command::UpgradeConfiguration {} => {
+            println!("Upgrade Configuration command is currently a NOOP")
+        }
+    };
 
     Ok(())
 }
