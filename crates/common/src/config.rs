@@ -1,9 +1,9 @@
+use config_file::{RequestConfigFile, ResponseConfigFile};
+use ndc_models::{ArgumentName, FieldName, FunctionName, ProcedureName, ScalarTypeName, TypeName};
+use schema::SchemaDefinition;
 use std::collections::BTreeMap;
-
-use crate::{
-    config_file::{RequestConfigFile, ResponseConfigFile},
-    schema::SchemaDefinition,
-};
+pub mod config_file;
+pub mod schema;
 
 #[derive(Debug, Clone)]
 pub struct ServerConfig {
@@ -21,14 +21,14 @@ pub struct ConnectionConfig {
 
 #[derive(Debug, Clone)]
 pub struct RequestConfig {
-    pub headers_argument: String,
-    pub headers_type_name: String,
+    pub headers_argument: ArgumentName,
+    pub headers_type_name: ScalarTypeName,
     pub forward_headers: Vec<String>,
 }
 #[derive(Debug, Clone)]
 pub struct ResponseConfig {
-    pub headers_field: String,
-    pub response_field: String,
+    pub headers_field: FieldName,
+    pub response_field: FieldName,
     pub type_name_prefix: String,
     pub type_name_suffix: String,
     pub forward_headers: Vec<String>,
@@ -37,8 +37,8 @@ pub struct ResponseConfig {
 impl Default for RequestConfig {
     fn default() -> Self {
         Self {
-            headers_argument: "_headers".to_owned(),
-            headers_type_name: "_HeaderMap".to_owned(),
+            headers_argument: "_headers".to_owned().into(),
+            headers_type_name: "_HeaderMap".to_owned().into(),
             forward_headers: vec![],
         }
     }
@@ -47,8 +47,8 @@ impl Default for RequestConfig {
 impl Default for ResponseConfig {
     fn default() -> Self {
         Self {
-            headers_field: "headers".to_owned(),
-            response_field: "response".to_owned(),
+            headers_field: "headers".to_owned().into(),
+            response_field: "response".to_owned().into(),
             type_name_prefix: "_".to_owned(),
             type_name_suffix: "Response".to_owned(),
             forward_headers: vec![],
@@ -90,16 +90,18 @@ impl From<ResponseConfigFile> for ResponseConfig {
 }
 
 impl ResponseConfig {
-    pub fn query_response_type_name(&self, query: &str) -> String {
+    pub fn query_response_type_name(&self, query: &FunctionName) -> TypeName {
         format!(
             "{}{}Query{}",
             self.type_name_prefix, query, self.type_name_suffix
         )
+        .into()
     }
-    pub fn mutation_response_type_name(&self, mutation: &str) -> String {
+    pub fn mutation_response_type_name(&self, mutation: &ProcedureName) -> TypeName {
         format!(
             "{}{}Mutation{}",
             self.type_name_prefix, mutation, self.type_name_suffix
         )
+        .into()
     }
 }

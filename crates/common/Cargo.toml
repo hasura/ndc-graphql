@@ -4,13 +4,16 @@ version.workspace = true
 edition.workspace = true
 
 [dependencies]
+async-trait = "0.1.78"
 glob-match = "0.2.1"
 graphql_client = "0.14.0"
 graphql-parser = "0.4.0"
-reqwest = { version = "0.12.3", features = [
+ndc-models = { git = "http://github.com/hasura/ndc-spec.git", tag = "v0.1.6" }
+reqwest = { version = "0.12.7", features = [
     "json",
     "rustls-tls",
 ], default-features = false }
 schemars = "0.8.16"
 serde = { version = "1.0.197", features = ["derive"] }
 serde_json = "1.0.114"
+tokio = "1.36.0"

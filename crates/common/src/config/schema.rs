@@ -1,14 +1,15 @@
 use crate::config::{RequestConfig, ResponseConfig};
 use graphql_parser::schema;
+use ndc_models::{ArgumentName, FieldName, FunctionName, ProcedureName, ScalarTypeName, TypeName};
 use std::{collections::BTreeMap, fmt::Display};
 
 #[derive(Debug, Clone)]
 pub struct SchemaDefinition {
-    pub query_type_name: Option<String>,
-    pub query_fields: BTreeMap<String, ObjectFieldDefinition>,
-    pub mutation_type_name: Option<String>,
-    pub mutation_fields: BTreeMap<String, ObjectFieldDefinition>,
-    pub definitions: BTreeMap<String, TypeDef>,
+    pub query_type_name: Option<TypeName>,
+    pub query_fields: BTreeMap<FunctionName, ObjectFieldDefinition>,
+    pub mutation_type_name: Option<TypeName>,
+    pub mutation_fields: BTreeMap<ProcedureName, ObjectFieldDefinition>,
+    pub definitions: BTreeMap<TypeName, TypeDef>,
 }
 
 impl SchemaDefinition {
@@ -29,7 +30,7 @@ impl SchemaDefinition {
             .ok_or(SchemaDefinitionError::MissingSchemaType)?;
 
         // note: if there are duplicate definitions, the last one will stick.
-        let definitions: BTreeMap<_, _> = schema_document
+        let definitions: BTreeMap<TypeName, TypeDef> = schema_document
             .definitions
             .iter()
             .filter_map(|definition| match definition {
@@ -70,7 +71,7 @@ impl SchemaDefinition {
             })
             .collect();
 
-        if definitions.contains_key(&request_config.headers_type_name) {
+        if definitions.contains_key(request_config.headers_type_name.inner()) {
             return Err(SchemaDefinitionError::HeaderTypeNameConflict(
                 request_config.headers_type_name.to_owned(),
             ));
@@ -94,7 +95,7 @@ impl SchemaDefinition {
 
         if let Some(query_type) = query_type {
             for field in &query_type.fields {
-                let query_field = field.name.to_owned();
+                let query_field = field.name.to_owned().into();
                 let response_type = response_config.query_response_type_name(&query_field);
 
                 if definitions.contains_key(&response_type) {
@@ -116,7 +117,7 @@ impl SchemaDefinition {
                     });
                 }
 
-                query_fields.insert(field.name.to_owned(), field_definition);
+                query_fields.insert(field.name.to_owned().into(), field_definition);
             }
         }
 
@@ -139,7 +140,7 @@ impl SchemaDefinition {
 
         if let Some(mutation_type) = mutation_type {
             for field in &mutation_type.fields {
-                let mutation_field = field.name.to_owned();
+                let mutation_field = field.name.to_owned().into();
                 let response_type = response_config.mutation_response_type_name(&mutation_field);
 
                 if definitions.contains_key(&response_type) {
@@ -161,15 +162,15 @@ impl SchemaDefinition {
                     });
                 }
 
-                mutation_fields.insert(field.name.to_owned(), field_definition);
+                mutation_fields.insert(field.name.to_owned().into(), field_definition);
             }
         }
 
         Ok(Self {
             query_fields,
-            query_type_name: schema_definition.query.to_owned(),
+            query_type_name: schema_definition.query.to_owned().map(Into::into),
             mutation_fields,
-            mutation_type_name: schema_definition.mutation.to_owned(),
+            mutation_type_name: schema_definition.mutation.to_owned().map(Into::into),
             definitions,
         })
     }
@@ -190,9 +191,9 @@ impl TypeRef {
             schema::Type::NonNullType(underlying) => Self::NonNull(Box::new(Self::new(underlying))),
         }
     }
-    pub fn name(&self) -> &str {
+    pub fn name(&self) -> TypeName {
         match self {
-            TypeRef::Named(n) => n.as_str(),
+            TypeRef::Named(n) => n.to_owned().into(),
             TypeRef::List(underlying) | TypeRef::NonNull(underlying) => underlying.name(),
         }
     }
@@ -208,27 +209,27 @@ pub enum TypeDef {
         description: Option<String>,
     },
     Object {
-        fields: BTreeMap<String, ObjectFieldDefinition>,
+        fields: BTreeMap<FieldName, ObjectFieldDefinition>,
         description: Option<String>,
     },
     InputObject {
-        fields: BTreeMap<String, InputObjectFieldDefinition>,
+        fields: BTreeMap<FieldName, InputObjectFieldDefinition>,
         description: Option<String>,
     },
 }
 
 impl TypeDef {
-    fn new_scalar(scalar_definition: &schema::ScalarType<String>) -> (String, Self) {
+    fn new_scalar(scalar_definition: &schema::ScalarType<String>) -> (TypeName, Self) {
         (
-            scalar_definition.name.to_owned(),
+            scalar_definition.name.to_owned().into(),
             Self::Scalar {
                 description: scalar_definition.description.to_owned(),
             },
         )
     }
-    fn new_enum(enum_definition: &schema::EnumType<String>) -> (String, Self) {
+    fn new_enum(enum_definition: &schema::EnumType<String>) -> (TypeName, Self) {
         (
-            enum_definition.name.to_owned(),
+            enum_definition.name.to_owned().into(),
             Self::Enum {
                 values: enum_definition
                     .values
@@ -239,14 +240,19 @@ impl TypeDef {
             },
         )
     }
-    fn new_object(object_definition: &schema::ObjectType<String>) -> (String, Self) {
+    fn new_object(object_definition: &schema::ObjectType<String>) -> (TypeName, Self) {
         (
-            object_definition.name.to_owned(),
+            object_definition.name.to_owned().into(),
             Self::Object {
                 fields: object_definition
                     .fields
                     .iter()
-                    .map(|field| (field.name.to_owned(), ObjectFieldDefinition::new(field)))
+                    .map(|field| {
+                        (
+                            field.name.to_owned().into(),
+                            ObjectFieldDefinition::new(field),
+                        )
+                    })
                     .collect(),
                 description: object_definition.description.to_owned(),
             },
@@ -254,16 +260,16 @@ impl TypeDef {
     }
     fn new_input_object(
         input_object_definition: &schema::InputObjectType<String>,
-    ) -> (String, Self) {
+    ) -> (TypeName, Self) {
         (
-            input_object_definition.name.to_owned(),
+            input_object_definition.name.to_owned().into(),
             Self::InputObject {
                 fields: input_object_definition
                     .fields
                     .iter()
                     .map(|field| {
                         (
-                            field.name.to_owned(),
+                            field.name.to_owned().into(),
                             InputObjectFieldDefinition::new(field),
                         )
                     })
@@ -292,7 +298,7 @@ impl EnumValueDefinition {
 #[derive(Debug, Clone)]
 pub struct ObjectFieldDefinition {
     pub r#type: TypeRef,
-    pub arguments: BTreeMap<String, ObjectFieldArgumentDefinition>,
+    pub arguments: BTreeMap<ArgumentName, ObjectFieldArgumentDefinition>,
     pub description: Option<String>,
 }
 
@@ -305,7 +311,7 @@ impl ObjectFieldDefinition {
                 .iter()
                 .map(|argument| {
                     (
-                        argument.name.to_owned(),
+                        argument.name.to_owned().into(),
                         ObjectFieldArgumentDefinition::new(argument),
                     )
                 })
@@ -348,22 +354,22 @@ impl InputObjectFieldDefinition {
 #[derive(Debug, Clone)]
 pub enum SchemaDefinitionError {
     MissingSchemaType,
-    HeaderTypeNameConflict(String),
+    HeaderTypeNameConflict(ScalarTypeName),
     QueryHeaderArgumentConflict {
-        query_field: String,
-        headers_argument: String,
+        query_field: FunctionName,
+        headers_argument: ArgumentName,
     },
     MutationHeaderArgumentConflict {
-        mutation_field: String,
-        headers_argument: String,
+        mutation_field: ProcedureName,
+        headers_argument: ArgumentName,
     },
     QueryResponseTypeConflict {
-        query_field: String,
-        response_type: String,
+        query_field: FunctionName,
+        response_type: TypeName,
     },
     MutationResponseTypeConflict {
-        mutation_field: String,
-        response_type: String,
+        mutation_field: ProcedureName,
+        response_type: TypeName,
     },
 }
 

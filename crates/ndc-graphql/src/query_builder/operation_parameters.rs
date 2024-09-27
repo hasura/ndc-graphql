@@ -1,10 +1,11 @@
 use std::collections::BTreeMap;
 
-use common::schema::TypeRef;
+use common::config::schema::TypeRef;
 use graphql_parser::{
     query::{Type, Value, VariableDefinition},
     Pos,
 };
+use ndc_sdk::models::ArgumentName;
 
 pub struct OperationParameters {
     namespace: String,
@@ -22,7 +23,7 @@ impl<'c> OperationParameters {
     }
     pub fn insert(
         &mut self,
-        name: &str,
+        name: &ArgumentName,
         value: serde_json::Value,
         r#type: &TypeRef,
     ) -> Value<'c, String> {

@@ -9,6 +9,7 @@ common = { path = "../common" }
 graphql_client = "0.14.0"
 graphql-introspection-query = "0.2.0"
 graphql-parser = "0.4.0"
+ndc-models = { git = "http://github.com/hasura/ndc-spec.git", tag = "v0.1.6" }
 schemars = "0.8.16"
 serde = { version = "1.0.197", features = ["derive"] }
 serde_json = "1.0.114"
