@@ -12,7 +12,9 @@ use graphql_parser::{
     Pos,
 };
 use indexmap::IndexMap;
-use ndc_sdk::models::{self, Argument, NestedField};
+use ndc_sdk::models::{
+    self, Argument, ArgumentName, FieldName, NestedField, TypeName, VariableName,
+};
 use std::collections::BTreeMap;
 
 pub mod error;
@@ -52,6 +54,7 @@ pub fn build_mutation_document(
                 arguments,
                 fields,
             } => {
+                let field_name: FieldName = name.to_string().into();
                 let alias = format!("procedure_{index}");
                 let field_definition =
                     configuration
@@ -73,13 +76,13 @@ pub fn build_mutation_document(
 
                 let item = selection_set_field(
                     &alias,
-                    name,
+                    &field_name,
                     field_arguments(
                         &procedure_arguments,
                         map_arg,
                         field_definition,
                         &mut parameters,
-                        name,
+                        &field_name,
                         mutation_type_name,
                         &dummy_variables,
                     )?,
@@ -142,7 +145,7 @@ pub fn build_query_document(
             column,
             fields,
             arguments,
-        } if column == "__value" => Ok((fields, arguments)),
+        } if column == &"__value".into() => Ok((fields, arguments)),
         models::Field::Column {
             column,
             fields: _,
@@ -188,13 +191,13 @@ pub fn build_query_document(
 
                 let item = selection_set_field(
                     &format!("q{}__value", index + 1),
-                    &request.collection,
+                    &request.collection.to_string().into(),
                     field_arguments(
                         &request_arguments,
                         map_arg,
                         root_field_definition,
                         &mut parameters,
-                        &request.collection,
+                        &request.collection.to_string().into(),
                         query_type_name,
                         variables,
                     )?,
@@ -228,13 +231,13 @@ pub fn build_query_document(
 
             let item = selection_set_field(
                 "__value",
-                &request.collection,
+                &request.collection.to_string().into(),
                 field_arguments(
                     &request_arguments,
                     map_arg,
                     root_field_definition,
                     &mut parameters,
-                    &request.collection,
+                    &request.collection.to_string().into(),
                     query_type_name,
                     &dummy_variables,
                 )?,
@@ -273,18 +276,21 @@ pub fn build_query_document(
 }
 
 type Headers = BTreeMap<String, String>;
-type Arguments = BTreeMap<String, serde_json::Value>;
+type Arguments = BTreeMap<ArgumentName, serde_json::Value>;
 
 /// extract the headers argument if present and applicable
 /// returns the headers for this request, including base headers and forwarded headers
 fn extract_headers<A, M>(
-    arguments: &BTreeMap<String, A>,
+    arguments: &BTreeMap<ArgumentName, A>,
     map_argument: M,
     configuration: &ServerConfig,
-    variables: &BTreeMap<String, serde_json::Value>,
+    variables: &BTreeMap<VariableName, serde_json::Value>,
 ) -> Result<(Headers, Arguments), QueryBuilderError>
 where
-    M: Fn(&A, &BTreeMap<String, serde_json::Value>) -> Result<serde_json::Value, QueryBuilderError>,
+    M: Fn(
+        &A,
+        &BTreeMap<VariableName, serde_json::Value>,
+    ) -> Result<serde_json::Value, QueryBuilderError>,
 {
     let mut request_arguments = BTreeMap::new();
     let mut headers = configuration.connection.headers.clone();
@@ -339,13 +345,13 @@ where
 #[allow(clippy::too_many_arguments)]
 fn selection_set_field<'a>(
     alias: &str,
-    field_name: &str,
+    field_name: &FieldName,
     arguments: Vec<(String, Value<'a, String>)>,
     fields: &Option<NestedField>,
     field_definition: &ObjectFieldDefinition,
     parameters: &mut OperationParameters,
     configuration: &ServerConfig,
-    variables: &BTreeMap<String, serde_json::Value>,
+    variables: &BTreeMap<VariableName, serde_json::Value>,
 ) -> Result<Selection<'a, String>, QueryBuilderError> {
     let selection_set = match fields.as_ref().map(underlying_fields) {
         Some(fields) => {
@@ -368,7 +374,8 @@ fn selection_set_field<'a>(
                     let object_name = field_definition.r#type.name();
 
                     // subfield selection should only exist on object types
-                    let field_definition = match configuration.schema.definitions.get(object_name) {
+                    let field_definition = match configuration.schema.definitions.get(&object_name)
+                    {
                         Some(TypeDef::Object {
                             fields,
                             description: _,
@@ -384,7 +391,7 @@ fn selection_set_field<'a>(
                     }?;
 
                     selection_set_field(
-                        alias,
+                        &alias.to_string(),
                         field_name,
                         field_arguments(
                             arguments,
@@ -392,7 +399,7 @@ fn selection_set_field<'a>(
                             field_definition,
                             parameters,
                             field_name,
-                            object_name,
+                            &object_name,
                             variables,
                         )?,
                         fields,
@@ -416,28 +423,31 @@ fn selection_set_field<'a>(
     };
     Ok(Selection::Field(Field {
         position: pos(),
-        alias: if alias == field_name {
+        alias: if alias == field_name.inner() {
             None
         } else {
             Some(alias.to_owned())
         },
-        name: field_name.to_owned(),
+        name: field_name.to_string(),
         arguments,
         directives: vec![],
         selection_set,
     }))
 }
 fn field_arguments<'a, A, M>(
-    arguments: &BTreeMap<String, A>,
+    arguments: &BTreeMap<ArgumentName, A>,
     map_argument: M,
     field_definition: &ObjectFieldDefinition,
     parameters: &mut OperationParameters,
-    field_name: &str,
-    object_name: &str,
-    variables: &BTreeMap<String, serde_json::Value>,
+    field_name: &FieldName,
+    object_name: &TypeName,
+    variables: &BTreeMap<VariableName, serde_json::Value>,
 ) -> Result<Vec<(String, Value<'a, String>)>, QueryBuilderError>
 where
-    M: Fn(&A, &BTreeMap<String, serde_json::Value>) -> Result<serde_json::Value, QueryBuilderError>,
+    M: Fn(
+        &A,
+        &BTreeMap<VariableName, serde_json::Value>,
+    ) -> Result<serde_json::Value, QueryBuilderError>,
 {
     arguments
         .iter()
@@ -456,14 +466,14 @@ where
 
             let value = parameters.insert(name, value, input_type);
 
-            Ok((name.to_owned(), value))
+            Ok((name.to_string(), value))
         })
         .collect()
 }
 
 fn map_query_arg(
     argument: &models::Argument,
-    variables: &BTreeMap<String, serde_json::Value>,
+    variables: &BTreeMap<VariableName, serde_json::Value>,
 ) -> Result<serde_json::Value, QueryBuilderError> {
     match argument {
         Argument::Variable { name } => variables
@@ -475,12 +485,12 @@ fn map_query_arg(
 }
 fn map_arg(
     argument: &serde_json::Value,
-    _variables: &BTreeMap<String, serde_json::Value>,
+    _variables: &BTreeMap<VariableName, serde_json::Value>,
 ) -> Result<serde_json::Value, QueryBuilderError> {
     Ok(argument.to_owned())
 }
 
-fn underlying_fields(nested_field: &NestedField) -> &IndexMap<String, models::Field> {
+fn underlying_fields(nested_field: &NestedField) -> &IndexMap<FieldName, models::Field> {
     match nested_field {
         NestedField::Object(obj) => &obj.fields,
         NestedField::Array(arr) => underlying_fields(&arr.fields),

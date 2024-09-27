@@ -2,19 +2,16 @@ use self::state::ServerState;
 use crate::query_builder::{build_mutation_document, build_query_document};
 use async_trait::async_trait;
 use common::{
-    capabilities_response::capabilities_response,
+    capabilities::capabilities,
     client::{execute_graphql, GraphQLRequest},
     config::ServerConfig,
     schema_response::schema_response,
 };
 use indexmap::IndexMap;
 use ndc_sdk::{
-    connector::{
-        Connector, ExplainError, FetchMetricsError, HealthError, MutationError, QueryError,
-        SchemaError,
-    },
+    connector::{self, Connector, MutationError, QueryError},
     json_response::JsonResponse,
-    models,
+    models::{self, FieldName},
 };
 use std::{collections::BTreeMap, mem};
 use tracing::{Instrument, Level};
@@ -32,24 +29,17 @@ impl Connector for GraphQLConnector {
     fn fetch_metrics(
         _configuration: &Self::Configuration,
         _state: &Self::State,
-    ) -> Result<(), FetchMetricsError> {
+    ) -> connector::Result<()> {
         Ok(())
     }
 
-    async fn health_check(
-        _configuration: &Self::Configuration,
-        _state: &Self::State,
-    ) -> Result<(), HealthError> {
-        Ok(())
-    }
-
-    async fn get_capabilities() -> JsonResponse<models::CapabilitiesResponse> {
-        JsonResponse::Value(capabilities_response())
+    async fn get_capabilities() -> models::Capabilities {
+        capabilities()
     }
 
     async fn get_schema(
         configuration: &Self::Configuration,
-    ) -> Result<JsonResponse<models::SchemaResponse>, SchemaError> {
+    ) -> connector::Result<JsonResponse<models::SchemaResponse>> {
         Ok(JsonResponse::Value(schema_response(
             &configuration.schema,
             &configuration.request,
@@ -61,15 +51,16 @@ impl Connector for GraphQLConnector {
         configuration: &Self::Configuration,
         _state: &Self::State,
         request: models::QueryRequest,
-    ) -> Result<JsonResponse<models::ExplainResponse>, ExplainError> {
+    ) -> connector::Result<JsonResponse<models::ExplainResponse>> {
         let operation = tracing::info_span!("Build Query Document", internal.visibility = "user")
-            .in_scope(|| build_query_document(&request, configuration))?;
+            .in_scope(|| build_query_document(&request, configuration))
+            .map_err(|err| QueryError::new_invalid_request(&err))?;
 
         let query = serde_json::to_string_pretty(&GraphQLRequest::new(
             &operation.query,
             &operation.variables,
         ))
-        .map_err(ExplainError::new)?;
+        .map_err(|err| QueryError::new_invalid_request(&err))?;
 
         let details = BTreeMap::from_iter(vec![
             ("SQL Query".to_string(), operation.query),
@@ -87,16 +78,17 @@ impl Connector for GraphQLConnector {
         configuration: &Self::Configuration,
         _state: &Self::State,
         request: models::MutationRequest,
-    ) -> Result<JsonResponse<models::ExplainResponse>, ExplainError> {
+    ) -> connector::Result<JsonResponse<models::ExplainResponse>> {
         let operation =
             tracing::info_span!("Build Mutation Document", internal.visibility = "user")
-                .in_scope(|| build_mutation_document(&request, configuration))?;
+                .in_scope(|| build_mutation_document(&request, configuration))
+                .map_err(|err| MutationError::new_invalid_request(&err))?;
 
         let query = serde_json::to_string_pretty(&GraphQLRequest::new(
             &operation.query,
             &operation.variables,
         ))
-        .map_err(ExplainError::new)?;
+        .map_err(|err| MutationError::new_invalid_request(&err))?;
 
         let details = BTreeMap::from_iter(vec![
             ("SQL Query".to_string(), operation.query),
@@ -114,22 +106,27 @@ impl Connector for GraphQLConnector {
         configuration: &Self::Configuration,
         state: &Self::State,
         request: models::MutationRequest,
-    ) -> Result<JsonResponse<models::MutationResponse>, MutationError> {
+    ) -> connector::Result<JsonResponse<models::MutationResponse>> {
         #[cfg(debug_assertions)]
         {
             // this block only present in debug builds, to avoid leaking sensitive information
-            let request_string = serde_json::to_string(&request).map_err(MutationError::new)?;
+            let request_string = serde_json::to_string(&request)
+                .map_err(|err| MutationError::new_invalid_request(&err))?;
             tracing::event!(Level::DEBUG, "Incoming IR" = request_string);
         }
 
         let operation =
-            tracing::info_span!("Build Mutation Document", internal.visibility = "user")
-                .in_scope(|| build_mutation_document(&request, configuration))?;
+            tracing::info_span!("Build Mutation Document", internal.visibility = "user").in_scope(
+                || {
+                    build_mutation_document(&request, configuration)
+                        .map_err(|err| MutationError::new_invalid_request(&err))
+                },
+            )?;
 
         let client = state
             .client(configuration)
             .await
-            .map_err(MutationError::new)?;
+            .map_err(|err| MutationError::new_invalid_request(&err))?;
 
         let execution_span =
             tracing::info_span!("Execute GraphQL Mutation", internal.visibility = "user");
@@ -144,9 +141,9 @@ impl Connector for GraphQLConnector {
         )
         .instrument(execution_span)
         .await
-        .map_err(MutationError::new)?;
+        .map_err(|err| MutationError::new_invalid_request(&err))?;
 
-        tracing::info_span!("Process Response").in_scope(|| {
+        Ok(tracing::info_span!("Process Response").in_scope(|| {
             if let Some(errors) = response.errors {
                 Err(MutationError::new_unprocessable_content(&errors[0].message)
                     .with_details(serde_json::json!({ "errors": errors })))
@@ -180,7 +177,7 @@ impl Connector for GraphQLConnector {
                         }),
                     })
                     .collect::<Result<Vec<_>, serde_json::Error>>()
-                    .map_err(MutationError::new)?;
+                    .map_err(|err| MutationError::new_invalid_request(&err))?;
 
                 Ok(JsonResponse::Value(models::MutationResponse {
                     operation_results,
@@ -190,30 +187,37 @@ impl Connector for GraphQLConnector {
                     &"No data or errors in response",
                 ))
             }
-        })
+        })?)
     }
 
     async fn query(
         configuration: &Self::Configuration,
         state: &Self::State,
         request: models::QueryRequest,
-    ) -> Result<JsonResponse<models::QueryResponse>, QueryError> {
+    ) -> connector::Result<JsonResponse<models::QueryResponse>> {
         #[cfg(debug_assertions)]
         {
             // this block only present in debug builds, to avoid leaking sensitive information
-            let request_string = serde_json::to_string(&request).map_err(QueryError::new)?;
+            let request_string = serde_json::to_string(&request)
+                .map_err(|err| QueryError::new_invalid_request(&err))?;
             tracing::event!(Level::DEBUG, "Incoming IR" = request_string);
         }
 
         let operation = tracing::info_span!("Build Query Document", internal.visibility = "user")
-            .in_scope(|| build_query_document(&request, configuration))?;
+            .in_scope(|| {
+            build_query_document(&request, configuration)
+                .map_err(|err| QueryError::new_invalid_request(&err))
+        })?;
 
-        let client = state.client(configuration).await.map_err(QueryError::new)?;
+        let client = state
+            .client(configuration)
+            .await
+            .map_err(|err| QueryError::new_invalid_request(&err))?;
 
         let execution_span =
             tracing::info_span!("Execute GraphQL Query", internal.visibility = "user");
 
-        let (headers, response) = execute_graphql::<IndexMap<String, models::RowFieldValue>>(
+        let (headers, response) = execute_graphql::<IndexMap<FieldName, models::RowFieldValue>>(
             &operation.query,
             operation.variables,
             &configuration.connection.endpoint,
@@ -223,9 +227,9 @@ impl Connector for GraphQLConnector {
         )
         .instrument(execution_span)
         .await
-        .map_err(QueryError::new)?;
+        .map_err(|err| QueryError::new_invalid_request(&err))?;
 
-        tracing::info_span!("Process Response").in_scope(|| {
+        Ok(tracing::info_span!("Process Response").in_scope(|| {
             if let Some(errors) = response.errors {
                 Err(QueryError::new_unprocessable_content(&errors[0].message)
                     .with_details(serde_json::json!({ "errors": errors })))
@@ -233,16 +237,18 @@ impl Connector for GraphQLConnector {
                 let forward_response_headers = !configuration.response.forward_headers.is_empty();
 
                 let row = if forward_response_headers {
-                    let headers = serde_json::to_value(headers).map_err(QueryError::new)?;
-                    let data = serde_json::to_value(data).map_err(QueryError::new)?;
+                    let headers = serde_json::to_value(headers)
+                        .map_err(|err| QueryError::new_invalid_request(&err))?;
+                    let data = serde_json::to_value(data)
+                        .map_err(|err| QueryError::new_invalid_request(&err))?;
 
                     IndexMap::from_iter(vec![
                         (
-                            configuration.response.headers_field.to_string(),
+                            configuration.response.headers_field.to_string().into(),
                             models::RowFieldValue(headers),
                         ),
                         (
-                            configuration.response.response_field.to_string(),
+                            configuration.response.response_field.to_string().into(),
                             models::RowFieldValue(data),
                         ),
                     ])
@@ -261,6 +267,6 @@ impl Connector for GraphQLConnector {
                     &"No data or errors in response",
                 ))
             }
-        })
+        })?)
     }
 }

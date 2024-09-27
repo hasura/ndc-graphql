@@ -1,6 +1,6 @@
 use clap::{Parser, Subcommand, ValueEnum};
 use common::{
-    capabilities_response::capabilities_response,
+    capabilities::capabilities_response,
     config::{
         config_file::{
             ConfigValue, ServerConfigFile, CONFIG_FILE_NAME, CONFIG_SCHEMA_FILE_NAME,
@@ -132,8 +132,8 @@ async fn main() -> Result<(), Box<dyn Error>> {
                 .await?
                 .ok_or_else(|| format!("Could not find {SCHEMA_FILE_NAME}"))?;
 
-            let request_config = config_file.request.into();
-            let response_config = config_file.response.into();
+            let request_config = config_file.request.unwrap_or_default().into();
+            let response_config = config_file.response.unwrap_or_default().into();
 
             let schema =
                 SchemaDefinition::new(&schema_document, &request_config, &response_config)?;
@@ -213,8 +213,8 @@ async fn validate_config(
     config_file: ServerConfigFile,
     schema_document: graphql_parser::schema::Document<'_, String>,
 ) -> Result<(), Box<dyn Error>> {
-    let request_config = config_file.request.into();
-    let response_config = config_file.response.into();
+    let request_config = config_file.request.unwrap_or_default().into();
+    let response_config = config_file.response.unwrap_or_default().into();
 
     let _schema = SchemaDefinition::new(&schema_document, &request_config, &response_config)?;
 

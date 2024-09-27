@@ -1,4 +1,4 @@
-use common::capabilities_response::capabilities_response;
+use common::capabilities::capabilities_response;
 use common::config::ServerConfig;
 use common::{config::config_file::ServerConfigFile, schema_response::schema_response};
 use insta::{assert_json_snapshot, assert_snapshot, assert_yaml_snapshot, glob};
@@ -109,4 +109,13 @@ async fn test_generated_schema() {
 #[test]
 fn test_capabilities() {
     assert_yaml_snapshot!("Capabilities", capabilities_response())
+}
+
+#[test]
+fn configuration_schema() {
+    assert_snapshot!(
+        "Configuration JSON Schema",
+        serde_json::to_string_pretty(&schema_for!(ServerConfigFile))
+            .expect("Should serialize schema to json")
+    )
 }

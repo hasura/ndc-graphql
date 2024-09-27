@@ -9,7 +9,7 @@ common = { path = "../common" }
 glob-match = "0.2.1"
 graphql-parser = "0.4.0"
 indexmap = "2.1.0"
-ndc-sdk = { git = "https://github.com/hasura/ndc-sdk-rs", tag = "v0.1.5", package = "ndc-sdk", features = [
+ndc-sdk = { git = "https://github.com/hasura/ndc-sdk-rs", tag = "v0.4.0", package = "ndc-sdk", features = [
   "rustls",
 ], default-features = false }
 prometheus = "0.13.3"

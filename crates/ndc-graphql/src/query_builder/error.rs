@@ -1,38 +1,41 @@
 use std::fmt::Display;
 
-use ndc_sdk::connector::{ExplainError, MutationError, QueryError};
+use ndc_sdk::{
+    connector::{MutationError, QueryError},
+    models::{ArgumentName, CollectionName, FieldName, ProcedureName, TypeName, VariableName},
+};
 
 #[derive(Debug)]
 pub enum QueryBuilderError {
     SchemaDefinitionNotFound,
-    ObjectTypeNotFound(String),
-    InputObjectTypeNotFound(String),
+    ObjectTypeNotFound(TypeName),
+    InputObjectTypeNotFound(TypeName),
     NoRequesQueryFields,
     NoQueryType,
     NoMutationType,
     NotSupported(String),
     QueryFieldNotFound {
-        field: String,
+        field: CollectionName,
     },
     MutationFieldNotFound {
-        field: String,
+        field: ProcedureName,
     },
     ObjectFieldNotFound {
-        object: String,
-        field: String,
+        object: TypeName,
+        field: FieldName,
     },
     InputObjectFieldNotFound {
-        input_object: String,
-        field: String,
+        input_object: TypeName,
+        field: FieldName,
     },
     ArgumentNotFound {
-        object: String,
-        field: String,
-        argument: String,
+        object: TypeName,
+        field: FieldName,
+        argument: ArgumentName,
     },
     MisshapenHeadersArgument(serde_json::Value),
     Unexpected(String),
-    MissingVariable(String),
+    MissingVariable(VariableName),
 }
 
 impl std::error::Error for QueryBuilderError {}
@@ -45,11 +48,6 @@ impl From<QueryBuilderError> for QueryError {
 impl From<QueryBuilderError> for MutationError {
     fn from(value: QueryBuilderError) -> Self {
         MutationError::new_invalid_request(&value)
-    }
-}
-impl From<QueryBuilderError> for ExplainError {
-    fn from(value: QueryBuilderError) -> Self {
-        ExplainError::new_invalid_request(&value)
     }
 }
 

@@ -7,8 +7,8 @@ use common::config::{
 };
 use graphql_parser::parse_schema;
 use ndc_sdk::connector::{
-    Connector, ConnectorSetup, InitializationError, InvalidNode, InvalidNodes, KeyOrIndex,
-    LocatedError, ParseError,
+    self, Connector, ConnectorSetup, InvalidNode, InvalidNodes, KeyOrIndex, LocatedError,
+    ParseError,
 };
 use std::{
     collections::HashMap,
@@ -29,15 +29,15 @@ impl ConnectorSetup for GraphQLConnectorSetup {
     async fn parse_configuration(
         &self,
         configuration_dir: impl AsRef<Path> + Send,
-    ) -> Result<<Self::Connector as Connector>::Configuration, ParseError> {
-        self.read_configuration(configuration_dir).await
+    ) -> connector::Result<<Self::Connector as Connector>::Configuration> {
+        Ok(self.read_configuration(configuration_dir).await?)
     }
 
     async fn try_init_state(
         &self,
         configuration: &<Self::Connector as Connector>::Configuration,
         _metrics: &mut prometheus::Registry,
-    ) -> Result<<Self::Connector as Connector>::State, InitializationError> {
+    ) -> connector::Result<<Self::Connector as Connector>::State> {
         Ok(ServerState::new(configuration))
     }
 }
@@ -85,8 +85,8 @@ impl GraphQLConnectorSetup {
             })
         })?;
 
-        let request_config = config_file.request.into();
-        let response_config = config_file.response.into();
+        let request_config = config_file.request.unwrap_or_default().into();
+        let response_config = config_file.response.unwrap_or_default().into();
 
         let schema = SchemaDefinition::new(&schema_document, &request_config, &response_config)
             .map_err(|err| {
