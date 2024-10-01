@@ -2,11 +2,11 @@ use crate::config::ConnectionConfig;
 use glob_match::glob_match;
 use reqwest::header::{HeaderMap, HeaderValue, CONTENT_TYPE};
 use serde::Serialize;
-use std::{collections::BTreeMap, error::Error, fmt::Debug};
+use std::{collections::BTreeMap, fmt::Debug};
 
 pub fn get_http_client(
     _connection_config: &ConnectionConfig,
-) -> Result<reqwest::Client, Box<dyn std::error::Error>> {
+) -> Result<reqwest::Client, reqwest::Error> {
     let mut headers = HeaderMap::new();
     headers.insert(CONTENT_TYPE, HeaderValue::from_static("application/json"));
 
@@ -24,7 +24,7 @@ pub async fn execute_graphql<T: serde::de::DeserializeOwned>(
     headers: &BTreeMap<String, String>,
     client: &reqwest::Client,
     return_headers: &Vec<String>,
-) -> Result<(BTreeMap<String, String>, graphql_client::Response<T>), Box<dyn Error>> {
+) -> Result<(BTreeMap<String, String>, graphql_client::Response<T>), reqwest::Error> {
     let mut request = client.post(endpoint);
 
     for (header_name, header_value) in headers {
@@ -52,11 +52,7 @@ pub async fn execute_graphql<T: serde::de::DeserializeOwned>(
         })
         .collect();
 
-    if response.error_for_status_ref().is_err() {
-        return Err(response.text().await?.into());
-    }
-
-    let response: graphql_client::Response<T> = response.json().await?;
+    let response: graphql_client::Response<T> = response.error_for_status()?.json().await?;
 
     Ok((headers, response))
 }

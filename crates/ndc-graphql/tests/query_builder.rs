@@ -113,9 +113,5 @@ fn test_capabilities() {
 
 #[test]
 fn configuration_schema() {
-    assert_snapshot!(
-        "Configuration JSON Schema",
-        serde_json::to_string_pretty(&schema_for!(ServerConfigFile))
-            .expect("Should serialize schema to json")
-    )
+    assert_json_snapshot!("Configuration JSON Schema", schema_for!(ServerConfigFile))
 }

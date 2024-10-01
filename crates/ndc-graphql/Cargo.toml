@@ -8,6 +8,7 @@ async-trait = "0.1.78"
 common = { path = "../common" }
 glob-match = "0.2.1"
 graphql-parser = "0.4.0"
+http = "0.2"
 indexmap = "2.1.0"
 ndc-sdk = { git = "https://github.com/hasura/ndc-sdk-rs", tag = "v0.4.0", package = "ndc-sdk", features = [
   "rustls",
@@ -19,6 +20,7 @@ reqwest = { version = "0.12.3", features = [
 ], default-features = false }
 serde = { version = "1.0.197", features = ["derive"] }
 serde_json = "1.0.114"
+thiserror = "1.0.64"
 tokio = "1.36.0"
 tracing = "0.1.40"
 
