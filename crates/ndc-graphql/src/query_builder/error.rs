@@ -1,107 +1,66 @@
-use std::fmt::Display;
-
+use http::StatusCode;
 use ndc_sdk::{
-    connector::{MutationError, QueryError},
+    connector::ErrorResponse,
     models::{ArgumentName, CollectionName, FieldName, ProcedureName, TypeName, VariableName},
 };
 
-#[derive(Debug)]
+#[derive(Debug, thiserror::Error)]
 pub enum QueryBuilderError {
-    SchemaDefinitionNotFound,
+    #[error("Object Type {0} not found in configuration")]
     ObjectTypeNotFound(TypeName),
+    #[error("Input Object Type {0} not found in configuration")]
     InputObjectTypeNotFound(TypeName),
+    #[error("No fields for query")]
     NoRequesQueryFields,
+    #[error("No query type in schema definition")]
     NoQueryType,
+    #[error("No mutation type in schema definition")]
     NoMutationType,
+    #[error("Feature not supported: {0}")]
     NotSupported(String),
-    QueryFieldNotFound {
-        field: CollectionName,
-    },
-    MutationFieldNotFound {
-        field: ProcedureName,
-    },
-    ObjectFieldNotFound {
-        object: TypeName,
-        field: FieldName,
-    },
+    #[error("Field {field} not found in Query type")]
+    QueryFieldNotFound { field: CollectionName },
+    #[error("Field {field} not found in Mutation type")]
+    MutationFieldNotFound { field: ProcedureName },
+    #[error("Field {field} not found in Object Type {object}")]
+    ObjectFieldNotFound { object: TypeName, field: FieldName },
+    #[error("Field {field} not found in Input Object Type {input_object}")]
     InputObjectFieldNotFound {
         input_object: TypeName,
         field: FieldName,
     },
+    #[error("Argument {argument} for field {field} not found in Object Type {object}")]
     ArgumentNotFound {
         object: TypeName,
         field: FieldName,
         argument: ArgumentName,
     },
+    #[error("Misshapen headers argument: {0}")]
     MisshapenHeadersArgument(serde_json::Value),
+    #[error("Unexpected: {0}")]
     Unexpected(String),
+    #[error("Missing variable {0}")]
     MissingVariable(VariableName),
 }
 
-impl std::error::Error for QueryBuilderError {}
-
-impl From<QueryBuilderError> for QueryError {
+impl From<QueryBuilderError> for ErrorResponse {
     fn from(value: QueryBuilderError) -> Self {
-        QueryError::new_invalid_request(&value)
-    }
-}
-impl From<QueryBuilderError> for MutationError {
-    fn from(value: QueryBuilderError) -> Self {
-        MutationError::new_invalid_request(&value)
-    }
-}
-
-impl Display for QueryBuilderError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            QueryBuilderError::SchemaDefinitionNotFound => {
-                write!(f, "Schema definition not found in configuration")
-            }
-            QueryBuilderError::ObjectTypeNotFound(obj) => {
-                write!(f, "Object Type {obj} not found in configuration")
-            }
-            QueryBuilderError::InputObjectTypeNotFound(input) => {
-                write!(f, "Input Object Type {input} not found in configuration")
-            }
-            QueryBuilderError::NoRequesQueryFields => {
-                write!(f, "Misshapen request: no fields for query")
-            }
-            QueryBuilderError::NoQueryType => write!(f, "No query type in schema definition"),
-            QueryBuilderError::NoMutationType => write!(f, "No mutation type in schema definition"),
-            QueryBuilderError::NotSupported(feature) => {
-                write!(f, "Feature not supported: {feature}")
-            }
-            QueryBuilderError::ObjectFieldNotFound { object, field } => {
-                write!(f, "Field {field} not found in Object Type {object}")
-            }
-            QueryBuilderError::InputObjectFieldNotFound {
-                input_object,
-                field,
-            } => {
-                write!(
-                    f,
-                    "Field {field} not found in Input Object Type {input_object}"
-                )
-            }
-            QueryBuilderError::ArgumentNotFound {
-                object,
-                field,
-                argument,
-            } => write!(
-                f,
-                "Argument {argument} for field {field} not found in Object Type {object}"
-            ),
-            QueryBuilderError::Unexpected(s) => write!(f, "Unexpected: {s}"),
-            QueryBuilderError::QueryFieldNotFound { field } => {
-                write!(f, "Field {field} not found in Query type")
-            }
-            QueryBuilderError::MutationFieldNotFound { field } => {
-                write!(f, "Field {field} not found in Mutation type")
-            }
-            QueryBuilderError::MisshapenHeadersArgument(headers) => {
-                write!(f, "Misshapen headers argument: {}", headers)
-            }
-            QueryBuilderError::MissingVariable(name) => write!(f, "Missing variable {name}"),
-        }
+        let status = match value {
+            QueryBuilderError::ObjectTypeNotFound(_)
+            | QueryBuilderError::InputObjectTypeNotFound(_) => StatusCode::INTERNAL_SERVER_ERROR,
+            QueryBuilderError::NoRequesQueryFields
+            | QueryBuilderError::NoQueryType
+            | QueryBuilderError::NoMutationType
+            | QueryBuilderError::NotSupported(_)
+            | QueryBuilderError::QueryFieldNotFound { .. }
+            | QueryBuilderError::MutationFieldNotFound { .. }
+            | QueryBuilderError::ObjectFieldNotFound { .. }
+            | QueryBuilderError::InputObjectFieldNotFound { .. }
+            | QueryBuilderError::ArgumentNotFound { .. }
+            | QueryBuilderError::MisshapenHeadersArgument(_)
+            | QueryBuilderError::Unexpected(_)
+            | QueryBuilderError::MissingVariable(_) => StatusCode::BAD_REQUEST,
+        };
+        ErrorResponse::new(status, value.to_string(), serde_json::Value::Null)
     }
 }

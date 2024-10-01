@@ -1198,6 +1198,7 @@ dependencies = [
  "common",
  "glob-match",
  "graphql-parser",
+ "http 0.2.12",
  "indexmap 2.5.0",
  "insta",
  "ndc-sdk",
@@ -1206,6 +1207,7 @@ dependencies = [
  "schemars",
  "serde",
  "serde_json",
+ "thiserror",
  "tokio",
  "tracing",
 ]

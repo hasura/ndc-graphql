@@ -4,8 +4,9 @@ use common::{
     client::{execute_graphql, GraphQLRequest},
     config::ServerConfig,
 };
+use http::StatusCode;
 use indexmap::IndexMap;
-use ndc_sdk::{connector::MutationError, models};
+use ndc_sdk::{connector::ErrorResponse, models};
 use std::{collections::BTreeMap, mem};
 use tracing::{Instrument, Level};
 
@@ -13,13 +14,13 @@ pub async fn handle_mutation_explain(
     configuration: &ServerConfig,
     _state: &ServerState,
     request: models::MutationRequest,
-) -> Result<models::ExplainResponse, MutationError> {
+) -> Result<models::ExplainResponse, ErrorResponse> {
     let operation = tracing::info_span!("Build Mutation Document", internal.visibility = "user")
         .in_scope(|| build_mutation_document(&request, configuration))?;
 
     let query =
         serde_json::to_string_pretty(&GraphQLRequest::new(&operation.query, &operation.variables))
-            .map_err(|err| MutationError::new_invalid_request(&err))?;
+            .map_err(ErrorResponse::from_error)?;
 
     let details = BTreeMap::from_iter(vec![
         ("SQL Query".to_string(), operation.query),
@@ -37,12 +38,11 @@ pub async fn handle_mutation(
     configuration: &ServerConfig,
     state: &ServerState,
     request: models::MutationRequest,
-) -> Result<models::MutationResponse, MutationError> {
+) -> Result<models::MutationResponse, ErrorResponse> {
     #[cfg(debug_assertions)]
     {
         // this block only present in debug builds, to avoid leaking sensitive information
-        let request_string = serde_json::to_string(&request)
-            .map_err(|err| MutationError::new_invalid_request(&err))?;
+        let request_string = serde_json::to_string(&request).map_err(ErrorResponse::from_error)?;
         tracing::event!(Level::DEBUG, "Incoming IR" = request_string);
     }
 
@@ -52,7 +52,7 @@ pub async fn handle_mutation(
     let client = state
         .client(configuration)
         .await
-        .map_err(|err| MutationError::new_invalid_request(&err))?;
+        .map_err(ErrorResponse::from_error)?;
 
     let execution_span =
         tracing::info_span!("Execute GraphQL Mutation", internal.visibility = "user");
@@ -67,12 +67,17 @@ pub async fn handle_mutation(
     )
     .instrument(execution_span)
     .await
-    .map_err(|err| MutationError::new_unprocessable_content(&err))?;
+    .map_err(ErrorResponse::from_error)?;
 
     tracing::info_span!("Process Response").in_scope(|| {
         if let Some(errors) = response.errors {
-            Err(MutationError::new_unprocessable_content(&errors[0].message)
-                .with_details(serde_json::json!({ "errors": errors })))
+            Err(ErrorResponse::new(
+                StatusCode::UNPROCESSABLE_ENTITY,
+                "Errors in graphql query response".to_string(),
+                serde_json::json!({
+                    "errors": errors
+                }),
+            ))
         } else if let Some(mut data) = response.data {
             let forward_response_headers = !configuration.response.forward_headers.is_empty();
 
@@ -103,12 +108,14 @@ pub async fn handle_mutation(
                     }),
                 })
                 .collect::<Result<Vec<_>, serde_json::Error>>()
-                .map_err(|err| MutationError::new_unprocessable_content(&err))?;
+                .map_err(ErrorResponse::from_error)?;
 
             Ok(models::MutationResponse { operation_results })
         } else {
-            Err(MutationError::new_unprocessable_content(
-                &"No data or errors in response",
+            Err(ErrorResponse::new_internal_with_details(
+                serde_json::json!({
+                    "message": "No data or errors in response"
+                }),
             ))
         }
     })

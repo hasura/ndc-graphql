@@ -4,9 +4,10 @@ use common::{
     client::{execute_graphql, GraphQLRequest},
     config::ServerConfig,
 };
+use http::StatusCode;
 use indexmap::IndexMap;
 use ndc_sdk::{
-    connector::QueryError,
+    connector::{ErrorResponse, QueryError},
     models::{self, FieldName},
 };
 use std::collections::BTreeMap;
@@ -16,10 +17,9 @@ pub async fn handle_query_explain(
     configuration: &ServerConfig,
     _state: &ServerState,
     request: models::QueryRequest,
-) -> Result<models::ExplainResponse, QueryError> {
+) -> Result<models::ExplainResponse, ErrorResponse> {
     let operation = tracing::info_span!("Build Query Document", internal.visibility = "user")
-        .in_scope(|| build_query_document(&request, configuration))
-        .map_err(|err| QueryError::new_invalid_request(&err))?;
+        .in_scope(|| build_query_document(&request, configuration))?;
 
     let query =
         serde_json::to_string_pretty(&GraphQLRequest::new(&operation.query, &operation.variables))
@@ -41,12 +41,11 @@ pub async fn handle_query(
     configuration: &ServerConfig,
     state: &ServerState,
     request: models::QueryRequest,
-) -> Result<models::QueryResponse, QueryError> {
+) -> Result<models::QueryResponse, ErrorResponse> {
     #[cfg(debug_assertions)]
     {
         // this block only present in debug builds, to avoid leaking sensitive information
-        let request_string =
-            serde_json::to_string(&request).map_err(|err| QueryError::new_invalid_request(&err))?;
+        let request_string = serde_json::to_string(&request).map_err(ErrorResponse::from_error)?;
         tracing::event!(Level::DEBUG, "Incoming IR" = request_string);
     }
 
@@ -56,7 +55,7 @@ pub async fn handle_query(
     let client = state
         .client(configuration)
         .await
-        .map_err(|err| QueryError::new_invalid_request(&err))?;
+        .map_err(ErrorResponse::from_error)?;
 
     let execution_span = tracing::info_span!("Execute GraphQL Query", internal.visibility = "user");
 
@@ -70,12 +69,17 @@ pub async fn handle_query(
     )
     .instrument(execution_span)
     .await
-    .map_err(|err| QueryError::new_invalid_request(&err))?;
+    .map_err(ErrorResponse::from_error)?;
 
     tracing::info_span!("Process Response").in_scope(|| {
         if let Some(errors) = response.errors {
-            Err(QueryError::new_unprocessable_content(&errors[0].message)
-                .with_details(serde_json::json!({ "errors": errors })))
+            Err(ErrorResponse::new(
+                StatusCode::UNPROCESSABLE_ENTITY,
+                "Errors in graphql query response".to_string(),
+                serde_json::json!({
+                    "errors": errors
+                }),
+            ))
         } else if let Some(data) = response.data {
             let forward_response_headers = !configuration.response.forward_headers.is_empty();
 
@@ -104,8 +108,10 @@ pub async fn handle_query(
                 rows: Some(vec![row]),
             }]))
         } else {
-            Err(QueryError::new_unprocessable_content(
-                &"No data or errors in response",
+            Err(ErrorResponse::new_internal_with_details(
+                serde_json::json!({
+                    "message": "No data or errors in response"
+                }),
             ))
         }
     })
