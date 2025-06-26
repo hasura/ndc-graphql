@@ -2,7 +2,7 @@
 members = ["crates/ndc-graphql", "crates/ndc-graphql-cli", "crates/common"]
 resolver = "2"
 
-package.version = "0.2.2"
+package.version = "0.2.3"
 package.edition = "2021"
 
 # insta performs better in release mode
