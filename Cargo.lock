@@ -359,7 +359,7 @@ dependencies = [
 
 [[package]]
 name = "common"
-version = "0.2.2"
+version = "0.2.3"
 dependencies = [
  "async-trait",
  "glob-match",
@@ -1322,7 +1322,7 @@ dependencies = [
 
 [[package]]
 name = "ndc-graphql"
-version = "0.2.2"
+version = "0.2.3"
 dependencies = [
  "async-trait",
  "common",
@@ -1342,7 +1342,7 @@ dependencies = [
 
 [[package]]
 name = "ndc-graphql-cli"
-version = "0.2.2"
+version = "0.2.3"
 dependencies = [
  "clap",
  "common",
