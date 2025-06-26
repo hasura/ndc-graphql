@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.1]
+
+- Add nativeToolchainDefinition to connector-metadata.yml
+
 ## [0.2.0]
 
 - Implement foreach capability. Instead of producing multiple parallel requests, we produce a single, larger request to send to the target endpoint.
