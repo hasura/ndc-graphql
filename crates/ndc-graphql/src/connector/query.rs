@@ -100,6 +100,7 @@ pub async fn handle_query(
             };
 
             Ok(models::QueryResponse(vec![models::RowSet {
+                groups: None,
                 aggregates: None,
                 rows: Some(vec![row]),
             }]))

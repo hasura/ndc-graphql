@@ -5,7 +5,9 @@ use crate::config::{
     },
     RequestConfig, ResponseConfig,
 };
-use ndc_models::{self as models, ArgumentName, FieldName, SchemaResponse};
+use ndc_models::{
+    self as models, ArgumentName, FieldName, SchemaResponse, TypeName, TypeRepresentation,
+};
 use std::{collections::BTreeMap, iter};
 
 pub fn schema_response(
@@ -24,9 +26,10 @@ pub fn schema_response(
             TypeDef::Scalar { description: _ } => Some((
                 name.to_owned().into(),
                 models::ScalarType {
-                    representation: None,
+                    representation: type_name_to_representation(name),
                     aggregate_functions: BTreeMap::new(),
                     comparison_operators: BTreeMap::new(),
+                    extraction_functions: BTreeMap::new(),
                 },
             )),
             TypeDef::Enum {
@@ -35,11 +38,12 @@ pub fn schema_response(
             } => Some((
                 name.to_owned().into(),
                 models::ScalarType {
-                    representation: Some(models::TypeRepresentation::Enum {
+                    representation: models::TypeRepresentation::Enum {
                         one_of: values.iter().map(|value| value.name.to_owned()).collect(),
-                    }),
+                    },
                     aggregate_functions: BTreeMap::new(),
                     comparison_operators: BTreeMap::new(),
+                    extraction_functions: BTreeMap::new(),
                 },
             )),
         })
@@ -49,9 +53,10 @@ pub fn schema_response(
         scalar_types.insert(
             request.headers_type_name.to_owned(),
             models::ScalarType {
-                representation: Some(models::TypeRepresentation::JSON),
+                representation: models::TypeRepresentation::JSON,
                 aggregate_functions: BTreeMap::new(),
                 comparison_operators: BTreeMap::new(),
+                extraction_functions: BTreeMap::new(),
             },
         );
     }
@@ -69,6 +74,7 @@ pub fn schema_response(
                 models::ObjectType {
                     description: description.to_owned(),
                     fields: fields.iter().map(map_object_field).collect(),
+                    foreign_keys: BTreeMap::new(),
                 },
             )),
             TypeDef::InputObject {
@@ -79,6 +85,7 @@ pub fn schema_response(
                 models::ObjectType {
                     description: description.to_owned(),
                     fields: fields.iter().map(map_input_object_field).collect(),
+                    foreign_keys: BTreeMap::new(),
                 },
             )),
         })
@@ -110,6 +117,7 @@ pub fn schema_response(
                         },
                     ),
                 ]),
+                foreign_keys: BTreeMap::new(),
             }
         };
 
@@ -205,6 +213,8 @@ pub fn schema_response(
         collections: vec![],
         functions,
         procedures,
+        capabilities: None,
+        request_arguments: None,
     }
 }
 
@@ -268,5 +278,24 @@ fn typeref_to_ndc_type(typeref: &TypeRef) -> models::Type {
             // ignore (illegal) double non-null assertions. This shouln't happen anyways
             TypeRef::NonNull(_) => typeref_to_ndc_type(inner),
         },
+    }
+}
+
+// Guess the type representation by common GraphQL scalar names such as String, Int, Float, Boolean, etc...
+// https://spec.graphql.org/draft/#sec-Scalars.Built-in-Scalars
+fn type_name_to_representation(name: &TypeName) -> TypeRepresentation {
+    match name.to_string().to_lowercase().as_str() {
+        "bool" | "boolean" => TypeRepresentation::Boolean,
+        "int8" | "tinyint" => TypeRepresentation::Int8,
+        "int16" | "smallint" => TypeRepresentation::Int16,
+        "int" | "int32" | "serial" => TypeRepresentation::Int32,
+        "int64" => TypeRepresentation::Int64,
+        "bigint" | "bigserial" => TypeRepresentation::BigInteger,
+        "float8" | "float16" | "float32" => TypeRepresentation::Float32,
+        "float" | "float64" => TypeRepresentation::Float64,
+        "date" => TypeRepresentation::Date,
+        "timestamptz" | "datetime" => TypeRepresentation::TimestampTZ,
+        "id" | "string" | "uuid" | "text" | "citext" | "varchar" => TypeRepresentation::String,
+        _ => TypeRepresentation::JSON,
     }
 }

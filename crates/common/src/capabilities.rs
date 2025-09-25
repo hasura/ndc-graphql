@@ -10,9 +10,13 @@ pub fn capabilities() -> models::Capabilities {
                 aggregates: None,
                 filter_by: None,
                 order_by: None,
+                nested_collections: None,
             },
             exists: models::ExistsCapabilities {
                 nested_collections: None,
+                named_scopes: None,
+                nested_scalar_collections: None,
+                unrelated: None,
             },
         },
         mutation: models::MutationCapabilities {
@@ -20,6 +24,8 @@ pub fn capabilities() -> models::Capabilities {
             explain: Some(models::LeafCapability {}),
         },
         relationships: None,
+        relational_mutation: None,
+        relational_query: None,
     }
 }
 

@@ -353,7 +353,7 @@ fn selection_set_field<'a>(
     configuration: &ServerConfig,
     variables: &BTreeMap<VariableName, serde_json::Value>,
 ) -> Result<Selection<'a, String>, QueryBuilderError> {
-    let selection_set = match fields.as_ref().map(underlying_fields) {
+    let selection_set = match fields.as_ref().and_then(underlying_fields) {
         Some(fields) => {
             let items = fields
                 .iter()
@@ -490,9 +490,10 @@ fn map_arg(
     Ok(argument.to_owned())
 }
 
-fn underlying_fields(nested_field: &NestedField) -> &IndexMap<FieldName, models::Field> {
+fn underlying_fields(nested_field: &NestedField) -> Option<&IndexMap<FieldName, models::Field>> {
     match nested_field {
-        NestedField::Object(obj) => &obj.fields,
+        NestedField::Object(obj) => Some(&obj.fields),
         NestedField::Array(arr) => underlying_fields(&arr.fields),
+        NestedField::Collection(_) => None,
     }
 }

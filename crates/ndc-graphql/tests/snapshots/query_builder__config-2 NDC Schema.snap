@@ -1,5 +1,6 @@
 ---
 source: crates/ndc-graphql/tests/query_builder.rs
+assertion_line: 105
 expression: schema
 ---
 scalar_types:
@@ -10,6 +11,7 @@ scalar_types:
         - PK_Album
     aggregate_functions: {}
     comparison_operators: {}
+    extraction_functions: {}
   Album_select_column:
     representation:
       type: enum
@@ -19,6 +21,7 @@ scalar_types:
         - Title
     aggregate_functions: {}
     comparison_operators: {}
+    extraction_functions: {}
   Album_update_column:
     representation:
       type: enum
@@ -27,6 +30,7 @@ scalar_types:
         - Title
     aggregate_functions: {}
     comparison_operators: {}
+    extraction_functions: {}
   Artist_constraint:
     representation:
       type: enum
@@ -34,6 +38,7 @@ scalar_types:
         - PK_Artist
     aggregate_functions: {}
     comparison_operators: {}
+    extraction_functions: {}
   Artist_select_column:
     representation:
       type: enum
@@ -42,6 +47,7 @@ scalar_types:
         - Name
     aggregate_functions: {}
     comparison_operators: {}
+    extraction_functions: {}
   Artist_update_column:
     representation:
       type: enum
@@ -49,9 +55,13 @@ scalar_types:
         - Name
     aggregate_functions: {}
     comparison_operators: {}
+    extraction_functions: {}
   Boolean:
+    representation:
+      type: boolean
     aggregate_functions: {}
     comparison_operators: {}
+    extraction_functions: {}
   Customer_constraint:
     representation:
       type: enum
@@ -59,6 +69,7 @@ scalar_types:
         - PK_Customer
     aggregate_functions: {}
     comparison_operators: {}
+    extraction_functions: {}
   Customer_select_column:
     representation:
       type: enum
@@ -78,6 +89,7 @@ scalar_types:
         - SupportRepId
     aggregate_functions: {}
     comparison_operators: {}
+    extraction_functions: {}
   Customer_update_column:
     representation:
       type: enum
@@ -96,6 +108,7 @@ scalar_types:
         - SupportRepId
     aggregate_functions: {}
     comparison_operators: {}
+    extraction_functions: {}
   Employee_constraint:
     representation:
       type: enum
@@ -103,6 +116,7 @@ scalar_types:
         - PK_Employee
     aggregate_functions: {}
     comparison_operators: {}
+    extraction_functions: {}
   Employee_select_column:
     representation:
       type: enum
@@ -124,6 +138,7 @@ scalar_types:
         - Title
     aggregate_functions: {}
     comparison_operators: {}
+    extraction_functions: {}
   Employee_update_column:
     representation:
       type: enum
@@ -144,9 +159,13 @@ scalar_types:
         - Title
     aggregate_functions: {}
     comparison_operators: {}
+    extraction_functions: {}
   Float:
+    representation:
+      type: float64
     aggregate_functions: {}
     comparison_operators: {}
+    extraction_functions: {}
   Genre_constraint:
     representation:
       type: enum
@@ -154,6 +173,7 @@ scalar_types:
         - PK_Genre
     aggregate_functions: {}
     comparison_operators: {}
+    extraction_functions: {}
   Genre_select_column:
     representation:
       type: enum
@@ -162,6 +182,7 @@ scalar_types:
         - Name
     aggregate_functions: {}
     comparison_operators: {}
+    extraction_functions: {}
   Genre_update_column:
     representation:
       type: enum
@@ -169,9 +190,13 @@ scalar_types:
         - Name
     aggregate_functions: {}
     comparison_operators: {}
+    extraction_functions: {}
   Int:
+    representation:
+      type: int32
     aggregate_functions: {}
     comparison_operators: {}
+    extraction_functions: {}
   InvoiceLine_constraint:
     representation:
       type: enum
@@ -179,6 +204,7 @@ scalar_types:
         - PK_InvoiceLine
     aggregate_functions: {}
     comparison_operators: {}
+    extraction_functions: {}
   InvoiceLine_select_column:
     representation:
       type: enum
@@ -190,6 +216,7 @@ scalar_types:
         - UnitPrice
     aggregate_functions: {}
     comparison_operators: {}
+    extraction_functions: {}
   InvoiceLine_update_column:
     representation:
       type: enum
@@ -200,6 +227,7 @@ scalar_types:
         - UnitPrice
     aggregate_functions: {}
     comparison_operators: {}
+    extraction_functions: {}
   Invoice_constraint:
     representation:
       type: enum
@@ -207,6 +235,7 @@ scalar_types:
         - PK_Invoice
     aggregate_functions: {}
     comparison_operators: {}
+    extraction_functions: {}
   Invoice_select_column:
     representation:
       type: enum
@@ -222,6 +251,7 @@ scalar_types:
         - Total
     aggregate_functions: {}
     comparison_operators: {}
+    extraction_functions: {}
   Invoice_update_column:
     representation:
       type: enum
@@ -236,6 +266,7 @@ scalar_types:
         - Total
     aggregate_functions: {}
     comparison_operators: {}
+    extraction_functions: {}
   MediaType_constraint:
     representation:
       type: enum
@@ -243,6 +274,7 @@ scalar_types:
         - PK_MediaType
     aggregate_functions: {}
     comparison_operators: {}
+    extraction_functions: {}
   MediaType_select_column:
     representation:
       type: enum
@@ -251,6 +283,7 @@ scalar_types:
         - Name
     aggregate_functions: {}
     comparison_operators: {}
+    extraction_functions: {}
   MediaType_update_column:
     representation:
       type: enum
@@ -258,6 +291,7 @@ scalar_types:
         - Name
     aggregate_functions: {}
     comparison_operators: {}
+    extraction_functions: {}
   PlaylistTrack_constraint:
     representation:
       type: enum
@@ -265,6 +299,7 @@ scalar_types:
         - PK_PlaylistTrack
     aggregate_functions: {}
     comparison_operators: {}
+    extraction_functions: {}
   PlaylistTrack_select_column:
     representation:
       type: enum
@@ -273,6 +308,7 @@ scalar_types:
         - TrackId
     aggregate_functions: {}
     comparison_operators: {}
+    extraction_functions: {}
   PlaylistTrack_update_column:
     representation:
       type: enum
@@ -281,6 +317,7 @@ scalar_types:
         - TrackId
     aggregate_functions: {}
     comparison_operators: {}
+    extraction_functions: {}
   Playlist_constraint:
     representation:
       type: enum
@@ -288,6 +325,7 @@ scalar_types:
         - PK_Playlist
     aggregate_functions: {}
     comparison_operators: {}
+    extraction_functions: {}
   Playlist_select_column:
     representation:
       type: enum
@@ -296,6 +334,7 @@ scalar_types:
         - PlaylistId
     aggregate_functions: {}
     comparison_operators: {}
+    extraction_functions: {}
   Playlist_update_column:
     representation:
       type: enum
@@ -303,9 +342,13 @@ scalar_types:
         - Name
     aggregate_functions: {}
     comparison_operators: {}
+    extraction_functions: {}
   String:
+    representation:
+      type: string
     aggregate_functions: {}
     comparison_operators: {}
+    extraction_functions: {}
   Track_constraint:
     representation:
       type: enum
@@ -313,6 +356,7 @@ scalar_types:
         - PK_Track
     aggregate_functions: {}
     comparison_operators: {}
+    extraction_functions: {}
   Track_select_column:
     representation:
       type: enum
@@ -328,6 +372,7 @@ scalar_types:
         - UnitPrice
     aggregate_functions: {}
     comparison_operators: {}
+    extraction_functions: {}
   Track_update_column:
     representation:
       type: enum
@@ -342,11 +387,13 @@ scalar_types:
         - UnitPrice
     aggregate_functions: {}
     comparison_operators: {}
+    extraction_functions: {}
   _HeaderMap:
     representation:
       type: json
     aggregate_functions: {}
     comparison_operators: {}
+    extraction_functions: {}
   cursor_ordering:
     representation:
       type: enum
@@ -355,9 +402,13 @@ scalar_types:
         - DESC
     aggregate_functions: {}
     comparison_operators: {}
+    extraction_functions: {}
   numeric:
+    representation:
+      type: json
     aggregate_functions: {}
     comparison_operators: {}
+    extraction_functions: {}
   order_by:
     representation:
       type: enum
@@ -370,9 +421,13 @@ scalar_types:
         - desc_nulls_last
     aggregate_functions: {}
     comparison_operators: {}
+    extraction_functions: {}
   timestamp:
+    representation:
+      type: json
     aggregate_functions: {}
     comparison_operators: {}
+    extraction_functions: {}
 object_types:
   Album:
     description: "columns and relationships of \"Album\""
@@ -486,6 +541,7 @@ object_types:
               underlying_type:
                 type: named
                 name: Track_bool_exp
+    foreign_keys: {}
   Album_aggregate:
     description: "aggregated selection of \"Album\""
     fields:
@@ -501,6 +557,7 @@ object_types:
           element_type:
             type: named
             name: Album
+    foreign_keys: {}
   Album_aggregate_bool_exp:
     fields:
       count:
@@ -509,6 +566,7 @@ object_types:
           underlying_type:
             type: named
             name: Album_aggregate_bool_exp_count
+    foreign_keys: {}
   Album_aggregate_bool_exp_count:
     fields:
       arguments:
@@ -535,6 +593,7 @@ object_types:
         type:
           type: named
           name: Int_comparison_exp
+    foreign_keys: {}
   Album_aggregate_fields:
     description: "aggregate fields of \"Album\""
     fields:
@@ -617,6 +676,7 @@ object_types:
           underlying_type:
             type: named
             name: Album_variance_fields
+    foreign_keys: {}
   Album_aggregate_order_by:
     description: "order by aggregate values of table \"Album\""
     fields:
@@ -686,6 +746,7 @@ object_types:
           underlying_type:
             type: named
             name: Album_variance_order_by
+    foreign_keys: {}
   Album_arr_rel_insert_input:
     description: "input type for inserting array relation for remote table \"Album\""
     fields:
@@ -702,6 +763,7 @@ object_types:
           underlying_type:
             type: named
             name: Album_on_conflict
+    foreign_keys: {}
   Album_avg_fields:
     description: aggregate avg on columns
     fields:
@@ -717,6 +779,7 @@ object_types:
           underlying_type:
             type: named
             name: Float
+    foreign_keys: {}
   Album_avg_order_by:
     description: "order by avg() on columns of table \"Album\""
     fields:
@@ -732,6 +795,7 @@ object_types:
           underlying_type:
             type: named
             name: order_by
+    foreign_keys: {}
   Album_bool_exp:
     description: "Boolean expression to filter rows from the table \"Album\". All fields are combined with a logical 'AND'."
     fields:
@@ -793,6 +857,7 @@ object_types:
             element_type:
               type: named
               name: Album_bool_exp
+    foreign_keys: {}
   Album_inc_input:
     description: "input type for incrementing numeric columns in table \"Album\""
     fields:
@@ -802,6 +867,7 @@ object_types:
           underlying_type:
             type: named
             name: Int
+    foreign_keys: {}
   Album_insert_input:
     description: "input type for inserting data into table \"Album\""
     fields:
@@ -829,6 +895,7 @@ object_types:
           underlying_type:
             type: named
             name: Track_arr_rel_insert_input
+    foreign_keys: {}
   Album_max_fields:
     description: aggregate max on columns
     fields:
@@ -850,6 +917,7 @@ object_types:
           underlying_type:
             type: named
             name: String
+    foreign_keys: {}
   Album_max_order_by:
     description: "order by max() on columns of table \"Album\""
     fields:
@@ -871,6 +939,7 @@ object_types:
           underlying_type:
             type: named
             name: order_by
+    foreign_keys: {}
   Album_min_fields:
     description: aggregate min on columns
     fields:
@@ -892,6 +961,7 @@ object_types:
           underlying_type:
             type: named
             name: String
+    foreign_keys: {}
   Album_min_order_by:
     description: "order by min() on columns of table \"Album\""
     fields:
@@ -913,6 +983,7 @@ object_types:
           underlying_type:
             type: named
             name: order_by
+    foreign_keys: {}
   Album_mutation_response:
     description: "response of any mutation on the table \"Album\""
     fields:
@@ -928,6 +999,7 @@ object_types:
           element_type:
             type: named
             name: Album
+    foreign_keys: {}
   Album_obj_rel_insert_input:
     description: "input type for inserting object relation for remote table \"Album\""
     fields:
@@ -942,6 +1014,7 @@ object_types:
           underlying_type:
             type: named
             name: Album_on_conflict
+    foreign_keys: {}
   Album_on_conflict:
     description: "on_conflict condition type for table \"Album\""
     fields:
@@ -961,6 +1034,7 @@ object_types:
           underlying_type:
             type: named
             name: Album_bool_exp
+    foreign_keys: {}
   Album_order_by:
     description: "Ordering options when selecting data from \"Album\"."
     fields:
@@ -994,6 +1068,7 @@ object_types:
           underlying_type:
             type: named
             name: Track_aggregate_order_by
+    foreign_keys: {}
   Album_pk_columns_input:
     description: "primary key columns input for table: Album"
     fields:
@@ -1001,6 +1076,7 @@ object_types:
         type:
           type: named
           name: Int
+    foreign_keys: {}
   Album_set_input:
     description: "input type for updating data in table \"Album\""
     fields:
@@ -1016,6 +1092,7 @@ object_types:
           underlying_type:
             type: named
             name: String
+    foreign_keys: {}
   Album_stddev_fields:
     description: aggregate stddev on columns
     fields:
@@ -1031,6 +1108,7 @@ object_types:
           underlying_type:
             type: named
             name: Float
+    foreign_keys: {}
   Album_stddev_order_by:
     description: "order by stddev() on columns of table \"Album\""
     fields:
@@ -1046,6 +1124,7 @@ object_types:
           underlying_type:
             type: named
             name: order_by
+    foreign_keys: {}
   Album_stddev_pop_fields:
     description: aggregate stddev_pop on columns
     fields:
@@ -1061,6 +1140,7 @@ object_types:
           underlying_type:
             type: named
             name: Float
+    foreign_keys: {}
   Album_stddev_pop_order_by:
     description: "order by stddev_pop() on columns of table \"Album\""
     fields:
@@ -1076,6 +1156,7 @@ object_types:
           underlying_type:
             type: named
             name: order_by
+    foreign_keys: {}
   Album_stddev_samp_fields:
     description: aggregate stddev_samp on columns
     fields:
@@ -1091,6 +1172,7 @@ object_types:
           underlying_type:
             type: named
             name: Float
+    foreign_keys: {}
   Album_stddev_samp_order_by:
     description: "order by stddev_samp() on columns of table \"Album\""
     fields:
@@ -1106,6 +1188,7 @@ object_types:
           underlying_type:
             type: named
             name: order_by
+    foreign_keys: {}
   Album_stream_cursor_input:
     description: "Streaming cursor of the table \"Album\""
     fields:
@@ -1121,6 +1204,7 @@ object_types:
           underlying_type:
             type: named
             name: cursor_ordering
+    foreign_keys: {}
   Album_stream_cursor_value_input:
     description: Initial value of the column from where the streaming should start
     fields:
@@ -1142,6 +1226,7 @@ object_types:
           underlying_type:
             type: named
             name: String
+    foreign_keys: {}
   Album_sum_fields:
     description: aggregate sum on columns
     fields:
@@ -1157,6 +1242,7 @@ object_types:
           underlying_type:
             type: named
             name: Int
+    foreign_keys: {}
   Album_sum_order_by:
     description: "order by sum() on columns of table \"Album\""
     fields:
@@ -1172,6 +1258,7 @@ object_types:
           underlying_type:
             type: named
             name: order_by
+    foreign_keys: {}
   Album_updates:
     fields:
       _inc:
@@ -1193,6 +1280,7 @@ object_types:
         type:
           type: named
           name: Album_bool_exp
+    foreign_keys: {}
   Album_var_pop_fields:
     description: aggregate var_pop on columns
     fields:
@@ -1208,6 +1296,7 @@ object_types:
           underlying_type:
             type: named
             name: Float
+    foreign_keys: {}
   Album_var_pop_order_by:
     description: "order by var_pop() on columns of table \"Album\""
     fields:
@@ -1223,6 +1312,7 @@ object_types:
           underlying_type:
             type: named
             name: order_by
+    foreign_keys: {}
   Album_var_samp_fields:
     description: aggregate var_samp on columns
     fields:
@@ -1238,6 +1328,7 @@ object_types:
           underlying_type:
             type: named
             name: Float
+    foreign_keys: {}
   Album_var_samp_order_by:
     description: "order by var_samp() on columns of table \"Album\""
     fields:
@@ -1253,6 +1344,7 @@ object_types:
           underlying_type:
             type: named
             name: order_by
+    foreign_keys: {}
   Album_variance_fields:
     description: aggregate variance on columns
     fields:
@@ -1268,6 +1360,7 @@ object_types:
           underlying_type:
             type: named
             name: Float
+    foreign_keys: {}
   Album_variance_order_by:
     description: "order by variance() on columns of table \"Album\""
     fields:
@@ -1283,6 +1376,7 @@ object_types:
           underlying_type:
             type: named
             name: order_by
+    foreign_keys: {}
   Artist:
     description: "columns and relationships of \"Artist\""
     fields:
@@ -1388,6 +1482,7 @@ object_types:
           underlying_type:
             type: named
             name: String
+    foreign_keys: {}
   Artist_aggregate:
     description: "aggregated selection of \"Artist\""
     fields:
@@ -1403,6 +1498,7 @@ object_types:
           element_type:
             type: named
             name: Artist
+    foreign_keys: {}
   Artist_aggregate_fields:
     description: "aggregate fields of \"Artist\""
     fields:
@@ -1485,6 +1581,7 @@ object_types:
           underlying_type:
             type: named
             name: Artist_variance_fields
+    foreign_keys: {}
   Artist_avg_fields:
     description: aggregate avg on columns
     fields:
@@ -1494,6 +1591,7 @@ object_types:
           underlying_type:
             type: named
             name: Float
+    foreign_keys: {}
   Artist_bool_exp:
     description: "Boolean expression to filter rows from the table \"Artist\". All fields are combined with a logical 'AND'."
     fields:
@@ -1543,6 +1641,7 @@ object_types:
             element_type:
               type: named
               name: Artist_bool_exp
+    foreign_keys: {}
   Artist_insert_input:
     description: "input type for inserting data into table \"Artist\""
     fields:
@@ -1558,6 +1657,7 @@ object_types:
           underlying_type:
             type: named
             name: String
+    foreign_keys: {}
   Artist_max_fields:
     description: aggregate max on columns
     fields:
@@ -1573,6 +1673,7 @@ object_types:
           underlying_type:
             type: named
             name: String
+    foreign_keys: {}
   Artist_min_fields:
     description: aggregate min on columns
     fields:
@@ -1588,6 +1689,7 @@ object_types:
           underlying_type:
             type: named
             name: String
+    foreign_keys: {}
   Artist_mutation_response:
     description: "response of any mutation on the table \"Artist\""
     fields:
@@ -1603,6 +1705,7 @@ object_types:
           element_type:
             type: named
             name: Artist
+    foreign_keys: {}
   Artist_obj_rel_insert_input:
     description: "input type for inserting object relation for remote table \"Artist\""
     fields:
@@ -1617,6 +1720,7 @@ object_types:
           underlying_type:
             type: named
             name: Artist_on_conflict
+    foreign_keys: {}
   Artist_on_conflict:
     description: "on_conflict condition type for table \"Artist\""
     fields:
@@ -1636,6 +1740,7 @@ object_types:
           underlying_type:
             type: named
             name: Artist_bool_exp
+    foreign_keys: {}
   Artist_order_by:
     description: "Ordering options when selecting data from \"Artist\"."
     fields:
@@ -1657,6 +1762,7 @@ object_types:
           underlying_type:
             type: named
             name: order_by
+    foreign_keys: {}
   Artist_pk_columns_input:
     description: "primary key columns input for table: Artist"
     fields:
@@ -1664,6 +1770,7 @@ object_types:
         type:
           type: named
           name: Int
+    foreign_keys: {}
   Artist_set_input:
     description: "input type for updating data in table \"Artist\""
     fields:
@@ -1673,6 +1780,7 @@ object_types:
           underlying_type:
             type: named
             name: String
+    foreign_keys: {}
   Artist_stddev_fields:
     description: aggregate stddev on columns
     fields:
@@ -1682,6 +1790,7 @@ object_types:
           underlying_type:
             type: named
             name: Float
+    foreign_keys: {}
   Artist_stddev_pop_fields:
     description: aggregate stddev_pop on columns
     fields:
@@ -1691,6 +1800,7 @@ object_types:
           underlying_type:
             type: named
             name: Float
+    foreign_keys: {}
   Artist_stddev_samp_fields:
     description: aggregate stddev_samp on columns
     fields:
@@ -1700,6 +1810,7 @@ object_types:
           underlying_type:
             type: named
             name: Float
+    foreign_keys: {}
   Artist_stream_cursor_input:
     description: "Streaming cursor of the table \"Artist\""
     fields:
@@ -1715,6 +1826,7 @@ object_types:
           underlying_type:
             type: named
             name: cursor_ordering
+    foreign_keys: {}
   Artist_stream_cursor_value_input:
     description: Initial value of the column from where the streaming should start
     fields:
@@ -1730,6 +1842,7 @@ object_types:
           underlying_type:
             type: named
             name: String
+    foreign_keys: {}
   Artist_sum_fields:
     description: aggregate sum on columns
     fields:
@@ -1739,6 +1852,7 @@ object_types:
           underlying_type:
             type: named
             name: Int
+    foreign_keys: {}
   Artist_updates:
     fields:
       _set:
@@ -1753,6 +1867,7 @@ object_types:
         type:
           type: named
           name: Artist_bool_exp
+    foreign_keys: {}
   Artist_var_pop_fields:
     description: aggregate var_pop on columns
     fields:
@@ -1762,6 +1877,7 @@ object_types:
           underlying_type:
             type: named
             name: Float
+    foreign_keys: {}
   Artist_var_samp_fields:
     description: aggregate var_samp on columns
     fields:
@@ -1771,6 +1887,7 @@ object_types:
           underlying_type:
             type: named
             name: Float
+    foreign_keys: {}
   Artist_variance_fields:
     description: aggregate variance on columns
     fields:
@@ -1780,6 +1897,7 @@ object_types:
           underlying_type:
             type: named
             name: Float
+    foreign_keys: {}
   Customer:
     description: "columns and relationships of \"Customer\""
     fields:
@@ -1952,6 +2070,7 @@ object_types:
           underlying_type:
             type: named
             name: Int
+    foreign_keys: {}
   Customer_aggregate:
     description: "aggregated selection of \"Customer\""
     fields:
@@ -1967,6 +2086,7 @@ object_types:
           element_type:
             type: named
             name: Customer
+    foreign_keys: {}
   Customer_aggregate_bool_exp:
     fields:
       count:
@@ -1975,6 +2095,7 @@ object_types:
           underlying_type:
             type: named
             name: Customer_aggregate_bool_exp_count
+    foreign_keys: {}
   Customer_aggregate_bool_exp_count:
     fields:
       arguments:
@@ -2001,6 +2122,7 @@ object_types:
         type:
           type: named
           name: Int_comparison_exp
+    foreign_keys: {}
   Customer_aggregate_fields:
     description: "aggregate fields of \"Customer\""
     fields:
@@ -2083,6 +2205,7 @@ object_types:
           underlying_type:
             type: named
             name: Customer_variance_fields
+    foreign_keys: {}
   Customer_aggregate_order_by:
     description: "order by aggregate values of table \"Customer\""
     fields:
@@ -2152,6 +2275,7 @@ object_types:
           underlying_type:
             type: named
             name: Customer_variance_order_by
+    foreign_keys: {}
   Customer_arr_rel_insert_input:
     description: "input type for inserting array relation for remote table \"Customer\""
     fields:
@@ -2168,6 +2292,7 @@ object_types:
           underlying_type:
             type: named
             name: Customer_on_conflict
+    foreign_keys: {}
   Customer_avg_fields:
     description: aggregate avg on columns
     fields:
@@ -2183,6 +2308,7 @@ object_types:
           underlying_type:
             type: named
             name: Float
+    foreign_keys: {}
   Customer_avg_order_by:
     description: "order by avg() on columns of table \"Customer\""
     fields:
@@ -2198,6 +2324,7 @@ object_types:
           underlying_type:
             type: named
             name: order_by
+    foreign_keys: {}
   Customer_bool_exp:
     description: "Boolean expression to filter rows from the table \"Customer\". All fields are combined with a logical 'AND'."
     fields:
@@ -2319,6 +2446,7 @@ object_types:
             element_type:
               type: named
               name: Customer_bool_exp
+    foreign_keys: {}
   Customer_inc_input:
     description: "input type for incrementing numeric columns in table \"Customer\""
     fields:
@@ -2328,6 +2456,7 @@ object_types:
           underlying_type:
             type: named
             name: Int
+    foreign_keys: {}
   Customer_insert_input:
     description: "input type for inserting data into table \"Customer\""
     fields:
@@ -2415,6 +2544,7 @@ object_types:
           underlying_type:
             type: named
             name: Int
+    foreign_keys: {}
   Customer_max_fields:
     description: aggregate max on columns
     fields:
@@ -2496,6 +2626,7 @@ object_types:
           underlying_type:
             type: named
             name: Int
+    foreign_keys: {}
   Customer_max_order_by:
     description: "order by max() on columns of table \"Customer\""
     fields:
@@ -2577,6 +2708,7 @@ object_types:
           underlying_type:
             type: named
             name: order_by
+    foreign_keys: {}
   Customer_min_fields:
     description: aggregate min on columns
     fields:
@@ -2658,6 +2790,7 @@ object_types:
           underlying_type:
             type: named
             name: Int
+    foreign_keys: {}
   Customer_min_order_by:
     description: "order by min() on columns of table \"Customer\""
     fields:
@@ -2739,6 +2872,7 @@ object_types:
           underlying_type:
             type: named
             name: order_by
+    foreign_keys: {}
   Customer_mutation_response:
     description: "response of any mutation on the table \"Customer\""
     fields:
@@ -2754,6 +2888,7 @@ object_types:
           element_type:
             type: named
             name: Customer
+    foreign_keys: {}
   Customer_obj_rel_insert_input:
     description: "input type for inserting object relation for remote table \"Customer\""
     fields:
@@ -2768,6 +2903,7 @@ object_types:
           underlying_type:
             type: named
             name: Customer_on_conflict
+    foreign_keys: {}
   Customer_on_conflict:
     description: "on_conflict condition type for table \"Customer\""
     fields:
@@ -2787,6 +2923,7 @@ object_types:
           underlying_type:
             type: named
             name: Customer_bool_exp
+    foreign_keys: {}
   Customer_order_by:
     description: "Ordering options when selecting data from \"Customer\"."
     fields:
@@ -2880,6 +3017,7 @@ object_types:
           underlying_type:
             type: named
             name: order_by
+    foreign_keys: {}
   Customer_pk_columns_input:
     description: "primary key columns input for table: Customer"
     fields:
@@ -2887,6 +3025,7 @@ object_types:
         type:
           type: named
           name: Int
+    foreign_keys: {}
   Customer_set_input:
     description: "input type for updating data in table \"Customer\""
     fields:
@@ -2962,6 +3101,7 @@ object_types:
           underlying_type:
             type: named
             name: Int
+    foreign_keys: {}
   Customer_stddev_fields:
     description: aggregate stddev on columns
     fields:
@@ -2977,6 +3117,7 @@ object_types:
           underlying_type:
             type: named
             name: Float
+    foreign_keys: {}
   Customer_stddev_order_by:
     description: "order by stddev() on columns of table \"Customer\""
     fields:
@@ -2992,6 +3133,7 @@ object_types:
           underlying_type:
             type: named
             name: order_by
+    foreign_keys: {}
   Customer_stddev_pop_fields:
     description: aggregate stddev_pop on columns
     fields:
@@ -3007,6 +3149,7 @@ object_types:
           underlying_type:
             type: named
             name: Float
+    foreign_keys: {}
   Customer_stddev_pop_order_by:
     description: "order by stddev_pop() on columns of table \"Customer\""
     fields:
@@ -3022,6 +3165,7 @@ object_types:
           underlying_type:
             type: named
             name: order_by
+    foreign_keys: {}
   Customer_stddev_samp_fields:
     description: aggregate stddev_samp on columns
     fields:
@@ -3037,6 +3181,7 @@ object_types:
           underlying_type:
             type: named
             name: Float
+    foreign_keys: {}
   Customer_stddev_samp_order_by:
     description: "order by stddev_samp() on columns of table \"Customer\""
     fields:
@@ -3052,6 +3197,7 @@ object_types:
           underlying_type:
             type: named
             name: order_by
+    foreign_keys: {}
   Customer_stream_cursor_input:
     description: "Streaming cursor of the table \"Customer\""
     fields:
@@ -3067,6 +3213,7 @@ object_types:
           underlying_type:
             type: named
             name: cursor_ordering
+    foreign_keys: {}
   Customer_stream_cursor_value_input:
     description: Initial value of the column from where the streaming should start
     fields:
@@ -3148,6 +3295,7 @@ object_types:
           underlying_type:
             type: named
             name: Int
+    foreign_keys: {}
   Customer_sum_fields:
     description: aggregate sum on columns
     fields:
@@ -3163,6 +3311,7 @@ object_types:
           underlying_type:
             type: named
             name: Int
+    foreign_keys: {}
   Customer_sum_order_by:
     description: "order by sum() on columns of table \"Customer\""
     fields:
@@ -3178,6 +3327,7 @@ object_types:
           underlying_type:
             type: named
             name: order_by
+    foreign_keys: {}
   Customer_updates:
     fields:
       _inc:
@@ -3199,6 +3349,7 @@ object_types:
         type:
           type: named
           name: Customer_bool_exp
+    foreign_keys: {}
   Customer_var_pop_fields:
     description: aggregate var_pop on columns
     fields:
@@ -3214,6 +3365,7 @@ object_types:
           underlying_type:
             type: named
             name: Float
+    foreign_keys: {}
   Customer_var_pop_order_by:
     description: "order by var_pop() on columns of table \"Customer\""
     fields:
@@ -3229,6 +3381,7 @@ object_types:
           underlying_type:
             type: named
             name: order_by
+    foreign_keys: {}
   Customer_var_samp_fields:
     description: aggregate var_samp on columns
     fields:
@@ -3244,6 +3397,7 @@ object_types:
           underlying_type:
             type: named
             name: Float
+    foreign_keys: {}
   Customer_var_samp_order_by:
     description: "order by var_samp() on columns of table \"Customer\""
     fields:
@@ -3259,6 +3413,7 @@ object_types:
           underlying_type:
             type: named
             name: order_by
+    foreign_keys: {}
   Customer_variance_fields:
     description: aggregate variance on columns
     fields:
@@ -3274,6 +3429,7 @@ object_types:
           underlying_type:
             type: named
             name: Float
+    foreign_keys: {}
   Customer_variance_order_by:
     description: "order by variance() on columns of table \"Customer\""
     fields:
@@ -3289,6 +3445,7 @@ object_types:
           underlying_type:
             type: named
             name: order_by
+    foreign_keys: {}
   Employee:
     description: "columns and relationships of \"Employee\""
     fields:
@@ -3567,6 +3724,7 @@ object_types:
           underlying_type:
             type: named
             name: String
+    foreign_keys: {}
   Employee_aggregate:
     description: "aggregated selection of \"Employee\""
     fields:
@@ -3582,6 +3740,7 @@ object_types:
           element_type:
             type: named
             name: Employee
+    foreign_keys: {}
   Employee_aggregate_bool_exp:
     fields:
       count:
@@ -3590,6 +3749,7 @@ object_types:
           underlying_type:
             type: named
             name: Employee_aggregate_bool_exp_count
+    foreign_keys: {}
   Employee_aggregate_bool_exp_count:
     fields:
       arguments:
@@ -3616,6 +3776,7 @@ object_types:
         type:
           type: named
           name: Int_comparison_exp
+    foreign_keys: {}
   Employee_aggregate_fields:
     description: "aggregate fields of \"Employee\""
     fields:
@@ -3698,6 +3859,7 @@ object_types:
           underlying_type:
             type: named
             name: Employee_variance_fields
+    foreign_keys: {}
   Employee_aggregate_order_by:
     description: "order by aggregate values of table \"Employee\""
     fields:
@@ -3767,6 +3929,7 @@ object_types:
           underlying_type:
             type: named
             name: Employee_variance_order_by
+    foreign_keys: {}
   Employee_arr_rel_insert_input:
     description: "input type for inserting array relation for remote table \"Employee\""
     fields:
@@ -3783,6 +3946,7 @@ object_types:
           underlying_type:
             type: named
             name: Employee_on_conflict
+    foreign_keys: {}
   Employee_avg_fields:
     description: aggregate avg on columns
     fields:
@@ -3798,6 +3962,7 @@ object_types:
           underlying_type:
             type: named
             name: Float
+    foreign_keys: {}
   Employee_avg_order_by:
     description: "order by avg() on columns of table \"Employee\""
     fields:
@@ -3813,6 +3978,7 @@ object_types:
           underlying_type:
             type: named
             name: order_by
+    foreign_keys: {}
   Employee_bool_exp:
     description: "Boolean expression to filter rows from the table \"Employee\". All fields are combined with a logical 'AND'."
     fields:
@@ -3958,6 +4124,7 @@ object_types:
             element_type:
               type: named
               name: Employee_bool_exp
+    foreign_keys: {}
   Employee_inc_input:
     description: "input type for incrementing numeric columns in table \"Employee\""
     fields:
@@ -3967,6 +4134,7 @@ object_types:
           underlying_type:
             type: named
             name: Int
+    foreign_keys: {}
   Employee_insert_input:
     description: "input type for inserting data into table \"Employee\""
     fields:
@@ -4072,6 +4240,7 @@ object_types:
           underlying_type:
             type: named
             name: String
+    foreign_keys: {}
   Employee_max_fields:
     description: aggregate max on columns
     fields:
@@ -4165,6 +4334,7 @@ object_types:
           underlying_type:
             type: named
             name: String
+    foreign_keys: {}
   Employee_max_order_by:
     description: "order by max() on columns of table \"Employee\""
     fields:
@@ -4258,6 +4428,7 @@ object_types:
           underlying_type:
             type: named
             name: order_by
+    foreign_keys: {}
   Employee_min_fields:
     description: aggregate min on columns
     fields:
@@ -4351,6 +4522,7 @@ object_types:
           underlying_type:
             type: named
             name: String
+    foreign_keys: {}
   Employee_min_order_by:
     description: "order by min() on columns of table \"Employee\""
     fields:
@@ -4444,6 +4616,7 @@ object_types:
           underlying_type:
             type: named
             name: order_by
+    foreign_keys: {}
   Employee_mutation_response:
     description: "response of any mutation on the table \"Employee\""
     fields:
@@ -4459,6 +4632,7 @@ object_types:
           element_type:
             type: named
             name: Employee
+    foreign_keys: {}
   Employee_obj_rel_insert_input:
     description: "input type for inserting object relation for remote table \"Employee\""
     fields:
@@ -4473,6 +4647,7 @@ object_types:
           underlying_type:
             type: named
             name: Employee_on_conflict
+    foreign_keys: {}
   Employee_on_conflict:
     description: "on_conflict condition type for table \"Employee\""
     fields:
@@ -4492,6 +4667,7 @@ object_types:
           underlying_type:
             type: named
             name: Employee_bool_exp
+    foreign_keys: {}
   Employee_order_by:
     description: "Ordering options when selecting data from \"Employee\"."
     fields:
@@ -4603,6 +4779,7 @@ object_types:
           underlying_type:
             type: named
             name: order_by
+    foreign_keys: {}
   Employee_pk_columns_input:
     description: "primary key columns input for table: Employee"
     fields:
@@ -4610,6 +4787,7 @@ object_types:
         type:
           type: named
           name: Int
+    foreign_keys: {}
   Employee_set_input:
     description: "input type for updating data in table \"Employee\""
     fields:
@@ -4697,6 +4875,7 @@ object_types:
           underlying_type:
             type: named
             name: String
+    foreign_keys: {}
   Employee_stddev_fields:
     description: aggregate stddev on columns
     fields:
@@ -4712,6 +4891,7 @@ object_types:
           underlying_type:
             type: named
             name: Float
+    foreign_keys: {}
   Employee_stddev_order_by:
     description: "order by stddev() on columns of table \"Employee\""
     fields:
@@ -4727,6 +4907,7 @@ object_types:
           underlying_type:
             type: named
             name: order_by
+    foreign_keys: {}
   Employee_stddev_pop_fields:
     description: aggregate stddev_pop on columns
     fields:
@@ -4742,6 +4923,7 @@ object_types:
           underlying_type:
             type: named
             name: Float
+    foreign_keys: {}
   Employee_stddev_pop_order_by:
     description: "order by stddev_pop() on columns of table \"Employee\""
     fields:
@@ -4757,6 +4939,7 @@ object_types:
           underlying_type:
             type: named
             name: order_by
+    foreign_keys: {}
   Employee_stddev_samp_fields:
     description: aggregate stddev_samp on columns
     fields:
@@ -4772,6 +4955,7 @@ object_types:
           underlying_type:
             type: named
             name: Float
+    foreign_keys: {}
   Employee_stddev_samp_order_by:
     description: "order by stddev_samp() on columns of table \"Employee\""
     fields:
@@ -4787,6 +4971,7 @@ object_types:
           underlying_type:
             type: named
             name: order_by
+    foreign_keys: {}
   Employee_stream_cursor_input:
     description: "Streaming cursor of the table \"Employee\""
     fields:
@@ -4802,6 +4987,7 @@ object_types:
           underlying_type:
             type: named
             name: cursor_ordering
+    foreign_keys: {}
   Employee_stream_cursor_value_input:
     description: Initial value of the column from where the streaming should start
     fields:
@@ -4895,6 +5081,7 @@ object_types:
           underlying_type:
             type: named
             name: String
+    foreign_keys: {}
   Employee_sum_fields:
     description: aggregate sum on columns
     fields:
@@ -4910,6 +5097,7 @@ object_types:
           underlying_type:
             type: named
             name: Int
+    foreign_keys: {}
   Employee_sum_order_by:
     description: "order by sum() on columns of table \"Employee\""
     fields:
@@ -4925,6 +5113,7 @@ object_types:
           underlying_type:
             type: named
             name: order_by
+    foreign_keys: {}
   Employee_updates:
     fields:
       _inc:
@@ -4946,6 +5135,7 @@ object_types:
         type:
           type: named
           name: Employee_bool_exp
+    foreign_keys: {}
   Employee_var_pop_fields:
     description: aggregate var_pop on columns
     fields:
@@ -4961,6 +5151,7 @@ object_types:
           underlying_type:
             type: named
             name: Float
+    foreign_keys: {}
   Employee_var_pop_order_by:
     description: "order by var_pop() on columns of table \"Employee\""
     fields:
@@ -4976,6 +5167,7 @@ object_types:
           underlying_type:
             type: named
             name: order_by
+    foreign_keys: {}
   Employee_var_samp_fields:
     description: aggregate var_samp on columns
     fields:
@@ -4991,6 +5183,7 @@ object_types:
           underlying_type:
             type: named
             name: Float
+    foreign_keys: {}
   Employee_var_samp_order_by:
     description: "order by var_samp() on columns of table \"Employee\""
     fields:
@@ -5006,6 +5199,7 @@ object_types:
           underlying_type:
             type: named
             name: order_by
+    foreign_keys: {}
   Employee_variance_fields:
     description: aggregate variance on columns
     fields:
@@ -5021,6 +5215,7 @@ object_types:
           underlying_type:
             type: named
             name: Float
+    foreign_keys: {}
   Employee_variance_order_by:
     description: "order by variance() on columns of table \"Employee\""
     fields:
@@ -5036,6 +5231,7 @@ object_types:
           underlying_type:
             type: named
             name: order_by
+    foreign_keys: {}
   Genre:
     description: "columns and relationships of \"Genre\""
     fields:
@@ -5141,6 +5337,7 @@ object_types:
               underlying_type:
                 type: named
                 name: Track_bool_exp
+    foreign_keys: {}
   Genre_aggregate:
     description: "aggregated selection of \"Genre\""
     fields:
@@ -5156,6 +5353,7 @@ object_types:
           element_type:
             type: named
             name: Genre
+    foreign_keys: {}
   Genre_aggregate_fields:
     description: "aggregate fields of \"Genre\""
     fields:
@@ -5238,6 +5436,7 @@ object_types:
           underlying_type:
             type: named
             name: Genre_variance_fields
+    foreign_keys: {}
   Genre_avg_fields:
     description: aggregate avg on columns
     fields:
@@ -5247,6 +5446,7 @@ object_types:
           underlying_type:
             type: named
             name: Float
+    foreign_keys: {}
   Genre_bool_exp:
     description: "Boolean expression to filter rows from the table \"Genre\". All fields are combined with a logical 'AND'."
     fields:
@@ -5296,6 +5496,7 @@ object_types:
             element_type:
               type: named
               name: Genre_bool_exp
+    foreign_keys: {}
   Genre_insert_input:
     description: "input type for inserting data into table \"Genre\""
     fields:
@@ -5311,6 +5512,7 @@ object_types:
           underlying_type:
             type: named
             name: Track_arr_rel_insert_input
+    foreign_keys: {}
   Genre_max_fields:
     description: aggregate max on columns
     fields:
@@ -5326,6 +5528,7 @@ object_types:
           underlying_type:
             type: named
             name: String
+    foreign_keys: {}
   Genre_min_fields:
     description: aggregate min on columns
     fields:
@@ -5341,6 +5544,7 @@ object_types:
           underlying_type:
             type: named
             name: String
+    foreign_keys: {}
   Genre_mutation_response:
     description: "response of any mutation on the table \"Genre\""
     fields:
@@ -5356,6 +5560,7 @@ object_types:
           element_type:
             type: named
             name: Genre
+    foreign_keys: {}
   Genre_obj_rel_insert_input:
     description: "input type for inserting object relation for remote table \"Genre\""
     fields:
@@ -5370,6 +5575,7 @@ object_types:
           underlying_type:
             type: named
             name: Genre_on_conflict
+    foreign_keys: {}
   Genre_on_conflict:
     description: "on_conflict condition type for table \"Genre\""
     fields:
@@ -5389,6 +5595,7 @@ object_types:
           underlying_type:
             type: named
             name: Genre_bool_exp
+    foreign_keys: {}
   Genre_order_by:
     description: "Ordering options when selecting data from \"Genre\"."
     fields:
@@ -5410,6 +5617,7 @@ object_types:
           underlying_type:
             type: named
             name: Track_aggregate_order_by
+    foreign_keys: {}
   Genre_pk_columns_input:
     description: "primary key columns input for table: Genre"
     fields:
@@ -5417,6 +5625,7 @@ object_types:
         type:
           type: named
           name: Int
+    foreign_keys: {}
   Genre_set_input:
     description: "input type for updating data in table \"Genre\""
     fields:
@@ -5426,6 +5635,7 @@ object_types:
           underlying_type:
             type: named
             name: String
+    foreign_keys: {}
   Genre_stddev_fields:
     description: aggregate stddev on columns
     fields:
@@ -5435,6 +5645,7 @@ object_types:
           underlying_type:
             type: named
             name: Float
+    foreign_keys: {}
   Genre_stddev_pop_fields:
     description: aggregate stddev_pop on columns
     fields:
@@ -5444,6 +5655,7 @@ object_types:
           underlying_type:
             type: named
             name: Float
+    foreign_keys: {}
   Genre_stddev_samp_fields:
     description: aggregate stddev_samp on columns
     fields:
@@ -5453,6 +5665,7 @@ object_types:
           underlying_type:
             type: named
             name: Float
+    foreign_keys: {}
   Genre_stream_cursor_input:
     description: "Streaming cursor of the table \"Genre\""
     fields:
@@ -5468,6 +5681,7 @@ object_types:
           underlying_type:
             type: named
             name: cursor_ordering
+    foreign_keys: {}
   Genre_stream_cursor_value_input:
     description: Initial value of the column from where the streaming should start
     fields:
@@ -5483,6 +5697,7 @@ object_types:
           underlying_type:
             type: named
             name: String
+    foreign_keys: {}
   Genre_sum_fields:
     description: aggregate sum on columns
     fields:
@@ -5492,6 +5707,7 @@ object_types:
           underlying_type:
             type: named
             name: Int
+    foreign_keys: {}
   Genre_updates:
     fields:
       _set:
@@ -5506,6 +5722,7 @@ object_types:
         type:
           type: named
           name: Genre_bool_exp
+    foreign_keys: {}
   Genre_var_pop_fields:
     description: aggregate var_pop on columns
     fields:
@@ -5515,6 +5732,7 @@ object_types:
           underlying_type:
             type: named
             name: Float
+    foreign_keys: {}
   Genre_var_samp_fields:
     description: aggregate var_samp on columns
     fields:
@@ -5524,6 +5742,7 @@ object_types:
           underlying_type:
             type: named
             name: Float
+    foreign_keys: {}
   Genre_variance_fields:
     description: aggregate variance on columns
     fields:
@@ -5533,6 +5752,7 @@ object_types:
           underlying_type:
             type: named
             name: Float
+    foreign_keys: {}
   Int_comparison_exp:
     description: "Boolean expression to compare columns of type \"Int\". All fields are combined with logical 'AND'."
     fields:
@@ -5594,6 +5814,7 @@ object_types:
             element_type:
               type: named
               name: Int
+    foreign_keys: {}
   Invoice:
     description: "columns and relationships of \"Invoice\""
     fields:
@@ -5740,6 +5961,7 @@ object_types:
         type:
           type: named
           name: numeric
+    foreign_keys: {}
   InvoiceLine:
     description: "columns and relationships of \"InvoiceLine\""
     fields:
@@ -5773,6 +5995,7 @@ object_types:
         type:
           type: named
           name: numeric
+    foreign_keys: {}
   InvoiceLine_aggregate:
     description: "aggregated selection of \"InvoiceLine\""
     fields:
@@ -5788,6 +6011,7 @@ object_types:
           element_type:
             type: named
             name: InvoiceLine
+    foreign_keys: {}
   InvoiceLine_aggregate_bool_exp:
     fields:
       count:
@@ -5796,6 +6020,7 @@ object_types:
           underlying_type:
             type: named
             name: InvoiceLine_aggregate_bool_exp_count
+    foreign_keys: {}
   InvoiceLine_aggregate_bool_exp_count:
     fields:
       arguments:
@@ -5822,6 +6047,7 @@ object_types:
         type:
           type: named
           name: Int_comparison_exp
+    foreign_keys: {}
   InvoiceLine_aggregate_fields:
     description: "aggregate fields of \"InvoiceLine\""
     fields:
@@ -5904,6 +6130,7 @@ object_types:
           underlying_type:
             type: named
             name: InvoiceLine_variance_fields
+    foreign_keys: {}
   InvoiceLine_aggregate_order_by:
     description: "order by aggregate values of table \"InvoiceLine\""
     fields:
@@ -5973,6 +6200,7 @@ object_types:
           underlying_type:
             type: named
             name: InvoiceLine_variance_order_by
+    foreign_keys: {}
   InvoiceLine_arr_rel_insert_input:
     description: "input type for inserting array relation for remote table \"InvoiceLine\""
     fields:
@@ -5989,6 +6217,7 @@ object_types:
           underlying_type:
             type: named
             name: InvoiceLine_on_conflict
+    foreign_keys: {}
   InvoiceLine_avg_fields:
     description: aggregate avg on columns
     fields:
@@ -6022,6 +6251,7 @@ object_types:
           underlying_type:
             type: named
             name: Float
+    foreign_keys: {}
   InvoiceLine_avg_order_by:
     description: "order by avg() on columns of table \"InvoiceLine\""
     fields:
@@ -6055,6 +6285,7 @@ object_types:
           underlying_type:
             type: named
             name: order_by
+    foreign_keys: {}
   InvoiceLine_bool_exp:
     description: "Boolean expression to filter rows from the table \"InvoiceLine\". All fields are combined with a logical 'AND'."
     fields:
@@ -6122,6 +6353,7 @@ object_types:
             element_type:
               type: named
               name: InvoiceLine_bool_exp
+    foreign_keys: {}
   InvoiceLine_inc_input:
     description: "input type for incrementing numeric columns in table \"InvoiceLine\""
     fields:
@@ -6149,6 +6381,7 @@ object_types:
           underlying_type:
             type: named
             name: numeric
+    foreign_keys: {}
   InvoiceLine_insert_input:
     description: "input type for inserting data into table \"InvoiceLine\""
     fields:
@@ -6188,6 +6421,7 @@ object_types:
           underlying_type:
             type: named
             name: numeric
+    foreign_keys: {}
   InvoiceLine_max_fields:
     description: aggregate max on columns
     fields:
@@ -6221,6 +6455,7 @@ object_types:
           underlying_type:
             type: named
             name: numeric
+    foreign_keys: {}
   InvoiceLine_max_order_by:
     description: "order by max() on columns of table \"InvoiceLine\""
     fields:
@@ -6254,6 +6489,7 @@ object_types:
           underlying_type:
             type: named
             name: order_by
+    foreign_keys: {}
   InvoiceLine_min_fields:
     description: aggregate min on columns
     fields:
@@ -6287,6 +6523,7 @@ object_types:
           underlying_type:
             type: named
             name: numeric
+    foreign_keys: {}
   InvoiceLine_min_order_by:
     description: "order by min() on columns of table \"InvoiceLine\""
     fields:
@@ -6320,6 +6557,7 @@ object_types:
           underlying_type:
             type: named
             name: order_by
+    foreign_keys: {}
   InvoiceLine_mutation_response:
     description: "response of any mutation on the table \"InvoiceLine\""
     fields:
@@ -6335,6 +6573,7 @@ object_types:
           element_type:
             type: named
             name: InvoiceLine
+    foreign_keys: {}
   InvoiceLine_on_conflict:
     description: "on_conflict condition type for table \"InvoiceLine\""
     fields:
@@ -6354,6 +6593,7 @@ object_types:
           underlying_type:
             type: named
             name: InvoiceLine_bool_exp
+    foreign_keys: {}
   InvoiceLine_order_by:
     description: "Ordering options when selecting data from \"InvoiceLine\"."
     fields:
@@ -6399,6 +6639,7 @@ object_types:
           underlying_type:
             type: named
             name: order_by
+    foreign_keys: {}
   InvoiceLine_pk_columns_input:
     description: "primary key columns input for table: InvoiceLine"
     fields:
@@ -6406,6 +6647,7 @@ object_types:
         type:
           type: named
           name: Int
+    foreign_keys: {}
   InvoiceLine_set_input:
     description: "input type for updating data in table \"InvoiceLine\""
     fields:
@@ -6433,6 +6675,7 @@ object_types:
           underlying_type:
             type: named
             name: numeric
+    foreign_keys: {}
   InvoiceLine_stddev_fields:
     description: aggregate stddev on columns
     fields:
@@ -6466,6 +6709,7 @@ object_types:
           underlying_type:
             type: named
             name: Float
+    foreign_keys: {}
   InvoiceLine_stddev_order_by:
     description: "order by stddev() on columns of table \"InvoiceLine\""
     fields:
@@ -6499,6 +6743,7 @@ object_types:
           underlying_type:
             type: named
             name: order_by
+    foreign_keys: {}
   InvoiceLine_stddev_pop_fields:
     description: aggregate stddev_pop on columns
     fields:
@@ -6532,6 +6777,7 @@ object_types:
           underlying_type:
             type: named
             name: Float
+    foreign_keys: {}
   InvoiceLine_stddev_pop_order_by:
     description: "order by stddev_pop() on columns of table \"InvoiceLine\""
     fields:
@@ -6565,6 +6811,7 @@ object_types:
           underlying_type:
             type: named
             name: order_by
+    foreign_keys: {}
   InvoiceLine_stddev_samp_fields:
     description: aggregate stddev_samp on columns
     fields:
@@ -6598,6 +6845,7 @@ object_types:
           underlying_type:
             type: named
             name: Float
+    foreign_keys: {}
   InvoiceLine_stddev_samp_order_by:
     description: "order by stddev_samp() on columns of table \"InvoiceLine\""
     fields:
@@ -6631,6 +6879,7 @@ object_types:
           underlying_type:
             type: named
             name: order_by
+    foreign_keys: {}
   InvoiceLine_stream_cursor_input:
     description: "Streaming cursor of the table \"InvoiceLine\""
     fields:
@@ -6646,6 +6895,7 @@ object_types:
           underlying_type:
             type: named
             name: cursor_ordering
+    foreign_keys: {}
   InvoiceLine_stream_cursor_value_input:
     description: Initial value of the column from where the streaming should start
     fields:
@@ -6679,6 +6929,7 @@ object_types:
           underlying_type:
             type: named
             name: numeric
+    foreign_keys: {}
   InvoiceLine_sum_fields:
     description: aggregate sum on columns
     fields:
@@ -6712,6 +6963,7 @@ object_types:
           underlying_type:
             type: named
             name: numeric
+    foreign_keys: {}
   InvoiceLine_sum_order_by:
     description: "order by sum() on columns of table \"InvoiceLine\""
     fields:
@@ -6745,6 +6997,7 @@ object_types:
           underlying_type:
             type: named
             name: order_by
+    foreign_keys: {}
   InvoiceLine_updates:
     fields:
       _inc:
@@ -6766,6 +7019,7 @@ object_types:
         type:
           type: named
           name: InvoiceLine_bool_exp
+    foreign_keys: {}
   InvoiceLine_var_pop_fields:
     description: aggregate var_pop on columns
     fields:
@@ -6799,6 +7053,7 @@ object_types:
           underlying_type:
             type: named
             name: Float
+    foreign_keys: {}
   InvoiceLine_var_pop_order_by:
     description: "order by var_pop() on columns of table \"InvoiceLine\""
     fields:
@@ -6832,6 +7087,7 @@ object_types:
           underlying_type:
             type: named
             name: order_by
+    foreign_keys: {}
   InvoiceLine_var_samp_fields:
     description: aggregate var_samp on columns
     fields:
@@ -6865,6 +7121,7 @@ object_types:
           underlying_type:
             type: named
             name: Float
+    foreign_keys: {}
   InvoiceLine_var_samp_order_by:
     description: "order by var_samp() on columns of table \"InvoiceLine\""
     fields:
@@ -6898,6 +7155,7 @@ object_types:
           underlying_type:
             type: named
             name: order_by
+    foreign_keys: {}
   InvoiceLine_variance_fields:
     description: aggregate variance on columns
     fields:
@@ -6931,6 +7189,7 @@ object_types:
           underlying_type:
             type: named
             name: Float
+    foreign_keys: {}
   InvoiceLine_variance_order_by:
     description: "order by variance() on columns of table \"InvoiceLine\""
     fields:
@@ -6964,6 +7223,7 @@ object_types:
           underlying_type:
             type: named
             name: order_by
+    foreign_keys: {}
   Invoice_aggregate:
     description: "aggregated selection of \"Invoice\""
     fields:
@@ -6979,6 +7239,7 @@ object_types:
           element_type:
             type: named
             name: Invoice
+    foreign_keys: {}
   Invoice_aggregate_bool_exp:
     fields:
       count:
@@ -6987,6 +7248,7 @@ object_types:
           underlying_type:
             type: named
             name: Invoice_aggregate_bool_exp_count
+    foreign_keys: {}
   Invoice_aggregate_bool_exp_count:
     fields:
       arguments:
@@ -7013,6 +7275,7 @@ object_types:
         type:
           type: named
           name: Int_comparison_exp
+    foreign_keys: {}
   Invoice_aggregate_fields:
     description: "aggregate fields of \"Invoice\""
     fields:
@@ -7095,6 +7358,7 @@ object_types:
           underlying_type:
             type: named
             name: Invoice_variance_fields
+    foreign_keys: {}
   Invoice_aggregate_order_by:
     description: "order by aggregate values of table \"Invoice\""
     fields:
@@ -7164,6 +7428,7 @@ object_types:
           underlying_type:
             type: named
             name: Invoice_variance_order_by
+    foreign_keys: {}
   Invoice_arr_rel_insert_input:
     description: "input type for inserting array relation for remote table \"Invoice\""
     fields:
@@ -7180,6 +7445,7 @@ object_types:
           underlying_type:
             type: named
             name: Invoice_on_conflict
+    foreign_keys: {}
   Invoice_avg_fields:
     description: aggregate avg on columns
     fields:
@@ -7201,6 +7467,7 @@ object_types:
           underlying_type:
             type: named
             name: Float
+    foreign_keys: {}
   Invoice_avg_order_by:
     description: "order by avg() on columns of table \"Invoice\""
     fields:
@@ -7222,6 +7489,7 @@ object_types:
           underlying_type:
             type: named
             name: order_by
+    foreign_keys: {}
   Invoice_bool_exp:
     description: "Boolean expression to filter rows from the table \"Invoice\". All fields are combined with a logical 'AND'."
     fields:
@@ -7319,6 +7587,7 @@ object_types:
             element_type:
               type: named
               name: Invoice_bool_exp
+    foreign_keys: {}
   Invoice_inc_input:
     description: "input type for incrementing numeric columns in table \"Invoice\""
     fields:
@@ -7334,6 +7603,7 @@ object_types:
           underlying_type:
             type: named
             name: numeric
+    foreign_keys: {}
   Invoice_insert_input:
     description: "input type for inserting data into table \"Invoice\""
     fields:
@@ -7397,6 +7667,7 @@ object_types:
           underlying_type:
             type: named
             name: numeric
+    foreign_keys: {}
   Invoice_max_fields:
     description: aggregate max on columns
     fields:
@@ -7454,6 +7725,7 @@ object_types:
           underlying_type:
             type: named
             name: numeric
+    foreign_keys: {}
   Invoice_max_order_by:
     description: "order by max() on columns of table \"Invoice\""
     fields:
@@ -7511,6 +7783,7 @@ object_types:
           underlying_type:
             type: named
             name: order_by
+    foreign_keys: {}
   Invoice_min_fields:
     description: aggregate min on columns
     fields:
@@ -7568,6 +7841,7 @@ object_types:
           underlying_type:
             type: named
             name: numeric
+    foreign_keys: {}
   Invoice_min_order_by:
     description: "order by min() on columns of table \"Invoice\""
     fields:
@@ -7625,6 +7899,7 @@ object_types:
           underlying_type:
             type: named
             name: order_by
+    foreign_keys: {}
   Invoice_mutation_response:
     description: "response of any mutation on the table \"Invoice\""
     fields:
@@ -7640,6 +7915,7 @@ object_types:
           element_type:
             type: named
             name: Invoice
+    foreign_keys: {}
   Invoice_obj_rel_insert_input:
     description: "input type for inserting object relation for remote table \"Invoice\""
     fields:
@@ -7654,6 +7930,7 @@ object_types:
           underlying_type:
             type: named
             name: Invoice_on_conflict
+    foreign_keys: {}
   Invoice_on_conflict:
     description: "on_conflict condition type for table \"Invoice\""
     fields:
@@ -7673,6 +7950,7 @@ object_types:
           underlying_type:
             type: named
             name: Invoice_bool_exp
+    foreign_keys: {}
   Invoice_order_by:
     description: "Ordering options when selecting data from \"Invoice\"."
     fields:
@@ -7742,6 +8020,7 @@ object_types:
           underlying_type:
             type: named
             name: order_by
+    foreign_keys: {}
   Invoice_pk_columns_input:
     description: "primary key columns input for table: Invoice"
     fields:
@@ -7749,6 +8028,7 @@ object_types:
         type:
           type: named
           name: Int
+    foreign_keys: {}
   Invoice_set_input:
     description: "input type for updating data in table \"Invoice\""
     fields:
@@ -7800,6 +8080,7 @@ object_types:
           underlying_type:
             type: named
             name: numeric
+    foreign_keys: {}
   Invoice_stddev_fields:
     description: aggregate stddev on columns
     fields:
@@ -7821,6 +8102,7 @@ object_types:
           underlying_type:
             type: named
             name: Float
+    foreign_keys: {}
   Invoice_stddev_order_by:
     description: "order by stddev() on columns of table \"Invoice\""
     fields:
@@ -7842,6 +8124,7 @@ object_types:
           underlying_type:
             type: named
             name: order_by
+    foreign_keys: {}
   Invoice_stddev_pop_fields:
     description: aggregate stddev_pop on columns
     fields:
@@ -7863,6 +8146,7 @@ object_types:
           underlying_type:
             type: named
             name: Float
+    foreign_keys: {}
   Invoice_stddev_pop_order_by:
     description: "order by stddev_pop() on columns of table \"Invoice\""
     fields:
@@ -7884,6 +8168,7 @@ object_types:
           underlying_type:
             type: named
             name: order_by
+    foreign_keys: {}
   Invoice_stddev_samp_fields:
     description: aggregate stddev_samp on columns
     fields:
@@ -7905,6 +8190,7 @@ object_types:
           underlying_type:
             type: named
             name: Float
+    foreign_keys: {}
   Invoice_stddev_samp_order_by:
     description: "order by stddev_samp() on columns of table \"Invoice\""
     fields:
@@ -7926,6 +8212,7 @@ object_types:
           underlying_type:
             type: named
             name: order_by
+    foreign_keys: {}
   Invoice_stream_cursor_input:
     description: "Streaming cursor of the table \"Invoice\""
     fields:
@@ -7941,6 +8228,7 @@ object_types:
           underlying_type:
             type: named
             name: cursor_ordering
+    foreign_keys: {}
   Invoice_stream_cursor_value_input:
     description: Initial value of the column from where the streaming should start
     fields:
@@ -7998,6 +8286,7 @@ object_types:
           underlying_type:
             type: named
             name: numeric
+    foreign_keys: {}
   Invoice_sum_fields:
     description: aggregate sum on columns
     fields:
@@ -8019,6 +8308,7 @@ object_types:
           underlying_type:
             type: named
             name: numeric
+    foreign_keys: {}
   Invoice_sum_order_by:
     description: "order by sum() on columns of table \"Invoice\""
     fields:
@@ -8040,6 +8330,7 @@ object_types:
           underlying_type:
             type: named
             name: order_by
+    foreign_keys: {}
   Invoice_updates:
     fields:
       _inc:
@@ -8061,6 +8352,7 @@ object_types:
         type:
           type: named
           name: Invoice_bool_exp
+    foreign_keys: {}
   Invoice_var_pop_fields:
     description: aggregate var_pop on columns
     fields:
@@ -8082,6 +8374,7 @@ object_types:
           underlying_type:
             type: named
             name: Float
+    foreign_keys: {}
   Invoice_var_pop_order_by:
     description: "order by var_pop() on columns of table \"Invoice\""
     fields:
@@ -8103,6 +8396,7 @@ object_types:
           underlying_type:
             type: named
             name: order_by
+    foreign_keys: {}
   Invoice_var_samp_fields:
     description: aggregate var_samp on columns
     fields:
@@ -8124,6 +8418,7 @@ object_types:
           underlying_type:
             type: named
             name: Float
+    foreign_keys: {}
   Invoice_var_samp_order_by:
     description: "order by var_samp() on columns of table \"Invoice\""
     fields:
@@ -8145,6 +8440,7 @@ object_types:
           underlying_type:
             type: named
             name: order_by
+    foreign_keys: {}
   Invoice_variance_fields:
     description: aggregate variance on columns
     fields:
@@ -8166,6 +8462,7 @@ object_types:
           underlying_type:
             type: named
             name: Float
+    foreign_keys: {}
   Invoice_variance_order_by:
     description: "order by variance() on columns of table \"Invoice\""
     fields:
@@ -8187,6 +8484,7 @@ object_types:
           underlying_type:
             type: named
             name: order_by
+    foreign_keys: {}
   MediaType:
     description: "columns and relationships of \"MediaType\""
     fields:
@@ -8292,6 +8590,7 @@ object_types:
               underlying_type:
                 type: named
                 name: Track_bool_exp
+    foreign_keys: {}
   MediaType_aggregate:
     description: "aggregated selection of \"MediaType\""
     fields:
@@ -8307,6 +8606,7 @@ object_types:
           element_type:
             type: named
             name: MediaType
+    foreign_keys: {}
   MediaType_aggregate_fields:
     description: "aggregate fields of \"MediaType\""
     fields:
@@ -8389,6 +8689,7 @@ object_types:
           underlying_type:
             type: named
             name: MediaType_variance_fields
+    foreign_keys: {}
   MediaType_avg_fields:
     description: aggregate avg on columns
     fields:
@@ -8398,6 +8699,7 @@ object_types:
           underlying_type:
             type: named
             name: Float
+    foreign_keys: {}
   MediaType_bool_exp:
     description: "Boolean expression to filter rows from the table \"MediaType\". All fields are combined with a logical 'AND'."
     fields:
@@ -8447,6 +8749,7 @@ object_types:
             element_type:
               type: named
               name: MediaType_bool_exp
+    foreign_keys: {}
   MediaType_insert_input:
     description: "input type for inserting data into table \"MediaType\""
     fields:
@@ -8462,6 +8765,7 @@ object_types:
           underlying_type:
             type: named
             name: Track_arr_rel_insert_input
+    foreign_keys: {}
   MediaType_max_fields:
     description: aggregate max on columns
     fields:
@@ -8477,6 +8781,7 @@ object_types:
           underlying_type:
             type: named
             name: String
+    foreign_keys: {}
   MediaType_min_fields:
     description: aggregate min on columns
     fields:
@@ -8492,6 +8797,7 @@ object_types:
           underlying_type:
             type: named
             name: String
+    foreign_keys: {}
   MediaType_mutation_response:
     description: "response of any mutation on the table \"MediaType\""
     fields:
@@ -8507,6 +8813,7 @@ object_types:
           element_type:
             type: named
             name: MediaType
+    foreign_keys: {}
   MediaType_obj_rel_insert_input:
     description: "input type for inserting object relation for remote table \"MediaType\""
     fields:
@@ -8521,6 +8828,7 @@ object_types:
           underlying_type:
             type: named
             name: MediaType_on_conflict
+    foreign_keys: {}
   MediaType_on_conflict:
     description: "on_conflict condition type for table \"MediaType\""
     fields:
@@ -8540,6 +8848,7 @@ object_types:
           underlying_type:
             type: named
             name: MediaType_bool_exp
+    foreign_keys: {}
   MediaType_order_by:
     description: "Ordering options when selecting data from \"MediaType\"."
     fields:
@@ -8561,6 +8870,7 @@ object_types:
           underlying_type:
             type: named
             name: Track_aggregate_order_by
+    foreign_keys: {}
   MediaType_pk_columns_input:
     description: "primary key columns input for table: MediaType"
     fields:
@@ -8568,6 +8878,7 @@ object_types:
         type:
           type: named
           name: Int
+    foreign_keys: {}
   MediaType_set_input:
     description: "input type for updating data in table \"MediaType\""
     fields:
@@ -8577,6 +8888,7 @@ object_types:
           underlying_type:
             type: named
             name: String
+    foreign_keys: {}
   MediaType_stddev_fields:
     description: aggregate stddev on columns
     fields:
@@ -8586,6 +8898,7 @@ object_types:
           underlying_type:
             type: named
             name: Float
+    foreign_keys: {}
   MediaType_stddev_pop_fields:
     description: aggregate stddev_pop on columns
     fields:
@@ -8595,6 +8908,7 @@ object_types:
           underlying_type:
             type: named
             name: Float
+    foreign_keys: {}
   MediaType_stddev_samp_fields:
     description: aggregate stddev_samp on columns
     fields:
@@ -8604,6 +8918,7 @@ object_types:
           underlying_type:
             type: named
             name: Float
+    foreign_keys: {}
   MediaType_stream_cursor_input:
     description: "Streaming cursor of the table \"MediaType\""
     fields:
@@ -8619,6 +8934,7 @@ object_types:
           underlying_type:
             type: named
             name: cursor_ordering
+    foreign_keys: {}
   MediaType_stream_cursor_value_input:
     description: Initial value of the column from where the streaming should start
     fields:
@@ -8634,6 +8950,7 @@ object_types:
           underlying_type:
             type: named
             name: String
+    foreign_keys: {}
   MediaType_sum_fields:
     description: aggregate sum on columns
     fields:
@@ -8643,6 +8960,7 @@ object_types:
           underlying_type:
             type: named
             name: Int
+    foreign_keys: {}
   MediaType_updates:
     fields:
       _set:
@@ -8657,6 +8975,7 @@ object_types:
         type:
           type: named
           name: MediaType_bool_exp
+    foreign_keys: {}
   MediaType_var_pop_fields:
     description: aggregate var_pop on columns
     fields:
@@ -8666,6 +8985,7 @@ object_types:
           underlying_type:
             type: named
             name: Float
+    foreign_keys: {}
   MediaType_var_samp_fields:
     description: aggregate var_samp on columns
     fields:
@@ -8675,6 +8995,7 @@ object_types:
           underlying_type:
             type: named
             name: Float
+    foreign_keys: {}
   MediaType_variance_fields:
     description: aggregate variance on columns
     fields:
@@ -8684,6 +9005,7 @@ object_types:
           underlying_type:
             type: named
             name: Float
+    foreign_keys: {}
   Playlist:
     description: "columns and relationships of \"Playlist\""
     fields:
@@ -8789,6 +9111,7 @@ object_types:
               underlying_type:
                 type: named
                 name: PlaylistTrack_bool_exp
+    foreign_keys: {}
   PlaylistTrack:
     description: "columns and relationships of \"PlaylistTrack\""
     fields:
@@ -8810,6 +9133,7 @@ object_types:
         type:
           type: named
           name: Int
+    foreign_keys: {}
   PlaylistTrack_aggregate:
     description: "aggregated selection of \"PlaylistTrack\""
     fields:
@@ -8825,6 +9149,7 @@ object_types:
           element_type:
             type: named
             name: PlaylistTrack
+    foreign_keys: {}
   PlaylistTrack_aggregate_bool_exp:
     fields:
       count:
@@ -8833,6 +9158,7 @@ object_types:
           underlying_type:
             type: named
             name: PlaylistTrack_aggregate_bool_exp_count
+    foreign_keys: {}
   PlaylistTrack_aggregate_bool_exp_count:
     fields:
       arguments:
@@ -8859,6 +9185,7 @@ object_types:
         type:
           type: named
           name: Int_comparison_exp
+    foreign_keys: {}
   PlaylistTrack_aggregate_fields:
     description: "aggregate fields of \"PlaylistTrack\""
     fields:
@@ -8941,6 +9268,7 @@ object_types:
           underlying_type:
             type: named
             name: PlaylistTrack_variance_fields
+    foreign_keys: {}
   PlaylistTrack_aggregate_order_by:
     description: "order by aggregate values of table \"PlaylistTrack\""
     fields:
@@ -9010,6 +9338,7 @@ object_types:
           underlying_type:
             type: named
             name: PlaylistTrack_variance_order_by
+    foreign_keys: {}
   PlaylistTrack_arr_rel_insert_input:
     description: "input type for inserting array relation for remote table \"PlaylistTrack\""
     fields:
@@ -9026,6 +9355,7 @@ object_types:
           underlying_type:
             type: named
             name: PlaylistTrack_on_conflict
+    foreign_keys: {}
   PlaylistTrack_avg_fields:
     description: aggregate avg on columns
     fields:
@@ -9041,6 +9371,7 @@ object_types:
           underlying_type:
             type: named
             name: Float
+    foreign_keys: {}
   PlaylistTrack_avg_order_by:
     description: "order by avg() on columns of table \"PlaylistTrack\""
     fields:
@@ -9056,6 +9387,7 @@ object_types:
           underlying_type:
             type: named
             name: order_by
+    foreign_keys: {}
   PlaylistTrack_bool_exp:
     description: "Boolean expression to filter rows from the table \"PlaylistTrack\". All fields are combined with a logical 'AND'."
     fields:
@@ -9105,6 +9437,7 @@ object_types:
             element_type:
               type: named
               name: PlaylistTrack_bool_exp
+    foreign_keys: {}
   PlaylistTrack_inc_input:
     description: "input type for incrementing numeric columns in table \"PlaylistTrack\""
     fields:
@@ -9120,6 +9453,7 @@ object_types:
           underlying_type:
             type: named
             name: Int
+    foreign_keys: {}
   PlaylistTrack_insert_input:
     description: "input type for inserting data into table \"PlaylistTrack\""
     fields:
@@ -9147,6 +9481,7 @@ object_types:
           underlying_type:
             type: named
             name: Int
+    foreign_keys: {}
   PlaylistTrack_max_fields:
     description: aggregate max on columns
     fields:
@@ -9162,6 +9497,7 @@ object_types:
           underlying_type:
             type: named
             name: Int
+    foreign_keys: {}
   PlaylistTrack_max_order_by:
     description: "order by max() on columns of table \"PlaylistTrack\""
     fields:
@@ -9177,6 +9513,7 @@ object_types:
           underlying_type:
             type: named
             name: order_by
+    foreign_keys: {}
   PlaylistTrack_min_fields:
     description: aggregate min on columns
     fields:
@@ -9192,6 +9529,7 @@ object_types:
           underlying_type:
             type: named
             name: Int
+    foreign_keys: {}
   PlaylistTrack_min_order_by:
     description: "order by min() on columns of table \"PlaylistTrack\""
     fields:
@@ -9207,6 +9545,7 @@ object_types:
           underlying_type:
             type: named
             name: order_by
+    foreign_keys: {}
   PlaylistTrack_mutation_response:
     description: "response of any mutation on the table \"PlaylistTrack\""
     fields:
@@ -9222,6 +9561,7 @@ object_types:
           element_type:
             type: named
             name: PlaylistTrack
+    foreign_keys: {}
   PlaylistTrack_on_conflict:
     description: "on_conflict condition type for table \"PlaylistTrack\""
     fields:
@@ -9241,6 +9581,7 @@ object_types:
           underlying_type:
             type: named
             name: PlaylistTrack_bool_exp
+    foreign_keys: {}
   PlaylistTrack_order_by:
     description: "Ordering options when selecting data from \"PlaylistTrack\"."
     fields:
@@ -9268,6 +9609,7 @@ object_types:
           underlying_type:
             type: named
             name: order_by
+    foreign_keys: {}
   PlaylistTrack_pk_columns_input:
     description: "primary key columns input for table: PlaylistTrack"
     fields:
@@ -9279,6 +9621,7 @@ object_types:
         type:
           type: named
           name: Int
+    foreign_keys: {}
   PlaylistTrack_set_input:
     description: "input type for updating data in table \"PlaylistTrack\""
     fields:
@@ -9294,6 +9637,7 @@ object_types:
           underlying_type:
             type: named
             name: Int
+    foreign_keys: {}
   PlaylistTrack_stddev_fields:
     description: aggregate stddev on columns
     fields:
@@ -9309,6 +9653,7 @@ object_types:
           underlying_type:
             type: named
             name: Float
+    foreign_keys: {}
   PlaylistTrack_stddev_order_by:
     description: "order by stddev() on columns of table \"PlaylistTrack\""
     fields:
@@ -9324,6 +9669,7 @@ object_types:
           underlying_type:
             type: named
             name: order_by
+    foreign_keys: {}
   PlaylistTrack_stddev_pop_fields:
     description: aggregate stddev_pop on columns
     fields:
@@ -9339,6 +9685,7 @@ object_types:
           underlying_type:
             type: named
             name: Float
+    foreign_keys: {}
   PlaylistTrack_stddev_pop_order_by:
     description: "order by stddev_pop() on columns of table \"PlaylistTrack\""
     fields:
@@ -9354,6 +9701,7 @@ object_types:
           underlying_type:
             type: named
             name: order_by
+    foreign_keys: {}
   PlaylistTrack_stddev_samp_fields:
     description: aggregate stddev_samp on columns
     fields:
@@ -9369,6 +9717,7 @@ object_types:
           underlying_type:
             type: named
             name: Float
+    foreign_keys: {}
   PlaylistTrack_stddev_samp_order_by:
     description: "order by stddev_samp() on columns of table \"PlaylistTrack\""
     fields:
@@ -9384,6 +9733,7 @@ object_types:
           underlying_type:
             type: named
             name: order_by
+    foreign_keys: {}
   PlaylistTrack_stream_cursor_input:
     description: "Streaming cursor of the table \"PlaylistTrack\""
     fields:
@@ -9399,6 +9749,7 @@ object_types:
           underlying_type:
             type: named
             name: cursor_ordering
+    foreign_keys: {}
   PlaylistTrack_stream_cursor_value_input:
     description: Initial value of the column from where the streaming should start
     fields:
@@ -9414,6 +9765,7 @@ object_types:
           underlying_type:
             type: named
             name: Int
+    foreign_keys: {}
   PlaylistTrack_sum_fields:
     description: aggregate sum on columns
     fields:
@@ -9429,6 +9781,7 @@ object_types:
           underlying_type:
             type: named
             name: Int
+    foreign_keys: {}
   PlaylistTrack_sum_order_by:
     description: "order by sum() on columns of table \"PlaylistTrack\""
     fields:
@@ -9444,6 +9797,7 @@ object_types:
           underlying_type:
             type: named
             name: order_by
+    foreign_keys: {}
   PlaylistTrack_updates:
     fields:
       _inc:
@@ -9465,6 +9819,7 @@ object_types:
         type:
           type: named
           name: PlaylistTrack_bool_exp
+    foreign_keys: {}
   PlaylistTrack_var_pop_fields:
     description: aggregate var_pop on columns
     fields:
@@ -9480,6 +9835,7 @@ object_types:
           underlying_type:
             type: named
             name: Float
+    foreign_keys: {}
   PlaylistTrack_var_pop_order_by:
     description: "order by var_pop() on columns of table \"PlaylistTrack\""
     fields:
@@ -9495,6 +9851,7 @@ object_types:
           underlying_type:
             type: named
             name: order_by
+    foreign_keys: {}
   PlaylistTrack_var_samp_fields:
     description: aggregate var_samp on columns
     fields:
@@ -9510,6 +9867,7 @@ object_types:
           underlying_type:
             type: named
             name: Float
+    foreign_keys: {}
   PlaylistTrack_var_samp_order_by:
     description: "order by var_samp() on columns of table \"PlaylistTrack\""
     fields:
@@ -9525,6 +9883,7 @@ object_types:
           underlying_type:
             type: named
             name: order_by
+    foreign_keys: {}
   PlaylistTrack_variance_fields:
     description: aggregate variance on columns
     fields:
@@ -9540,6 +9899,7 @@ object_types:
           underlying_type:
             type: named
             name: Float
+    foreign_keys: {}
   PlaylistTrack_variance_order_by:
     description: "order by variance() on columns of table \"PlaylistTrack\""
     fields:
@@ -9555,6 +9915,7 @@ object_types:
           underlying_type:
             type: named
             name: order_by
+    foreign_keys: {}
   Playlist_aggregate:
     description: "aggregated selection of \"Playlist\""
     fields:
@@ -9570,6 +9931,7 @@ object_types:
           element_type:
             type: named
             name: Playlist
+    foreign_keys: {}
   Playlist_aggregate_fields:
     description: "aggregate fields of \"Playlist\""
     fields:
@@ -9652,6 +10014,7 @@ object_types:
           underlying_type:
             type: named
             name: Playlist_variance_fields
+    foreign_keys: {}
   Playlist_avg_fields:
     description: aggregate avg on columns
     fields:
@@ -9661,6 +10024,7 @@ object_types:
           underlying_type:
             type: named
             name: Float
+    foreign_keys: {}
   Playlist_bool_exp:
     description: "Boolean expression to filter rows from the table \"Playlist\". All fields are combined with a logical 'AND'."
     fields:
@@ -9710,6 +10074,7 @@ object_types:
             element_type:
               type: named
               name: Playlist_bool_exp
+    foreign_keys: {}
   Playlist_insert_input:
     description: "input type for inserting data into table \"Playlist\""
     fields:
@@ -9725,6 +10090,7 @@ object_types:
           underlying_type:
             type: named
             name: PlaylistTrack_arr_rel_insert_input
+    foreign_keys: {}
   Playlist_max_fields:
     description: aggregate max on columns
     fields:
@@ -9740,6 +10106,7 @@ object_types:
           underlying_type:
             type: named
             name: Int
+    foreign_keys: {}
   Playlist_min_fields:
     description: aggregate min on columns
     fields:
@@ -9755,6 +10122,7 @@ object_types:
           underlying_type:
             type: named
             name: Int
+    foreign_keys: {}
   Playlist_mutation_response:
     description: "response of any mutation on the table \"Playlist\""
     fields:
@@ -9770,6 +10138,7 @@ object_types:
           element_type:
             type: named
             name: Playlist
+    foreign_keys: {}
   Playlist_obj_rel_insert_input:
     description: "input type for inserting object relation for remote table \"Playlist\""
     fields:
@@ -9784,6 +10153,7 @@ object_types:
           underlying_type:
             type: named
             name: Playlist_on_conflict
+    foreign_keys: {}
   Playlist_on_conflict:
     description: "on_conflict condition type for table \"Playlist\""
     fields:
@@ -9803,6 +10173,7 @@ object_types:
           underlying_type:
             type: named
             name: Playlist_bool_exp
+    foreign_keys: {}
   Playlist_order_by:
     description: "Ordering options when selecting data from \"Playlist\"."
     fields:
@@ -9824,6 +10195,7 @@ object_types:
           underlying_type:
             type: named
             name: PlaylistTrack_aggregate_order_by
+    foreign_keys: {}
   Playlist_pk_columns_input:
     description: "primary key columns input for table: Playlist"
     fields:
@@ -9831,6 +10203,7 @@ object_types:
         type:
           type: named
           name: Int
+    foreign_keys: {}
   Playlist_set_input:
     description: "input type for updating data in table \"Playlist\""
     fields:
@@ -9840,6 +10213,7 @@ object_types:
           underlying_type:
             type: named
             name: String
+    foreign_keys: {}
   Playlist_stddev_fields:
     description: aggregate stddev on columns
     fields:
@@ -9849,6 +10223,7 @@ object_types:
           underlying_type:
             type: named
             name: Float
+    foreign_keys: {}
   Playlist_stddev_pop_fields:
     description: aggregate stddev_pop on columns
     fields:
@@ -9858,6 +10233,7 @@ object_types:
           underlying_type:
             type: named
             name: Float
+    foreign_keys: {}
   Playlist_stddev_samp_fields:
     description: aggregate stddev_samp on columns
     fields:
@@ -9867,6 +10243,7 @@ object_types:
           underlying_type:
             type: named
             name: Float
+    foreign_keys: {}
   Playlist_stream_cursor_input:
     description: "Streaming cursor of the table \"Playlist\""
     fields:
@@ -9882,6 +10259,7 @@ object_types:
           underlying_type:
             type: named
             name: cursor_ordering
+    foreign_keys: {}
   Playlist_stream_cursor_value_input:
     description: Initial value of the column from where the streaming should start
     fields:
@@ -9897,6 +10275,7 @@ object_types:
           underlying_type:
             type: named
             name: Int
+    foreign_keys: {}
   Playlist_sum_fields:
     description: aggregate sum on columns
     fields:
@@ -9906,6 +10285,7 @@ object_types:
           underlying_type:
             type: named
             name: Int
+    foreign_keys: {}
   Playlist_updates:
     fields:
       _set:
@@ -9920,6 +10300,7 @@ object_types:
         type:
           type: named
           name: Playlist_bool_exp
+    foreign_keys: {}
   Playlist_var_pop_fields:
     description: aggregate var_pop on columns
     fields:
@@ -9929,6 +10310,7 @@ object_types:
           underlying_type:
             type: named
             name: Float
+    foreign_keys: {}
   Playlist_var_samp_fields:
     description: aggregate var_samp on columns
     fields:
@@ -9938,6 +10320,7 @@ object_types:
           underlying_type:
             type: named
             name: Float
+    foreign_keys: {}
   Playlist_variance_fields:
     description: aggregate variance on columns
     fields:
@@ -9947,6 +10330,7 @@ object_types:
           underlying_type:
             type: named
             name: Float
+    foreign_keys: {}
   String_comparison_exp:
     description: "Boolean expression to compare columns of type \"String\". All fields are combined with logical 'AND'."
     fields:
@@ -10078,6 +10462,7 @@ object_types:
           underlying_type:
             type: named
             name: String
+    foreign_keys: {}
   Track:
     description: "columns and relationships of \"Track\""
     fields:
@@ -10328,6 +10713,7 @@ object_types:
         type:
           type: named
           name: numeric
+    foreign_keys: {}
   Track_aggregate:
     description: "aggregated selection of \"Track\""
     fields:
@@ -10343,6 +10729,7 @@ object_types:
           element_type:
             type: named
             name: Track
+    foreign_keys: {}
   Track_aggregate_bool_exp:
     fields:
       count:
@@ -10351,6 +10738,7 @@ object_types:
           underlying_type:
             type: named
             name: Track_aggregate_bool_exp_count
+    foreign_keys: {}
   Track_aggregate_bool_exp_count:
     fields:
       arguments:
@@ -10377,6 +10765,7 @@ object_types:
         type:
           type: named
           name: Int_comparison_exp
+    foreign_keys: {}
   Track_aggregate_fields:
     description: "aggregate fields of \"Track\""
     fields:
@@ -10459,6 +10848,7 @@ object_types:
           underlying_type:
             type: named
             name: Track_variance_fields
+    foreign_keys: {}
   Track_aggregate_order_by:
     description: "order by aggregate values of table \"Track\""
     fields:
@@ -10528,6 +10918,7 @@ object_types:
           underlying_type:
             type: named
             name: Track_variance_order_by
+    foreign_keys: {}
   Track_arr_rel_insert_input:
     description: "input type for inserting array relation for remote table \"Track\""
     fields:
@@ -10544,6 +10935,7 @@ object_types:
           underlying_type:
             type: named
             name: Track_on_conflict
+    foreign_keys: {}
   Track_avg_fields:
     description: aggregate avg on columns
     fields:
@@ -10589,6 +10981,7 @@ object_types:
           underlying_type:
             type: named
             name: Float
+    foreign_keys: {}
   Track_avg_order_by:
     description: "order by avg() on columns of table \"Track\""
     fields:
@@ -10634,6 +11027,7 @@ object_types:
           underlying_type:
             type: named
             name: order_by
+    foreign_keys: {}
   Track_bool_exp:
     description: "Boolean expression to filter rows from the table \"Track\". All fields are combined with a logical 'AND'."
     fields:
@@ -10755,6 +11149,7 @@ object_types:
             element_type:
               type: named
               name: Track_bool_exp
+    foreign_keys: {}
   Track_inc_input:
     description: "input type for incrementing numeric columns in table \"Track\""
     fields:
@@ -10794,6 +11189,7 @@ object_types:
           underlying_type:
             type: named
             name: numeric
+    foreign_keys: {}
   Track_insert_input:
     description: "input type for inserting data into table \"Track\""
     fields:
@@ -10875,6 +11271,7 @@ object_types:
           underlying_type:
             type: named
             name: numeric
+    foreign_keys: {}
   Track_max_fields:
     description: aggregate max on columns
     fields:
@@ -10932,6 +11329,7 @@ object_types:
           underlying_type:
             type: named
             name: numeric
+    foreign_keys: {}
   Track_max_order_by:
     description: "order by max() on columns of table \"Track\""
     fields:
@@ -10989,6 +11387,7 @@ object_types:
           underlying_type:
             type: named
             name: order_by
+    foreign_keys: {}
   Track_min_fields:
     description: aggregate min on columns
     fields:
@@ -11046,6 +11445,7 @@ object_types:
           underlying_type:
             type: named
             name: numeric
+    foreign_keys: {}
   Track_min_order_by:
     description: "order by min() on columns of table \"Track\""
     fields:
@@ -11103,6 +11503,7 @@ object_types:
           underlying_type:
             type: named
             name: order_by
+    foreign_keys: {}
   Track_mutation_response:
     description: "response of any mutation on the table \"Track\""
     fields:
@@ -11118,6 +11519,7 @@ object_types:
           element_type:
             type: named
             name: Track
+    foreign_keys: {}
   Track_obj_rel_insert_input:
     description: "input type for inserting object relation for remote table \"Track\""
     fields:
@@ -11132,6 +11534,7 @@ object_types:
           underlying_type:
             type: named
             name: Track_on_conflict
+    foreign_keys: {}
   Track_on_conflict:
     description: "on_conflict condition type for table \"Track\""
     fields:
@@ -11151,6 +11554,7 @@ object_types:
           underlying_type:
             type: named
             name: Track_bool_exp
+    foreign_keys: {}
   Track_order_by:
     description: "Ordering options when selecting data from \"Track\"."
     fields:
@@ -11238,6 +11642,7 @@ object_types:
           underlying_type:
             type: named
             name: order_by
+    foreign_keys: {}
   Track_pk_columns_input:
     description: "primary key columns input for table: Track"
     fields:
@@ -11245,6 +11650,7 @@ object_types:
         type:
           type: named
           name: Int
+    foreign_keys: {}
   Track_set_input:
     description: "input type for updating data in table \"Track\""
     fields:
@@ -11296,6 +11702,7 @@ object_types:
           underlying_type:
             type: named
             name: numeric
+    foreign_keys: {}
   Track_stddev_fields:
     description: aggregate stddev on columns
     fields:
@@ -11341,6 +11748,7 @@ object_types:
           underlying_type:
             type: named
             name: Float
+    foreign_keys: {}
   Track_stddev_order_by:
     description: "order by stddev() on columns of table \"Track\""
     fields:
@@ -11386,6 +11794,7 @@ object_types:
           underlying_type:
             type: named
             name: order_by
+    foreign_keys: {}
   Track_stddev_pop_fields:
     description: aggregate stddev_pop on columns
     fields:
@@ -11431,6 +11840,7 @@ object_types:
           underlying_type:
             type: named
             name: Float
+    foreign_keys: {}
   Track_stddev_pop_order_by:
     description: "order by stddev_pop() on columns of table \"Track\""
     fields:
@@ -11476,6 +11886,7 @@ object_types:
           underlying_type:
             type: named
             name: order_by
+    foreign_keys: {}
   Track_stddev_samp_fields:
     description: aggregate stddev_samp on columns
     fields:
@@ -11521,6 +11932,7 @@ object_types:
           underlying_type:
             type: named
             name: Float
+    foreign_keys: {}
   Track_stddev_samp_order_by:
     description: "order by stddev_samp() on columns of table \"Track\""
     fields:
@@ -11566,6 +11978,7 @@ object_types:
           underlying_type:
             type: named
             name: order_by
+    foreign_keys: {}
   Track_stream_cursor_input:
     description: "Streaming cursor of the table \"Track\""
     fields:
@@ -11581,6 +11994,7 @@ object_types:
           underlying_type:
             type: named
             name: cursor_ordering
+    foreign_keys: {}
   Track_stream_cursor_value_input:
     description: Initial value of the column from where the streaming should start
     fields:
@@ -11638,6 +12052,7 @@ object_types:
           underlying_type:
             type: named
             name: numeric
+    foreign_keys: {}
   Track_sum_fields:
     description: aggregate sum on columns
     fields:
@@ -11683,6 +12098,7 @@ object_types:
           underlying_type:
             type: named
             name: numeric
+    foreign_keys: {}
   Track_sum_order_by:
     description: "order by sum() on columns of table \"Track\""
     fields:
@@ -11728,6 +12144,7 @@ object_types:
           underlying_type:
             type: named
             name: order_by
+    foreign_keys: {}
   Track_updates:
     fields:
       _inc:
@@ -11749,6 +12166,7 @@ object_types:
         type:
           type: named
           name: Track_bool_exp
+    foreign_keys: {}
   Track_var_pop_fields:
     description: aggregate var_pop on columns
     fields:
@@ -11794,6 +12212,7 @@ object_types:
           underlying_type:
             type: named
             name: Float
+    foreign_keys: {}
   Track_var_pop_order_by:
     description: "order by var_pop() on columns of table \"Track\""
     fields:
@@ -11839,6 +12258,7 @@ object_types:
           underlying_type:
             type: named
             name: order_by
+    foreign_keys: {}
   Track_var_samp_fields:
     description: aggregate var_samp on columns
     fields:
@@ -11884,6 +12304,7 @@ object_types:
           underlying_type:
             type: named
             name: Float
+    foreign_keys: {}
   Track_var_samp_order_by:
     description: "order by var_samp() on columns of table \"Track\""
     fields:
@@ -11929,6 +12350,7 @@ object_types:
           underlying_type:
             type: named
             name: order_by
+    foreign_keys: {}
   Track_variance_fields:
     description: aggregate variance on columns
     fields:
@@ -11974,6 +12396,7 @@ object_types:
           underlying_type:
             type: named
             name: Float
+    foreign_keys: {}
   Track_variance_order_by:
     description: "order by variance() on columns of table \"Track\""
     fields:
@@ -12019,6 +12442,7 @@ object_types:
           underlying_type:
             type: named
             name: order_by
+    foreign_keys: {}
   _AlbumQueryResponse:
     description: Response type for function Album
     fields:
@@ -12032,6 +12456,7 @@ object_types:
           element_type:
             type: named
             name: Album
+    foreign_keys: {}
   _Album_aggregateQueryResponse:
     description: Response type for function Album_aggregate
     fields:
@@ -12043,6 +12468,7 @@ object_types:
         type:
           type: named
           name: Album_aggregate
+    foreign_keys: {}
   _Album_by_pkQueryResponse:
     description: Response type for function Album_by_pk
     fields:
@@ -12056,6 +12482,7 @@ object_types:
           underlying_type:
             type: named
             name: Album
+    foreign_keys: {}
   _ArtistQueryResponse:
     description: Response type for function Artist
     fields:
@@ -12069,6 +12496,7 @@ object_types:
           element_type:
             type: named
             name: Artist
+    foreign_keys: {}
   _Artist_aggregateQueryResponse:
     description: Response type for function Artist_aggregate
     fields:
@@ -12080,6 +12508,7 @@ object_types:
         type:
           type: named
           name: Artist_aggregate
+    foreign_keys: {}
   _Artist_by_pkQueryResponse:
     description: Response type for function Artist_by_pk
     fields:
@@ -12093,6 +12522,7 @@ object_types:
           underlying_type:
             type: named
             name: Artist
+    foreign_keys: {}
   _CustomerQueryResponse:
     description: Response type for function Customer
     fields:
@@ -12106,6 +12536,7 @@ object_types:
           element_type:
             type: named
             name: Customer
+    foreign_keys: {}
   _Customer_aggregateQueryResponse:
     description: Response type for function Customer_aggregate
     fields:
@@ -12117,6 +12548,7 @@ object_types:
         type:
           type: named
           name: Customer_aggregate
+    foreign_keys: {}
   _Customer_by_pkQueryResponse:
     description: Response type for function Customer_by_pk
     fields:
@@ -12130,6 +12562,7 @@ object_types:
           underlying_type:
             type: named
             name: Customer
+    foreign_keys: {}
   _EmployeeQueryResponse:
     description: Response type for function Employee
     fields:
@@ -12143,6 +12576,7 @@ object_types:
           element_type:
             type: named
             name: Employee
+    foreign_keys: {}
   _Employee_aggregateQueryResponse:
     description: Response type for function Employee_aggregate
     fields:
@@ -12154,6 +12588,7 @@ object_types:
         type:
           type: named
           name: Employee_aggregate
+    foreign_keys: {}
   _Employee_by_pkQueryResponse:
     description: Response type for function Employee_by_pk
     fields:
@@ -12167,6 +12602,7 @@ object_types:
           underlying_type:
             type: named
             name: Employee
+    foreign_keys: {}
   _GenreQueryResponse:
     description: Response type for function Genre
     fields:
@@ -12180,6 +12616,7 @@ object_types:
           element_type:
             type: named
             name: Genre
+    foreign_keys: {}
   _Genre_aggregateQueryResponse:
     description: Response type for function Genre_aggregate
     fields:
@@ -12191,6 +12628,7 @@ object_types:
         type:
           type: named
           name: Genre_aggregate
+    foreign_keys: {}
   _Genre_by_pkQueryResponse:
     description: Response type for function Genre_by_pk
     fields:
@@ -12204,6 +12642,7 @@ object_types:
           underlying_type:
             type: named
             name: Genre
+    foreign_keys: {}
   _InvoiceLineQueryResponse:
     description: Response type for function InvoiceLine
     fields:
@@ -12217,6 +12656,7 @@ object_types:
           element_type:
             type: named
             name: InvoiceLine
+    foreign_keys: {}
   _InvoiceLine_aggregateQueryResponse:
     description: Response type for function InvoiceLine_aggregate
     fields:
@@ -12228,6 +12668,7 @@ object_types:
         type:
           type: named
           name: InvoiceLine_aggregate
+    foreign_keys: {}
   _InvoiceLine_by_pkQueryResponse:
     description: Response type for function InvoiceLine_by_pk
     fields:
@@ -12241,6 +12682,7 @@ object_types:
           underlying_type:
             type: named
             name: InvoiceLine
+    foreign_keys: {}
   _InvoiceQueryResponse:
     description: Response type for function Invoice
     fields:
@@ -12254,6 +12696,7 @@ object_types:
           element_type:
             type: named
             name: Invoice
+    foreign_keys: {}
   _Invoice_aggregateQueryResponse:
     description: Response type for function Invoice_aggregate
     fields:
@@ -12265,6 +12708,7 @@ object_types:
         type:
           type: named
           name: Invoice_aggregate
+    foreign_keys: {}
   _Invoice_by_pkQueryResponse:
     description: Response type for function Invoice_by_pk
     fields:
@@ -12278,6 +12722,7 @@ object_types:
           underlying_type:
             type: named
             name: Invoice
+    foreign_keys: {}
   _MediaTypeQueryResponse:
     description: Response type for function MediaType
     fields:
@@ -12291,6 +12736,7 @@ object_types:
           element_type:
             type: named
             name: MediaType
+    foreign_keys: {}
   _MediaType_aggregateQueryResponse:
     description: Response type for function MediaType_aggregate
     fields:
@@ -12302,6 +12748,7 @@ object_types:
         type:
           type: named
           name: MediaType_aggregate
+    foreign_keys: {}
   _MediaType_by_pkQueryResponse:
     description: Response type for function MediaType_by_pk
     fields:
@@ -12315,6 +12762,7 @@ object_types:
           underlying_type:
             type: named
             name: MediaType
+    foreign_keys: {}
   _PlaylistQueryResponse:
     description: Response type for function Playlist
     fields:
@@ -12328,6 +12776,7 @@ object_types:
           element_type:
             type: named
             name: Playlist
+    foreign_keys: {}
   _PlaylistTrackQueryResponse:
     description: Response type for function PlaylistTrack
     fields:
@@ -12341,6 +12790,7 @@ object_types:
           element_type:
             type: named
             name: PlaylistTrack
+    foreign_keys: {}
   _PlaylistTrack_aggregateQueryResponse:
     description: Response type for function PlaylistTrack_aggregate
     fields:
@@ -12352,6 +12802,7 @@ object_types:
         type:
           type: named
           name: PlaylistTrack_aggregate
+    foreign_keys: {}
   _PlaylistTrack_by_pkQueryResponse:
     description: Response type for function PlaylistTrack_by_pk
     fields:
@@ -12365,6 +12816,7 @@ object_types:
           underlying_type:
             type: named
             name: PlaylistTrack
+    foreign_keys: {}
   _Playlist_aggregateQueryResponse:
     description: Response type for function Playlist_aggregate
     fields:
@@ -12376,6 +12828,7 @@ object_types:
         type:
           type: named
           name: Playlist_aggregate
+    foreign_keys: {}
   _Playlist_by_pkQueryResponse:
     description: Response type for function Playlist_by_pk
     fields:
@@ -12389,6 +12842,7 @@ object_types:
           underlying_type:
             type: named
             name: Playlist
+    foreign_keys: {}
   _TrackQueryResponse:
     description: Response type for function Track
     fields:
@@ -12402,6 +12856,7 @@ object_types:
           element_type:
             type: named
             name: Track
+    foreign_keys: {}
   _Track_aggregateQueryResponse:
     description: Response type for function Track_aggregate
     fields:
@@ -12413,6 +12868,7 @@ object_types:
         type:
           type: named
           name: Track_aggregate
+    foreign_keys: {}
   _Track_by_pkQueryResponse:
     description: Response type for function Track_by_pk
     fields:
@@ -12426,6 +12882,7 @@ object_types:
           underlying_type:
             type: named
             name: Track
+    foreign_keys: {}
   _delete_AlbumMutationResponse:
     description: Response type for procedure delete_Album
     fields:
@@ -12439,6 +12896,7 @@ object_types:
           underlying_type:
             type: named
             name: Album_mutation_response
+    foreign_keys: {}
   _delete_Album_by_pkMutationResponse:
     description: Response type for procedure delete_Album_by_pk
     fields:
@@ -12452,6 +12910,7 @@ object_types:
           underlying_type:
             type: named
             name: Album
+    foreign_keys: {}
   _delete_ArtistMutationResponse:
     description: Response type for procedure delete_Artist
     fields:
@@ -12465,6 +12924,7 @@ object_types:
           underlying_type:
             type: named
             name: Artist_mutation_response
+    foreign_keys: {}
   _delete_Artist_by_pkMutationResponse:
     description: Response type for procedure delete_Artist_by_pk
     fields:
@@ -12478,6 +12938,7 @@ object_types:
           underlying_type:
             type: named
             name: Artist
+    foreign_keys: {}
   _delete_CustomerMutationResponse:
     description: Response type for procedure delete_Customer
     fields:
@@ -12491,6 +12952,7 @@ object_types:
           underlying_type:
             type: named
             name: Customer_mutation_response
+    foreign_keys: {}
   _delete_Customer_by_pkMutationResponse:
     description: Response type for procedure delete_Customer_by_pk
     fields:
@@ -12504,6 +12966,7 @@ object_types:
           underlying_type:
             type: named
             name: Customer
+    foreign_keys: {}
   _delete_EmployeeMutationResponse:
     description: Response type for procedure delete_Employee
     fields:
@@ -12517,6 +12980,7 @@ object_types:
           underlying_type:
             type: named
             name: Employee_mutation_response
+    foreign_keys: {}
   _delete_Employee_by_pkMutationResponse:
     description: Response type for procedure delete_Employee_by_pk
     fields:
@@ -12530,6 +12994,7 @@ object_types:
           underlying_type:
             type: named
             name: Employee
+    foreign_keys: {}
   _delete_GenreMutationResponse:
     description: Response type for procedure delete_Genre
     fields:
@@ -12543,6 +13008,7 @@ object_types:
           underlying_type:
             type: named
             name: Genre_mutation_response
+    foreign_keys: {}
   _delete_Genre_by_pkMutationResponse:
     description: Response type for procedure delete_Genre_by_pk
     fields:
@@ -12556,6 +13022,7 @@ object_types:
           underlying_type:
             type: named
             name: Genre
+    foreign_keys: {}
   _delete_InvoiceLineMutationResponse:
     description: Response type for procedure delete_InvoiceLine
     fields:
@@ -12569,6 +13036,7 @@ object_types:
           underlying_type:
             type: named
             name: InvoiceLine_mutation_response
+    foreign_keys: {}
   _delete_InvoiceLine_by_pkMutationResponse:
     description: Response type for procedure delete_InvoiceLine_by_pk
     fields:
@@ -12582,6 +13050,7 @@ object_types:
           underlying_type:
             type: named
             name: InvoiceLine
+    foreign_keys: {}
   _delete_InvoiceMutationResponse:
     description: Response type for procedure delete_Invoice
     fields:
@@ -12595,6 +13064,7 @@ object_types:
           underlying_type:
             type: named
             name: Invoice_mutation_response
+    foreign_keys: {}
   _delete_Invoice_by_pkMutationResponse:
     description: Response type for procedure delete_Invoice_by_pk
     fields:
@@ -12608,6 +13078,7 @@ object_types:
           underlying_type:
             type: named
             name: Invoice
+    foreign_keys: {}
   _delete_MediaTypeMutationResponse:
     description: Response type for procedure delete_MediaType
     fields:
@@ -12621,6 +13092,7 @@ object_types:
           underlying_type:
             type: named
             name: MediaType_mutation_response
+    foreign_keys: {}
   _delete_MediaType_by_pkMutationResponse:
     description: Response type for procedure delete_MediaType_by_pk
     fields:
@@ -12634,6 +13106,7 @@ object_types:
           underlying_type:
             type: named
             name: MediaType
+    foreign_keys: {}
   _delete_PlaylistMutationResponse:
     description: Response type for procedure delete_Playlist
     fields:
@@ -12647,6 +13120,7 @@ object_types:
           underlying_type:
             type: named
             name: Playlist_mutation_response
+    foreign_keys: {}
   _delete_PlaylistTrackMutationResponse:
     description: Response type for procedure delete_PlaylistTrack
     fields:
@@ -12660,6 +13134,7 @@ object_types:
           underlying_type:
             type: named
             name: PlaylistTrack_mutation_response
+    foreign_keys: {}
   _delete_PlaylistTrack_by_pkMutationResponse:
     description: Response type for procedure delete_PlaylistTrack_by_pk
     fields:
@@ -12673,6 +13148,7 @@ object_types:
           underlying_type:
             type: named
             name: PlaylistTrack
+    foreign_keys: {}
   _delete_Playlist_by_pkMutationResponse:
     description: Response type for procedure delete_Playlist_by_pk
     fields:
@@ -12686,6 +13162,7 @@ object_types:
           underlying_type:
             type: named
             name: Playlist
+    foreign_keys: {}
   _delete_TrackMutationResponse:
     description: Response type for procedure delete_Track
     fields:
@@ -12699,6 +13176,7 @@ object_types:
           underlying_type:
             type: named
             name: Track_mutation_response
+    foreign_keys: {}
   _delete_Track_by_pkMutationResponse:
     description: Response type for procedure delete_Track_by_pk
     fields:
@@ -12712,6 +13190,7 @@ object_types:
           underlying_type:
             type: named
             name: Track
+    foreign_keys: {}
   _insert_AlbumMutationResponse:
     description: Response type for procedure insert_Album
     fields:
@@ -12725,6 +13204,7 @@ object_types:
           underlying_type:
             type: named
             name: Album_mutation_response
+    foreign_keys: {}
   _insert_Album_oneMutationResponse:
     description: Response type for procedure insert_Album_one
     fields:
@@ -12738,6 +13218,7 @@ object_types:
           underlying_type:
             type: named
             name: Album
+    foreign_keys: {}
   _insert_ArtistMutationResponse:
     description: Response type for procedure insert_Artist
     fields:
@@ -12751,6 +13232,7 @@ object_types:
           underlying_type:
             type: named
             name: Artist_mutation_response
+    foreign_keys: {}
   _insert_Artist_oneMutationResponse:
     description: Response type for procedure insert_Artist_one
     fields:
@@ -12764,6 +13246,7 @@ object_types:
           underlying_type:
             type: named
             name: Artist
+    foreign_keys: {}
   _insert_CustomerMutationResponse:
     description: Response type for procedure insert_Customer
     fields:
@@ -12777,6 +13260,7 @@ object_types:
           underlying_type:
             type: named
             name: Customer_mutation_response
+    foreign_keys: {}
   _insert_Customer_oneMutationResponse:
     description: Response type for procedure insert_Customer_one
     fields:
@@ -12790,6 +13274,7 @@ object_types:
           underlying_type:
             type: named
             name: Customer
+    foreign_keys: {}
   _insert_EmployeeMutationResponse:
     description: Response type for procedure insert_Employee
     fields:
@@ -12803,6 +13288,7 @@ object_types:
           underlying_type:
             type: named
             name: Employee_mutation_response
+    foreign_keys: {}
   _insert_Employee_oneMutationResponse:
     description: Response type for procedure insert_Employee_one
     fields:
@@ -12816,6 +13302,7 @@ object_types:
           underlying_type:
             type: named
             name: Employee
+    foreign_keys: {}
   _insert_GenreMutationResponse:
     description: Response type for procedure insert_Genre
     fields:
@@ -12829,6 +13316,7 @@ object_types:
           underlying_type:
             type: named
             name: Genre_mutation_response
+    foreign_keys: {}
   _insert_Genre_oneMutationResponse:
     description: Response type for procedure insert_Genre_one
     fields:
@@ -12842,6 +13330,7 @@ object_types:
           underlying_type:
             type: named
             name: Genre
+    foreign_keys: {}
   _insert_InvoiceLineMutationResponse:
     description: Response type for procedure insert_InvoiceLine
     fields:
@@ -12855,6 +13344,7 @@ object_types:
           underlying_type:
             type: named
             name: InvoiceLine_mutation_response
+    foreign_keys: {}
   _insert_InvoiceLine_oneMutationResponse:
     description: Response type for procedure insert_InvoiceLine_one
     fields:
@@ -12868,6 +13358,7 @@ object_types:
           underlying_type:
             type: named
             name: InvoiceLine
+    foreign_keys: {}
   _insert_InvoiceMutationResponse:
     description: Response type for procedure insert_Invoice
     fields:
@@ -12881,6 +13372,7 @@ object_types:
           underlying_type:
             type: named
             name: Invoice_mutation_response
+    foreign_keys: {}
   _insert_Invoice_oneMutationResponse:
     description: Response type for procedure insert_Invoice_one
     fields:
@@ -12894,6 +13386,7 @@ object_types:
           underlying_type:
             type: named
             name: Invoice
+    foreign_keys: {}
   _insert_MediaTypeMutationResponse:
     description: Response type for procedure insert_MediaType
     fields:
@@ -12907,6 +13400,7 @@ object_types:
           underlying_type:
             type: named
             name: MediaType_mutation_response
+    foreign_keys: {}
   _insert_MediaType_oneMutationResponse:
     description: Response type for procedure insert_MediaType_one
     fields:
@@ -12920,6 +13414,7 @@ object_types:
           underlying_type:
             type: named
             name: MediaType
+    foreign_keys: {}
   _insert_PlaylistMutationResponse:
     description: Response type for procedure insert_Playlist
     fields:
@@ -12933,6 +13428,7 @@ object_types:
           underlying_type:
             type: named
             name: Playlist_mutation_response
+    foreign_keys: {}
   _insert_PlaylistTrackMutationResponse:
     description: Response type for procedure insert_PlaylistTrack
     fields:
@@ -12946,6 +13442,7 @@ object_types:
           underlying_type:
             type: named
             name: PlaylistTrack_mutation_response
+    foreign_keys: {}
   _insert_PlaylistTrack_oneMutationResponse:
     description: Response type for procedure insert_PlaylistTrack_one
     fields:
@@ -12959,6 +13456,7 @@ object_types:
           underlying_type:
             type: named
             name: PlaylistTrack
+    foreign_keys: {}
   _insert_Playlist_oneMutationResponse:
     description: Response type for procedure insert_Playlist_one
     fields:
@@ -12972,6 +13470,7 @@ object_types:
           underlying_type:
             type: named
             name: Playlist
+    foreign_keys: {}
   _insert_TrackMutationResponse:
     description: Response type for procedure insert_Track
     fields:
@@ -12985,6 +13484,7 @@ object_types:
           underlying_type:
             type: named
             name: Track_mutation_response
+    foreign_keys: {}
   _insert_Track_oneMutationResponse:
     description: Response type for procedure insert_Track_one
     fields:
@@ -12998,6 +13498,7 @@ object_types:
           underlying_type:
             type: named
             name: Track
+    foreign_keys: {}
   _update_AlbumMutationResponse:
     description: Response type for procedure update_Album
     fields:
@@ -13011,6 +13512,7 @@ object_types:
           underlying_type:
             type: named
             name: Album_mutation_response
+    foreign_keys: {}
   _update_Album_by_pkMutationResponse:
     description: Response type for procedure update_Album_by_pk
     fields:
@@ -13024,6 +13526,7 @@ object_types:
           underlying_type:
             type: named
             name: Album
+    foreign_keys: {}
   _update_Album_manyMutationResponse:
     description: Response type for procedure update_Album_many
     fields:
@@ -13041,6 +13544,7 @@ object_types:
               underlying_type:
                 type: named
                 name: Album_mutation_response
+    foreign_keys: {}
   _update_ArtistMutationResponse:
     description: Response type for procedure update_Artist
     fields:
@@ -13054,6 +13558,7 @@ object_types:
           underlying_type:
             type: named
             name: Artist_mutation_response
+    foreign_keys: {}
   _update_Artist_by_pkMutationResponse:
     description: Response type for procedure update_Artist_by_pk
     fields:
@@ -13067,6 +13572,7 @@ object_types:
           underlying_type:
             type: named
             name: Artist
+    foreign_keys: {}
   _update_Artist_manyMutationResponse:
     description: Response type for procedure update_Artist_many
     fields:
@@ -13084,6 +13590,7 @@ object_types:
               underlying_type:
                 type: named
                 name: Artist_mutation_response
+    foreign_keys: {}
   _update_CustomerMutationResponse:
     description: Response type for procedure update_Customer
     fields:
@@ -13097,6 +13604,7 @@ object_types:
           underlying_type:
             type: named
             name: Customer_mutation_response
+    foreign_keys: {}
   _update_Customer_by_pkMutationResponse:
     description: Response type for procedure update_Customer_by_pk
     fields:
@@ -13110,6 +13618,7 @@ object_types:
           underlying_type:
             type: named
             name: Customer
+    foreign_keys: {}
   _update_Customer_manyMutationResponse:
     description: Response type for procedure update_Customer_many
     fields:
@@ -13127,6 +13636,7 @@ object_types:
               underlying_type:
                 type: named
                 name: Customer_mutation_response
+    foreign_keys: {}
   _update_EmployeeMutationResponse:
     description: Response type for procedure update_Employee
     fields:
@@ -13140,6 +13650,7 @@ object_types:
           underlying_type:
             type: named
             name: Employee_mutation_response
+    foreign_keys: {}
   _update_Employee_by_pkMutationResponse:
     description: Response type for procedure update_Employee_by_pk
     fields:
@@ -13153,6 +13664,7 @@ object_types:
           underlying_type:
             type: named
             name: Employee
+    foreign_keys: {}
   _update_Employee_manyMutationResponse:
     description: Response type for procedure update_Employee_many
     fields:
@@ -13170,6 +13682,7 @@ object_types:
               underlying_type:
                 type: named
                 name: Employee_mutation_response
+    foreign_keys: {}
   _update_GenreMutationResponse:
     description: Response type for procedure update_Genre
     fields:
@@ -13183,6 +13696,7 @@ object_types:
           underlying_type:
             type: named
             name: Genre_mutation_response
+    foreign_keys: {}
   _update_Genre_by_pkMutationResponse:
     description: Response type for procedure update_Genre_by_pk
     fields:
@@ -13196,6 +13710,7 @@ object_types:
           underlying_type:
             type: named
             name: Genre
+    foreign_keys: {}
   _update_Genre_manyMutationResponse:
     description: Response type for procedure update_Genre_many
     fields:
@@ -13213,6 +13728,7 @@ object_types:
               underlying_type:
                 type: named
                 name: Genre_mutation_response
+    foreign_keys: {}
   _update_InvoiceLineMutationResponse:
     description: Response type for procedure update_InvoiceLine
     fields:
@@ -13226,6 +13742,7 @@ object_types:
           underlying_type:
             type: named
             name: InvoiceLine_mutation_response
+    foreign_keys: {}
   _update_InvoiceLine_by_pkMutationResponse:
     description: Response type for procedure update_InvoiceLine_by_pk
     fields:
@@ -13239,6 +13756,7 @@ object_types:
           underlying_type:
             type: named
             name: InvoiceLine
+    foreign_keys: {}
   _update_InvoiceLine_manyMutationResponse:
     description: Response type for procedure update_InvoiceLine_many
     fields:
@@ -13256,6 +13774,7 @@ object_types:
               underlying_type:
                 type: named
                 name: InvoiceLine_mutation_response
+    foreign_keys: {}
   _update_InvoiceMutationResponse:
     description: Response type for procedure update_Invoice
     fields:
@@ -13269,6 +13788,7 @@ object_types:
           underlying_type:
             type: named
             name: Invoice_mutation_response
+    foreign_keys: {}
   _update_Invoice_by_pkMutationResponse:
     description: Response type for procedure update_Invoice_by_pk
     fields:
@@ -13282,6 +13802,7 @@ object_types:
           underlying_type:
             type: named
             name: Invoice
+    foreign_keys: {}
   _update_Invoice_manyMutationResponse:
     description: Response type for procedure update_Invoice_many
     fields:
@@ -13299,6 +13820,7 @@ object_types:
               underlying_type:
                 type: named
                 name: Invoice_mutation_response
+    foreign_keys: {}
   _update_MediaTypeMutationResponse:
     description: Response type for procedure update_MediaType
     fields:
@@ -13312,6 +13834,7 @@ object_types:
           underlying_type:
             type: named
             name: MediaType_mutation_response
+    foreign_keys: {}
   _update_MediaType_by_pkMutationResponse:
     description: Response type for procedure update_MediaType_by_pk
     fields:
@@ -13325,6 +13848,7 @@ object_types:
           underlying_type:
             type: named
             name: MediaType
+    foreign_keys: {}
   _update_MediaType_manyMutationResponse:
     description: Response type for procedure update_MediaType_many
     fields:
@@ -13342,6 +13866,7 @@ object_types:
               underlying_type:
                 type: named
                 name: MediaType_mutation_response
+    foreign_keys: {}
   _update_PlaylistMutationResponse:
     description: Response type for procedure update_Playlist
     fields:
@@ -13355,6 +13880,7 @@ object_types:
           underlying_type:
             type: named
             name: Playlist_mutation_response
+    foreign_keys: {}
   _update_PlaylistTrackMutationResponse:
     description: Response type for procedure update_PlaylistTrack
     fields:
@@ -13368,6 +13894,7 @@ object_types:
           underlying_type:
             type: named
             name: PlaylistTrack_mutation_response
+    foreign_keys: {}
   _update_PlaylistTrack_by_pkMutationResponse:
     description: Response type for procedure update_PlaylistTrack_by_pk
     fields:
@@ -13381,6 +13908,7 @@ object_types:
           underlying_type:
             type: named
             name: PlaylistTrack
+    foreign_keys: {}
   _update_PlaylistTrack_manyMutationResponse:
     description: Response type for procedure update_PlaylistTrack_many
     fields:
@@ -13398,6 +13926,7 @@ object_types:
               underlying_type:
                 type: named
                 name: PlaylistTrack_mutation_response
+    foreign_keys: {}
   _update_Playlist_by_pkMutationResponse:
     description: Response type for procedure update_Playlist_by_pk
     fields:
@@ -13411,6 +13940,7 @@ object_types:
           underlying_type:
             type: named
             name: Playlist
+    foreign_keys: {}
   _update_Playlist_manyMutationResponse:
     description: Response type for procedure update_Playlist_many
     fields:
@@ -13428,6 +13958,7 @@ object_types:
               underlying_type:
                 type: named
                 name: Playlist_mutation_response
+    foreign_keys: {}
   _update_TrackMutationResponse:
     description: Response type for procedure update_Track
     fields:
@@ -13441,6 +13972,7 @@ object_types:
           underlying_type:
             type: named
             name: Track_mutation_response
+    foreign_keys: {}
   _update_Track_by_pkMutationResponse:
     description: Response type for procedure update_Track_by_pk
     fields:
@@ -13454,6 +13986,7 @@ object_types:
           underlying_type:
             type: named
             name: Track
+    foreign_keys: {}
   _update_Track_manyMutationResponse:
     description: Response type for procedure update_Track_many
     fields:
@@ -13471,6 +14004,7 @@ object_types:
               underlying_type:
                 type: named
                 name: Track_mutation_response
+    foreign_keys: {}
   numeric_comparison_exp:
     description: "Boolean expression to compare columns of type \"numeric\". All fields are combined with logical 'AND'."
     fields:
@@ -13532,6 +14066,7 @@ object_types:
             element_type:
               type: named
               name: numeric
+    foreign_keys: {}
   subscription_root:
     fields:
       Album:
@@ -15001,6 +15536,7 @@ object_types:
               underlying_type:
                 type: named
                 name: Track_bool_exp
+    foreign_keys: {}
   timestamp_comparison_exp:
     description: "Boolean expression to compare columns of type \"timestamp\". All fields are combined with logical 'AND'."
     fields:
@@ -15062,6 +15598,7 @@ object_types:
             element_type:
               type: named
               name: timestamp
+    foreign_keys: {}
 collections: []
 functions:
   - name: Album
@@ -17888,3 +18425,5 @@ procedures:
     result_type:
       type: named
       name: _update_Track_manyMutationResponse
+capabilities: ~
+request_arguments: ~
