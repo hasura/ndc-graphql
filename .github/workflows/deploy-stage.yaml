@@ -155,7 +155,7 @@ jobs:
           
       - uses: actions/download-artifact@v4
         with:
-          path: release/artifacts
+          path: release
           merge-multiple: true
 
       - name: generate CLI manifest
@@ -165,13 +165,12 @@ jobs:
 
           export CLI_VERSION="$GITHUB_REF_NAME"
 
-          export LINUX_AMD64_SHA256=$(sha256sum ${ROOT}/release/artifacts/ndc-graphql-cli-x86_64-unknown-linux-musl     | cut -f1 -d' ')
-          export MACOS_AMD64_SHA256=$(sha256sum ${ROOT}/release/artifacts/ndc-graphql-cli-x86_64-apple-darwin           | cut -f1 -d' ')
-          export WINDOWS_AMD64_SHA256=$(sha256sum ${ROOT}/release/artifacts/ndc-graphql-cli-x86_64-pc-windows-msvc.exe  | cut -f1 -d' ')
-          export LINUX_ARM64_SHA256=$(sha256sum ${ROOT}/release/artifacts/ndc-graphql-cli-aarch64-unknown-linux-musl    | cut -f1 -d' ')
-          export MACOS_ARM64_SHA256=$(sha256sum ${ROOT}/release/artifacts/ndc-graphql-cli-aarch64-apple-darwin          | cut -f1 -d' ')
+          export LINUX_AMD64_SHA256=$(sha256sum ${ROOT}/release/ndc-graphql-cli-x86_64-unknown-linux-musl     | cut -f1 -d' ')
+          export MACOS_AMD64_SHA256=$(sha256sum ${ROOT}/release/ndc-graphql-cli-x86_64-apple-darwin           | cut -f1 -d' ')
+          export WINDOWS_AMD64_SHA256=$(sha256sum ${ROOT}/release/ndc-graphql-cli-x86_64-pc-windows-msvc.exe  | cut -f1 -d' ')
+          export LINUX_ARM64_SHA256=$(sha256sum ${ROOT}/release/ndc-graphql-cli-aarch64-unknown-linux-musl    | cut -f1 -d' ')
+          export MACOS_ARM64_SHA256=$(sha256sum ${ROOT}/release/ndc-graphql-cli-aarch64-apple-darwin          | cut -f1 -d' ')
 
-          mkdir -p "${ROOT}/release/"
           cat "${ROOT}/ci/templates/manifest.yaml" | envsubst > "${ROOT}/release/manifest.yaml"
       
       - uses: actions/upload-artifact@v4
@@ -189,6 +188,7 @@ jobs:
           export CLI_VERSION=$GITHUB_REF_NAME
 
           mkdir -p "${ROOT}/release/connector-definition/.hasura-connector/"
+          mkdir -p "${ROOT}/release/artifacts"
           cat "${ROOT}/ci/templates/connector-metadata.yaml" | envsubst '$DOCKER_IMAGE,$CLI_VERSION' > "${ROOT}/release/connector-definition/.hasura-connector/connector-metadata.yaml"
 
           cargo run --package ndc-graphql-cli -- --connector-context-path "${ROOT}/release/connector-definition" init
