@@ -2,7 +2,7 @@
 members = ["crates/ndc-graphql", "crates/ndc-graphql-cli", "crates/common"]
 resolver = "2"
 
-package.version = "v0.3.0-beta.1"
+package.version = "0.3.0-beta.1"
 package.edition = "2021"
 package.license = "Apache-2.0"
 
