@@ -13,6 +13,7 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
+  DOCKER_BUILD_RECORD_UPLOAD: "false"
 
 jobs:
   build-and-push-image:
@@ -47,6 +48,7 @@ jobs:
           push: ${{ startsWith(github.ref, 'refs/tags/v') }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          
 
   build-cli-binaries:
     name: build the CLI binaries
@@ -216,7 +218,7 @@ jobs:
       - name: create a release
         uses: ncipollo/release-action@v1
         with:
-          draft: false
+          draft: true
           tag: v${{ steps.get-version.outputs.tagged_version }}
           body: ${{ steps.changelog-reader.outputs.changes }}
           artifacts: release/artifacts/*
