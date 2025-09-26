@@ -6,7 +6,8 @@ use crate::config::{
     RequestConfig, ResponseConfig,
 };
 use ndc_models::{
-    self as models, ArgumentName, FieldName, SchemaResponse, TypeName, TypeRepresentation,
+    self as models, ArgumentInfo, ArgumentName, FieldName, SchemaResponse, Type, TypeName,
+    TypeRepresentation,
 };
 use std::{collections::BTreeMap, iter};
 
@@ -49,17 +50,16 @@ pub fn schema_response(
         })
         .collect();
 
-    if forward_request_headers {
-        scalar_types.insert(
-            request.headers_type_name.to_owned(),
-            models::ScalarType {
-                representation: models::TypeRepresentation::JSON,
-                aggregate_functions: BTreeMap::new(),
-                comparison_operators: BTreeMap::new(),
-                extraction_functions: BTreeMap::new(),
-            },
-        );
-    }
+    // add headers type name for either header forwarding or request-level arguments
+    scalar_types.insert(
+        request.headers_type_name.to_owned(),
+        models::ScalarType {
+            representation: models::TypeRepresentation::JSON,
+            aggregate_functions: BTreeMap::new(),
+            comparison_operators: BTreeMap::new(),
+            extraction_functions: BTreeMap::new(),
+        },
+    );
 
     let mut object_types: BTreeMap<_, _> = schema
         .definitions
@@ -207,6 +207,28 @@ pub fn schema_response(
         });
     }
 
+    // request-level arguments
+    let common_request_arguments: BTreeMap<ArgumentName, ArgumentInfo> = BTreeMap::from([(
+        "headers".into(),
+        ArgumentInfo {
+            description: Some(
+                "Headers to be merged into original request headers of graphql requests"
+                    .to_string(),
+            ),
+            argument_type: Type::Nullable {
+                underlying_type: Box::new(Type::Named {
+                    name: TypeName::from(request.headers_type_name.as_str()),
+                }),
+            },
+        },
+    )]);
+
+    let request_level_arguments = ndc_models::RequestLevelArguments {
+        query_arguments: common_request_arguments.clone(),
+        mutation_arguments: common_request_arguments,
+        relational_query_arguments: BTreeMap::new(),
+    };
+
     models::SchemaResponse {
         scalar_types,
         object_types,
@@ -214,7 +236,7 @@ pub fn schema_response(
         functions,
         procedures,
         capabilities: None,
-        request_arguments: None,
+        request_arguments: Some(request_level_arguments),
     }
 }
 

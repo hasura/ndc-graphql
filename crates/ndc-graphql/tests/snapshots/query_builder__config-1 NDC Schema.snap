@@ -388,6 +388,12 @@ scalar_types:
     aggregate_functions: {}
     comparison_operators: {}
     extraction_functions: {}
+  _HeaderMap:
+    representation:
+      type: json
+    aggregate_functions: {}
+    comparison_operators: {}
+    extraction_functions: {}
   cursor_ordering:
     representation:
       type: enum
@@ -16660,4 +16666,21 @@ procedures:
             type: named
             name: Track_mutation_response
 capabilities: ~
-request_arguments: ~
+request_arguments:
+  query_arguments:
+    headers:
+      description: Headers to be merged into original request headers of graphql requests
+      type:
+        type: nullable
+        underlying_type:
+          type: named
+          name: _HeaderMap
+  mutation_arguments:
+    headers:
+      description: Headers to be merged into original request headers of graphql requests
+      type:
+        type: nullable
+        underlying_type:
+          type: named
+          name: _HeaderMap
+  relational_query_arguments: {}

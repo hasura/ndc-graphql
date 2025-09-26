@@ -18426,4 +18426,21 @@ procedures:
       type: named
       name: _update_Track_manyMutationResponse
 capabilities: ~
-request_arguments: ~
+request_arguments:
+  query_arguments:
+    headers:
+      description: Headers to be merged into original request headers of graphql requests
+      type:
+        type: nullable
+        underlying_type:
+          type: named
+          name: _HeaderMap
+  mutation_arguments:
+    headers:
+      description: Headers to be merged into original request headers of graphql requests
+      type:
+        type: nullable
+        underlying_type:
+          type: named
+          name: _HeaderMap
+  relational_query_arguments: {}
