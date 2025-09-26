@@ -40,18 +40,19 @@ from headers to the argument by the engine via [the new `ArgumentPresets` featur
 
 Below, you'll find a matrix of all supported features for the GraphQL connector:
 
-| Feature                | Supported | Notes |
-| ---------------------- | --------- | ----- |
-| Queries                | ✅        | All features that v3 engine currently supports
-| Mutations              | ✅        |
-| Header Passthrough     | ✅        | Entire headers can be forwarded
-| Subscriptions          | ❌        |
-| Unions                 | ❌        | Can be brought in via scalar types
-| Interfaces             | ❌        |
-| Relay API              | ❌        |
-| Directives             | ❌        | @cached, Apollo directives
+| Feature                 | Supported | Notes                                                        |
+| ----------------------- | --------- | ------------------------------------------------------------ |
+| Queries                 | ✅         | All features that v3 engine currently supports               |
+| Mutations               | ✅         |                                                              |
+| Header Passthrough      | ✅         | Entire headers can be forwarded                              |
+| Request-level Arguments | ✅         | Support dynamic headers from the from Pre-NDC Request Plugin |
+| Subscriptions           | ❌         |                                                              |
+| Unions                  | ❌         | Can be brought in via scalar types                           |
+| Interfaces              | ❌         |                                                              |
+| Relay API               | ❌         |                                                              |
+| Directives              | ❌         | @cached, Apollo directives                                   |
 
-#### Other Considerations and limitations
+## Other Considerations and limitations
 
 * Error formatting
   - The format of errors from the connector does not currently match V2 error formatting
@@ -62,9 +63,30 @@ Below, you'll find a matrix of all supported features for the GraphQL connector:
 * Response headers only allow at most one header per name
   - For example you may only use one `Set-Cookie` response header
 
-
 ## Using the GraphQL Connector
 
 This connector should be used with Hasura DDN.
 Please see the [relevant documentation](https://hasura.info/graphql-getting-started).
 
+## Advanced Features
+
+### Forward Headers from Pre-NDC Request Plugin
+ 
+You can use a [Pre-NDC Request Plugin](https://hasura.io/docs/3.0/plugins/introduction#pre-ndc-request-plugin) to modify the request, and add dynamic headers in runtime via `request_arguments.headers` field, which is a string map. Those headers will be merged into the HTTP request headers before being sent to external services.
+
+> See the full example at [Pre-NDC Request Plugin Request](https://hasura.io/docs/3.0/plugins/introduction#example-configuration)
+ 
+```json
+{
+  // ...
+  "ndcRequest": {
+    // ...
+    "request_arguments": {
+        "headers": {
+            "Authorization": "Bearer <token>",
+            "X-Custom-Header": "foo"
+        }
+    }
+  }
+}
+```
