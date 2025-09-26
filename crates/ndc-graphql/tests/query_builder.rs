@@ -41,8 +41,8 @@ async fn read_configuration(config: &str) -> ServerConfig {
         .join(config)
         .join("configuration");
     let env = HashMap::from_iter(vec![
-        ("GRAPHQL_ENDPOINT".to_owned(), "".to_owned()),
-        ("GRAPHQL_ENDPOINT_SECRET".to_owned(), "".to_owned()),
+        ("GRAPHQL_ENDPOINT".to_owned(), String::new()),
+        ("GRAPHQL_ENDPOINT_SECRET".to_owned(), String::new()),
     ]);
     GraphQLConnectorSetup::new(env)
         .read_configuration(configuration_dir)
@@ -108,7 +108,7 @@ async fn test_generated_schema() {
 
 #[test]
 fn test_capabilities() {
-    assert_yaml_snapshot!("Capabilities", capabilities_response())
+    assert_yaml_snapshot!("Capabilities", capabilities_response());
 }
 
 #[test]
@@ -117,5 +117,5 @@ fn configuration_schema() {
         "Configuration JSON Schema",
         serde_json::to_string_pretty(&schema_for!(ServerConfigFile))
             .expect("Should serialize schema to json")
-    )
+    );
 }

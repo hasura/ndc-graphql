@@ -28,6 +28,14 @@ impl Connector for GraphQLConnector {
         Ok(())
     }
 
+    fn connector_name() -> &'static str {
+        "ndc_graphql"
+    }
+
+    fn connector_version() -> &'static str {
+        env!("CARGO_PKG_VERSION")
+    }
+
     async fn get_capabilities() -> models::Capabilities {
         capabilities()
     }

@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0]
+
+- Upgrade ndc-spec v0.2.10 and ndc-rust-sdk
+- Support request-level arguments
+
 ## [0.2.3]
 
 - Patch release for v0.2.1 and v0.2.2

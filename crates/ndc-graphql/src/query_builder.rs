@@ -98,6 +98,11 @@ pub fn build_mutation_document(
         }
     }
 
+    let mut request_level_headers =
+        extract_headers_from_request_arguments(request.request_arguments.as_ref())?;
+
+    request_headers.append(&mut request_level_headers);
+
     let selection_set = SelectionSet {
         span: (pos(), pos()),
         items,
@@ -123,6 +128,7 @@ pub fn build_mutation_document(
         headers: request_headers,
     })
 }
+
 pub fn build_query_document(
     request: &models::QueryRequest,
     configuration: &ServerConfig,
@@ -170,10 +176,10 @@ pub fn build_query_document(
         .query_fields
         .get(&request.collection)
         .ok_or_else(|| QueryBuilderError::QueryFieldNotFound {
-            field: request.collection.to_owned(),
+            field: request.collection.clone(),
         })?;
 
-    let (headers, items, variable_values, variable_definitions) =
+    let (mut headers, items, variable_values, variable_definitions) =
         if let Some(variables) = &request.variables {
             let mut variable_values = BTreeMap::new();
             let mut variable_definitions = vec![];
@@ -213,7 +219,7 @@ pub fn build_query_document(
                 items.push(item);
 
                 variable_values.append(&mut values);
-                variable_definitions.append(&mut definitions)
+                variable_definitions.append(&mut definitions);
             }
 
             (all_headers, items, variable_values, variable_definitions)
@@ -252,6 +258,11 @@ pub fn build_query_document(
 
             (headers, vec![item], variable_values, variable_definitions)
         };
+
+    let mut request_level_headers =
+        extract_headers_from_request_arguments(request.request_arguments.as_ref())?;
+
+    headers.append(&mut request_level_headers);
 
     let selection_set = SelectionSet {
         span: (pos(), pos()),
@@ -307,9 +318,7 @@ where
                 | serde_json::Value::Number(_)
                 | serde_json::Value::String(_)
                 | serde_json::Value::Array(_) => {
-                    return Err(QueryBuilderError::MisshapenHeadersArgument(
-                        value.to_owned(),
-                    ))
+                    return Err(QueryBuilderError::MisshapenHeadersArgument(value.clone()))
                 }
                 serde_json::Value::Object(object) => {
                     for (name, value) in object {
@@ -320,7 +329,7 @@ where
                             | serde_json::Value::Array(_)
                             | serde_json::Value::Object(_) => {
                                 return Err(QueryBuilderError::MisshapenHeadersArgument(
-                                    value.to_owned(),
+                                    value.clone(),
                                 ))
                             }
                             serde_json::Value::String(header) => {
@@ -342,6 +351,7 @@ where
 
     Ok((headers, request_arguments))
 }
+
 #[allow(clippy::too_many_arguments)]
 fn selection_set_field<'a>(
     alias: &str,
@@ -353,7 +363,7 @@ fn selection_set_field<'a>(
     configuration: &ServerConfig,
     variables: &BTreeMap<VariableName, serde_json::Value>,
 ) -> Result<Selection<'a, String>, QueryBuilderError> {
-    let selection_set = match fields.as_ref().map(underlying_fields) {
+    let selection_set = match fields.as_ref().and_then(underlying_fields) {
         Some(fields) => {
             let items = fields
                 .iter()
@@ -381,12 +391,12 @@ fn selection_set_field<'a>(
                             description: _,
                         }) => fields.get(field_name).ok_or_else(|| {
                             QueryBuilderError::ObjectFieldNotFound {
-                                object: field_definition.r#type.name().to_owned(),
-                                field: field_name.to_owned(),
+                                object: field_definition.r#type.name(),
+                                field: field_name.clone(),
                             }
                         }),
                         Some(_) | None => Err(QueryBuilderError::ObjectTypeNotFound(
-                            field_definition.r#type.name().to_owned(),
+                            field_definition.r#type.name(),
                         )),
                     }?;
 
@@ -426,7 +436,7 @@ fn selection_set_field<'a>(
         alias: if alias == field_name.inner() {
             None
         } else {
-            Some(alias.to_owned())
+            Some(alias.to_string())
         },
         name: field_name.to_string(),
         arguments,
@@ -434,6 +444,7 @@ fn selection_set_field<'a>(
         selection_set,
     }))
 }
+
 fn field_arguments<'a, A, M>(
     arguments: &BTreeMap<ArgumentName, A>,
     map_argument: M,
@@ -456,9 +467,9 @@ where
                 .arguments
                 .get(name)
                 .ok_or(QueryBuilderError::ArgumentNotFound {
-                    object: object_name.to_owned(),
-                    field: field_name.to_owned(),
-                    argument: name.to_owned(),
+                    object: object_name.clone(),
+                    field: field_name.clone(),
+                    argument: name.clone(),
                 })?
                 .r#type;
 
@@ -478,11 +489,12 @@ fn map_query_arg(
     match argument {
         Argument::Variable { name } => variables
             .get(name)
-            .map(|v| v.to_owned())
-            .ok_or_else(|| QueryBuilderError::MissingVariable(name.to_owned())),
+            .map(std::borrow::ToOwned::to_owned)
+            .ok_or_else(|| QueryBuilderError::MissingVariable(name.clone())),
         Argument::Literal { value } => Ok(value.to_owned()),
     }
 }
+
 fn map_arg(
     argument: &serde_json::Value,
     _variables: &BTreeMap<VariableName, serde_json::Value>,
@@ -490,9 +502,22 @@ fn map_arg(
     Ok(argument.to_owned())
 }
 
-fn underlying_fields(nested_field: &NestedField) -> &IndexMap<FieldName, models::Field> {
+fn underlying_fields(nested_field: &NestedField) -> Option<&IndexMap<FieldName, models::Field>> {
     match nested_field {
-        NestedField::Object(obj) => &obj.fields,
+        NestedField::Object(obj) => Some(&obj.fields),
         NestedField::Array(arr) => underlying_fields(&arr.fields),
+        NestedField::Collection(_) => None,
+    }
+}
+
+/// extract headers from the request_arguments object which is a string map.
+fn extract_headers_from_request_arguments(
+    request_arguments: Option<&BTreeMap<ArgumentName, serde_json::Value>>,
+) -> Result<BTreeMap<String, String>, QueryBuilderError> {
+    match request_arguments.and_then(|args| args.get("headers")) {
+        None => Ok(BTreeMap::new()),
+        Some(value) => serde_json::from_value::<Option<BTreeMap<String, String>>>(value.clone())
+            .map(Option::unwrap_or_default)
+            .map_err(|err| QueryBuilderError::Unexpected(err.to_string())),
     }
 }

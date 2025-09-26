@@ -2,10 +2,46 @@
 members = ["crates/ndc-graphql", "crates/ndc-graphql-cli", "crates/common"]
 resolver = "2"
 
-package.version = "0.2.3"
+package.version = "0.3.0"
 package.edition = "2021"
+package.license = "Apache-2.0"
+
+[workspace.dependencies]
+async-trait = "0.1"
+clap = { version = "4", features = ["derive", "env"] }
+glob-match = "0.2"
+graphql_client = "0.14"
+graphql-introspection-query = "0.2"
+graphql-parser = "0.4"
+indexmap = "2.11"
+ndc-models = { git = "http://github.com/hasura/ndc-spec.git", tag = "v0.2.10" }
+# 
+ndc-sdk = { git = "https://github.com/hasura/ndc-sdk-rs", tag = "v0.9.0-beta.1", package = "ndc-sdk", features = [
+    "rustls",
+], default-features = false }
+prometheus = "0.14"
+reqwest = { version = "0.12", features = [
+    "json",
+    "rustls-tls",
+], default-features = false }
+schemars = "0.8.22"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tokio = { version = "1", features = ["macros", "rt-multi-thread", "fs"] }
+tracing = "0.1"
 
 # insta performs better in release mode
 [profile.dev.package]
 insta.opt-level = 3
 similar.opt-level = 3
+
+[workspace.lints.clippy]
+all = { level = "warn", priority = -1 }
+pedantic = { level = "warn", priority = -1 }
+# disable certain pedantic warnings
+doc_markdown = { level = "allow" }
+missing_errors_doc = { level = "allow" }
+missing_panics_doc = { level = "allow" }
+module_name_repetitions = { level = "allow" }
+must_use_candidate = { level = "allow" }
+wildcard_imports = { level = "allow" }

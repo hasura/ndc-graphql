@@ -26,9 +26,14 @@ pub struct GraphQLConnectorSetup {
 impl ConnectorSetup for GraphQLConnectorSetup {
     type Connector = GraphQLConnector;
 
+    /// Validate the configuration provided by the user, returning a configuration error or a
+    /// validated [`Configuration`].
+    ///
+    /// The [`ParseError`] type is provided as a convenience to connector authors, to be used on
+    /// error.
     async fn parse_configuration(
         &self,
-        configuration_dir: impl AsRef<Path> + Send,
+        configuration_dir: &Path,
     ) -> connector::Result<<Self::Connector as Connector>::Configuration> {
         Ok(self.read_configuration(configuration_dir).await?)
     }

@@ -46,4 +46,4 @@ dockerComposeWatch:
   - path: ./
     target: /etc/connector
     action: sync+restart
-documentationPage: https://hasura.info/graphql-getting-started
+documentationPage: https://hasura.io/docs/3.0/reference/connectors/graphql
