@@ -38,13 +38,6 @@ impl ConnectorSetup for GraphQLConnectorSetup {
         Ok(self.read_configuration(configuration_dir).await?)
     }
 
-    // async fn parse_configuration(
-    //     &self,
-    //     configuration_dir: impl AsRef<Path> + Send,
-    // ) -> connector::Result<<Self::Connector as Connector>::Configuration> {
-    //     Ok(self.read_configuration(configuration_dir).await?)
-    // }
-
     async fn try_init_state(
         &self,
         configuration: &<Self::Connector as Connector>::Configuration,
