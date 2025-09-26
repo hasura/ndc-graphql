@@ -13,6 +13,9 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
+  # Fix the artifact download failure
+  # Reference: https://github.com/actions/download-artifact/issues/377#issuecomment-2651196178
+  DOCKER_BUILD_RECORD_UPLOAD: "false"
 
 jobs:
   build-and-push-image:
@@ -153,7 +156,7 @@ jobs:
 
       - uses: actions/checkout@v5
           
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v5
         with:
           path: release/artifacts
           merge-multiple: true
