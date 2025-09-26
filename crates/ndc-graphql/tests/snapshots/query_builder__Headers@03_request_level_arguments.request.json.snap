@@ -1,0 +1,8 @@
+---
+source: crates/ndc-graphql/tests/query_builder.rs
+assertion_line: 91
+expression: operation.headers
+input_file: crates/ndc-graphql/tests/config-1/mutations/03_request_level_arguments.request.json
+---
+Authorization: unauthorized
+X-User-ID: "1"

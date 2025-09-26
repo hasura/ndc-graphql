@@ -346,9 +346,8 @@ dependencies = [
 
 [[package]]
 name = "common"
-version = "0.8.1"
+version = "0.3.0"
 dependencies = [
- "async-trait",
  "glob-match",
  "graphql-parser",
  "graphql_client",
@@ -357,7 +356,6 @@ dependencies = [
  "schemars 0.8.22",
  "serde",
  "serde_json",
- "tokio",
 ]
 
 [[package]]
@@ -1304,7 +1302,7 @@ dependencies = [
 
 [[package]]
 name = "ndc-graphql"
-version = "0.8.1"
+version = "0.3.0"
 dependencies = [
  "async-trait",
  "common",
@@ -1316,7 +1314,6 @@ dependencies = [
  "prometheus",
  "reqwest",
  "schemars 0.8.22",
- "serde",
  "serde_json",
  "tokio",
  "tracing",
@@ -1324,11 +1321,10 @@ dependencies = [
 
 [[package]]
 name = "ndc-graphql-cli"
-version = "0.8.1"
+version = "0.3.0"
 dependencies = [
  "clap",
  "common",
- "graphql-introspection-query",
  "graphql-parser",
  "graphql_client",
  "insta",
@@ -1356,7 +1352,7 @@ dependencies = [
 [[package]]
 name = "ndc-sdk"
 version = "0.8.1"
-source = "git+https://github.com/hasura/ndc-sdk-rs?rev=cc12fdaa9a452c6e61c69d802b824c0169fc0b53#cc12fdaa9a452c6e61c69d802b824c0169fc0b53"
+source = "git+https://github.com/hasura/ndc-sdk-rs?tag=v0.9.0-beta.1#cc12fdaa9a452c6e61c69d802b824c0169fc0b53"
 dependencies = [
  "async-trait",
  "axum",
@@ -1387,7 +1383,7 @@ dependencies = [
 [[package]]
 name = "ndc-sdk-core"
 version = "0.8.1"
-source = "git+https://github.com/hasura/ndc-sdk-rs?rev=cc12fdaa9a452c6e61c69d802b824c0169fc0b53#cc12fdaa9a452c6e61c69d802b824c0169fc0b53"
+source = "git+https://github.com/hasura/ndc-sdk-rs?tag=v0.9.0-beta.1#cc12fdaa9a452c6e61c69d802b824c0169fc0b53"
 dependencies = [
  "async-trait",
  "axum",

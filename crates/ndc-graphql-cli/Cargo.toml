@@ -7,7 +7,6 @@ edition.workspace = true
 common = { path = "../common" }
 clap = { workspace = true }
 graphql_client = { workspace = true }
-graphql-introspection-query = { workspace = true }
 graphql-parser = { workspace = true }
 ndc-models = { workspace = true }
 schemars = { workspace = true }

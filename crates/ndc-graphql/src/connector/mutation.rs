@@ -83,10 +83,9 @@ pub async fn handle_mutation(
                 .map(|(index, operation)| match operation {
                     models::MutationOperation::Procedure { .. } => Ok({
                         let alias = format!("procedure_{index}");
-                        let result = data
-                            .get_mut(&alias)
-                            .map(|val| mem::replace(val, serde_json::Value::Null))
-                            .unwrap_or(serde_json::Value::Null);
+                        let result = data.get_mut(&alias).map_or(serde_json::Value::Null, |val| {
+                            mem::replace(val, serde_json::Value::Null)
+                        });
                         let result = if forward_response_headers {
                             serde_json::to_value(BTreeMap::from_iter(vec![
                                 (

@@ -1,0 +1,7 @@
+---
+source: crates/ndc-graphql/tests/query_builder.rs
+assertion_line: 71
+expression: operation.variables
+input_file: crates/ndc-graphql/tests/config-1/queries/05_request_level_arguments.request.json
+---
+{}

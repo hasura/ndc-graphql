@@ -1,0 +1,14 @@
+---
+source: crates/ndc-graphql/tests/query_builder.rs
+assertion_line: 90
+expression: operation.variables
+input_file: crates/ndc-graphql/tests/config-1/mutations/03_request_level_arguments.request.json
+---
+{
+  "arg_1__set": {
+    "ArtistId": 1
+  },
+  "arg_2_pk_columns": {
+    "AlbumId": 1
+  }
+}

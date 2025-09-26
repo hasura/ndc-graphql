@@ -1,0 +1,8 @@
+---
+source: crates/ndc-graphql/tests/query_builder.rs
+assertion_line: 72
+expression: operation.headers
+input_file: crates/ndc-graphql/tests/config-1/queries/05_request_level_arguments.request.json
+---
+Authorization: Bearer unauthorized
+X-Test-Header: test_value

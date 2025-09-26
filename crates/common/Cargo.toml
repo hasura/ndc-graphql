@@ -4,7 +4,6 @@ version.workspace = true
 edition.workspace = true
 
 [dependencies]
-async-trait = { workspace = true }
 glob-match = { workspace = true }
 graphql_client = { workspace = true }
 graphql-parser = { workspace = true }
@@ -13,4 +12,3 @@ reqwest = { workspace = true }
 schemars = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
-tokio = { workspace = true }
