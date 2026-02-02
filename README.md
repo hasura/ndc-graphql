@@ -90,3 +90,18 @@ You can use a [Pre-NDC Request Plugin](https://hasura.io/docs/3.0/plugins/introd
   }
 }
 ```
+
+### TLS/SSL Configuration
+
+The connector uses `rustls` for TLS which does not automatically pick up system certificate stores. For self-hosted deployments using organization-signed certificates, you can configure custom CA certificates or disable TLS verification via environment variables.
+
+| Variable | Description |
+|----------|-------------|
+| `GRAPHQL_CA_CERT_FILE` | Path to a single PEM-encoded CA certificate file |
+| `GRAPHQL_CA_CERT_DIR` | Directory containing PEM-encoded CA certificates (`.pem`, `.crt`, `.cer`) |
+| `GRAPHQL_INSECURE_SKIP_TLS_VERIFY` | Set to `true` or `1` to disable TLS verification |
+
+**Notes:**
+- `GRAPHQL_CA_CERT_FILE` and `GRAPHQL_CA_CERT_DIR` can be used together (certificates are combined)
+- `GRAPHQL_INSECURE_SKIP_TLS_VERIFY` takes precedence and skips all CA cert logic when enabled
+- **Warning:** Disabling TLS verification is insecure and should only be used for development/testing
