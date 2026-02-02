@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.1]
+
+- Add support for custom CA certificates and allow skipping TLS verification entirely
+
 ## [0.3.0]
 
 - Upgrade ndc-spec v0.2.10 and ndc-rust-sdk
