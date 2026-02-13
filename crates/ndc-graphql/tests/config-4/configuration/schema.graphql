@@ -1,0 +1,32 @@
+schema {
+  query: Query
+}
+
+scalar ID
+scalar String
+
+type Query {
+  getAccountById(id: ID!): Account
+}
+
+type Account {
+  id: ID!
+  relationship: PartyAccountRelationship!
+  altRelationship: PartyRelationshipUnion
+}
+
+interface PartyAccountRelationship {
+  relId: ID!
+}
+
+type PersonRelationship implements PartyAccountRelationship {
+  relId: ID!
+  personName: String
+}
+
+type OrganizationRelationship implements PartyAccountRelationship {
+  relId: ID!
+  orgName: String
+}
+
+union PartyRelationshipUnion = PersonRelationship | OrganizationRelationship

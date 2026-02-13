@@ -1,11 +1,13 @@
 use std::collections::BTreeMap;
 
-use common::config::schema::TypeRef;
+use common::config::schema::{TypeDef, TypeRef};
 use graphql_parser::{
     query::{Type, Value, VariableDefinition},
     Pos,
 };
-use ndc_sdk::models::ArgumentName;
+use ndc_sdk::models::{ArgumentName, TypeName};
+
+use super::coerce::coerce_value;
 
 pub struct OperationParameters {
     namespace: String,
@@ -26,9 +28,12 @@ impl<'c> OperationParameters {
         name: &ArgumentName,
         value: serde_json::Value,
         r#type: &TypeRef,
+        definitions: &BTreeMap<TypeName, TypeDef>,
     ) -> Value<'c, String> {
         let name = format!("{}arg_{}_{}", self.namespace, self.parameter_index, name);
         self.parameter_index += 1;
+
+        let value = coerce_value(value, r#type, definitions);
 
         self.parameters
             .insert(name.clone(), (value, r#type.to_owned()));

@@ -1,0 +1,45 @@
+{
+    "$schema": "_query_request.schema.json",
+    "collection": "Album",
+    "query": {
+        "fields": {
+            "__value": {
+                "type": "column",
+                "column": "__value",
+                "fields": {
+                    "type": "array",
+                    "fields": {
+                        "type": "object",
+                        "fields": {
+                            "AlbumId": {
+                                "type": "column",
+                                "column": "AlbumId",
+                                "fields": null
+                            },
+                            "Title": {
+                                "type": "column",
+                                "column": "Title",
+                                "fields": null
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "arguments": {
+        "limit": {
+            "type": "literal",
+            "value": "20"
+        },
+        "where": {
+            "type": "literal",
+            "value": {
+                "AlbumId": {
+                    "_gt": "5"
+                }
+            }
+        }
+    },
+    "collection_relationships": {}
+}

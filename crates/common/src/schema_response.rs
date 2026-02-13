@@ -18,12 +18,21 @@ pub fn schema_response(
 ) -> SchemaResponse {
     let forward_request_headers = !request.forward_headers.is_empty();
     let forward_response_headers = !response.forward_headers.is_empty();
+    let has_polymorphic_types = schema.definitions.values().any(|definition| {
+        matches!(
+            definition,
+            TypeDef::Interface { .. } | TypeDef::Union { .. }
+        )
+    });
 
     let mut scalar_types: BTreeMap<_, _> = schema
         .definitions
         .iter()
         .filter_map(|(name, typedef)| match typedef {
-            TypeDef::Object { .. } | TypeDef::InputObject { .. } => None,
+            TypeDef::Object { .. }
+            | TypeDef::InputObject { .. }
+            | TypeDef::Interface { .. }
+            | TypeDef::Union { .. } => None,
             TypeDef::Scalar { description: _ } => Some((
                 name.to_owned().into(),
                 models::ScalarType {
@@ -50,6 +59,18 @@ pub fn schema_response(
         })
         .collect();
 
+    if has_polymorphic_types && !scalar_types.contains_key("String") {
+        scalar_types.insert(
+            "String".into(),
+            models::ScalarType {
+                representation: models::TypeRepresentation::String,
+                aggregate_functions: BTreeMap::new(),
+                comparison_operators: BTreeMap::new(),
+                extraction_functions: BTreeMap::new(),
+            },
+        );
+    }
+
     // add headers type name for either header forwarding or request-level arguments
     scalar_types.insert(
         request.headers_type_name.to_owned(),
@@ -61,35 +82,93 @@ pub fn schema_response(
         },
     );
 
-    let mut object_types: BTreeMap<_, _> = schema
-        .definitions
-        .iter()
-        .filter_map(|(name, typedef)| match typedef {
-            TypeDef::Scalar { .. } | TypeDef::Enum { .. } => None,
+    let mut object_types: BTreeMap<_, _> = BTreeMap::new();
+    for (name, typedef) in &schema.definitions {
+        match typedef {
+            TypeDef::Scalar { .. } | TypeDef::Enum { .. } => {}
             TypeDef::Object {
                 fields,
                 description,
-            } => Some((
-                name.to_owned().into(),
-                models::ObjectType {
-                    description: description.to_owned(),
-                    fields: fields.iter().map(map_object_field).collect(),
-                    foreign_keys: BTreeMap::new(),
-                },
-            )),
+            } => {
+                object_types.insert(
+                    name.to_owned().into(),
+                    models::ObjectType {
+                        description: description.to_owned(),
+                        fields: fields.iter().map(map_object_field).collect(),
+                        foreign_keys: BTreeMap::new(),
+                    },
+                );
+            }
+            TypeDef::Interface {
+                fields,
+                possible_types,
+                description,
+            } => {
+                let mut variant_types = Vec::new();
+                for concrete_type in possible_types {
+                    let Some(TypeDef::Object {
+                        fields: concrete_fields,
+                        ..
+                    }) = schema.definitions.get(concrete_type)
+                    else {
+                        continue;
+                    };
+
+                    let exclusive_fields =
+                        interface_exclusive_fields(fields, concrete_fields);
+                    if exclusive_fields.is_empty() {
+                        continue;
+                    }
+
+                    let variant_type_name = polymorphic_variant_type_name(name, concrete_type);
+                    object_types.insert(
+                        variant_type_name.to_owned().into(),
+                        models::ObjectType {
+                            description: Some(format!(
+                                "Fields available only when runtime type is {concrete_type} for polymorphic type {name}"
+                            )),
+                            fields: exclusive_fields.iter().map(map_object_field).collect(),
+                            foreign_keys: BTreeMap::new(),
+                        },
+                    );
+                    variant_types
+                        .push((concrete_type.to_string(), variant_type_name.to_string()));
+                }
+
+                object_types.insert(
+                    name.to_owned().into(),
+                    polymorphic_object_type(name, description, Some(fields), variant_types.into_iter()),
+                );
+            }
+            TypeDef::Union {
+                members,
+                description,
+            } => {
+                object_types.insert(
+                    name.to_owned().into(),
+                    polymorphic_object_type(
+                        name,
+                        description,
+                        None,
+                        members.iter().map(|member| (member.to_string(), member.to_string())),
+                    ),
+                );
+            }
             TypeDef::InputObject {
                 fields,
                 description,
-            } => Some((
-                name.to_owned().into(),
-                models::ObjectType {
-                    description: description.to_owned(),
-                    fields: fields.iter().map(map_input_object_field).collect(),
-                    foreign_keys: BTreeMap::new(),
-                },
-            )),
-        })
-        .collect();
+            } => {
+                object_types.insert(
+                    name.to_owned().into(),
+                    models::ObjectType {
+                        description: description.to_owned(),
+                        fields: fields.iter().map(map_input_object_field).collect(),
+                        foreign_keys: BTreeMap::new(),
+                    },
+                );
+            }
+        }
+    }
 
     let response_type =
         |field: &ObjectFieldDefinition, operation_type: &str, operation_name: &FieldName| {
@@ -238,6 +317,73 @@ pub fn schema_response(
         capabilities: None,
         request_arguments: Some(request_level_arguments),
     }
+}
+
+fn polymorphic_object_type<I>(
+    type_name: &TypeName,
+    description: &Option<String>,
+    common_fields: Option<&BTreeMap<FieldName, ObjectFieldDefinition>>,
+    concrete_types: I,
+) -> models::ObjectType
+where
+    I: Iterator<Item = (String, String)>,
+{
+    let mut fields: BTreeMap<FieldName, models::ObjectField> = common_fields
+        .map(|fields| fields.iter().map(map_object_field).collect())
+        .unwrap_or_default();
+
+    fields.insert(
+        "__typename".into(),
+        models::ObjectField {
+            description: Some(format!(
+                "Concrete GraphQL type name for polymorphic type {type_name}"
+            )),
+            r#type: models::Type::Named {
+                name: "String".to_owned().into(),
+            },
+            arguments: BTreeMap::new(),
+        },
+    );
+
+    for (concrete_type, concrete_type_output) in concrete_types {
+        fields.insert(
+            format!("on_{concrete_type}").into(),
+            models::ObjectField {
+                description: Some(format!(
+                    "Fields available when runtime type is {concrete_type}"
+                )),
+                r#type: models::Type::Nullable {
+                    underlying_type: Box::new(models::Type::Named {
+                        name: concrete_type_output.to_owned().into(),
+                    }),
+                },
+                arguments: BTreeMap::new(),
+            },
+        );
+    }
+
+    models::ObjectType {
+        description: description.to_owned(),
+        fields,
+        foreign_keys: BTreeMap::new(),
+    }
+}
+
+fn interface_exclusive_fields(
+    common_fields: &BTreeMap<FieldName, ObjectFieldDefinition>,
+    concrete_fields: &BTreeMap<FieldName, ObjectFieldDefinition>,
+) -> BTreeMap<FieldName, ObjectFieldDefinition> {
+    concrete_fields
+        .iter()
+        .filter(|(field_name, _)| !common_fields.contains_key(*field_name))
+        .map(|(field_name, field_definition)| {
+            (field_name.to_owned(), field_definition.to_owned())
+        })
+        .collect()
+}
+
+fn polymorphic_variant_type_name(type_name: &TypeName, concrete_type: &TypeName) -> TypeName {
+    format!("{type_name}On{concrete_type}").into()
 }
 
 fn map_object_field(
