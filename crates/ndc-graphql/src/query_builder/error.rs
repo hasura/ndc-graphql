@@ -24,6 +24,24 @@ pub enum QueryBuilderError {
         object: TypeName,
         field: FieldName,
     },
+    PolymorphicFieldNotFound {
+        object: TypeName,
+        field: FieldName,
+    },
+    PolymorphicFieldMissingSelection {
+        object: TypeName,
+        field: FieldName,
+    },
+    PolymorphicFieldArgumentsNotSupported {
+        object: TypeName,
+        field: FieldName,
+    },
+    TypenameArgumentsNotSupported {
+        object: TypeName,
+    },
+    TypenameSubselectionNotSupported {
+        object: TypeName,
+    },
     InputObjectFieldNotFound {
         input_object: TypeName,
         field: FieldName,
@@ -73,6 +91,36 @@ impl Display for QueryBuilderError {
             }
             QueryBuilderError::ObjectFieldNotFound { object, field } => {
                 write!(f, "Field {field} not found in Object Type {object}")
+            }
+            QueryBuilderError::PolymorphicFieldNotFound { object, field } => {
+                write!(
+                    f,
+                    "Field {field} is not a valid tagged variant field in polymorphic type {object}"
+                )
+            }
+            QueryBuilderError::PolymorphicFieldMissingSelection { object, field } => {
+                write!(
+                    f,
+                    "Field {field} in polymorphic type {object} requires a nested object selection"
+                )
+            }
+            QueryBuilderError::PolymorphicFieldArgumentsNotSupported { object, field } => {
+                write!(
+                    f,
+                    "Arguments are not supported for polymorphic tagged field {object}.{field}"
+                )
+            }
+            QueryBuilderError::TypenameArgumentsNotSupported { object } => {
+                write!(
+                    f,
+                    "Arguments are not supported for polymorphic field {object}.__typename"
+                )
+            }
+            QueryBuilderError::TypenameSubselectionNotSupported { object } => {
+                write!(
+                    f,
+                    "Field {object}.__typename cannot have a nested selection set"
+                )
             }
             QueryBuilderError::InputObjectFieldNotFound {
                 input_object,

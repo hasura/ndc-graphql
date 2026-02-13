@@ -1,0 +1,180 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "ServerConfigFile",
+  "type": "object",
+  "required": [
+    "$schema",
+    "execution",
+    "introspection"
+  ],
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "introspection": {
+      "description": "Connection Configuration for introspection.",
+      "allOf": [
+        {
+          "$ref": "#/definitions/ConnectionConfigFile"
+        }
+      ]
+    },
+    "execution": {
+      "description": "Connection configuration for query execution.",
+      "allOf": [
+        {
+          "$ref": "#/definitions/ConnectionConfigFile"
+        }
+      ]
+    },
+    "request": {
+      "description": "Optional configuration for requests.",
+      "anyOf": [
+        {
+          "$ref": "#/definitions/RequestConfigFile"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "response": {
+      "description": "Optional configuration for responses.",
+      "anyOf": [
+        {
+          "$ref": "#/definitions/ResponseConfigFile"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "definitions": {
+    "ConnectionConfigFile": {
+      "type": "object",
+      "required": [
+        "endpoint"
+      ],
+      "properties": {
+        "endpoint": {
+          "description": "Target GraphQL endpoint URL",
+          "allOf": [
+            {
+              "$ref": "#/definitions/ConfigValue"
+            }
+          ]
+        },
+        "headers": {
+          "description": "Static headers to include with each request",
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/ConfigValue"
+          }
+        }
+      }
+    },
+    "ConfigValue": {
+      "oneOf": [
+        {
+          "description": "A static string value",
+          "type": "object",
+          "required": [
+            "value"
+          ],
+          "properties": {
+            "value": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "description": "A reference to an environment variable, from which the value will be read at runtime",
+          "type": "object",
+          "required": [
+            "valueFromEnv"
+          ],
+          "properties": {
+            "valueFromEnv": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "RequestConfigFile": {
+      "type": "object",
+      "properties": {
+        "headersArgument": {
+          "description": "Name of the headers argument. Must not conflict with any arguments of root fields in the target schema. Defaults to \"_headers\", set to a different value if there is a conflict.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "headersTypeName": {
+          "description": "Name of the headers argument type. Must not conflict with other types in the target schema. Defaults to \"_HeaderMap\", set to a different value if there is a conflict.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "forwardHeaders": {
+          "description": "List of headers to forward from the request. Defaults to [], AKA no headers/disabled. Supports glob patterns eg. \"X-Hasura-*\". Enabling this requires additional configuration on the ddn side, see docs for more.",
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "ResponseConfigFile": {
+      "type": "object",
+      "properties": {
+        "headersField": {
+          "description": "Name of the headers field in the response type. Defaults to \"headers\".",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "responseField": {
+          "description": "Name of the response field in the response type. Defaults to \"response\".",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "typeNamePrefix": {
+          "description": "Prefix for response type names. Defaults to \"_\". Generated response type names must be unique once prefix and suffix are applied.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "typeNameSuffix": {
+          "description": "Suffix for response type names. Defaults to \"Response\". Generated response type names must be unique once prefix and suffix are applied.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "forwardHeaders": {
+          "description": "List of headers to forward from the response. Defaults to [], AKA no headers/disabled. Supports glob patterns eg. \"X-Hasura-*\". Enabling this requires additional configuration on the ddn side, see docs for more.",
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

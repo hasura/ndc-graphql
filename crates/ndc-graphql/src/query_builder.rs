@@ -6,8 +6,8 @@ use common::config::{
 use glob_match::glob_match;
 use graphql_parser::{
     query::{
-        Definition, Document, Field, Mutation, OperationDefinition, Query, Selection, SelectionSet,
-        Value,
+        Definition, Document, Field, InlineFragment, Mutation, OperationDefinition, Query,
+        Selection, SelectionSet, TypeCondition, Value,
     },
     Pos,
 };
@@ -363,74 +363,13 @@ fn selection_set_field<'a>(
     configuration: &ServerConfig,
     variables: &BTreeMap<VariableName, serde_json::Value>,
 ) -> Result<Selection<'a, String>, QueryBuilderError> {
-    let selection_set = match fields.as_ref().and_then(underlying_fields) {
-        Some(fields) => {
-            let items = fields
-                .iter()
-                .map(|(alias, field)| {
-                    let (field_name, fields, arguments) = match field {
-                        models::Field::Column {
-                            column,
-                            fields,
-                            arguments,
-                        } => (column, fields, arguments),
-                        models::Field::Relationship { .. } => {
-                            return Err(QueryBuilderError::NotSupported(
-                                "Relationships".to_string(),
-                            ))
-                        }
-                    };
-
-                    let object_name = field_definition.r#type.name();
-
-                    // subfield selection should only exist on object types
-                    let field_definition = match configuration.schema.definitions.get(&object_name)
-                    {
-                        Some(TypeDef::Object {
-                            fields,
-                            description: _,
-                        }) => fields.get(field_name).ok_or_else(|| {
-                            QueryBuilderError::ObjectFieldNotFound {
-                                object: field_definition.r#type.name(),
-                                field: field_name.clone(),
-                            }
-                        }),
-                        Some(_) | None => Err(QueryBuilderError::ObjectTypeNotFound(
-                            field_definition.r#type.name(),
-                        )),
-                    }?;
-
-                    selection_set_field(
-                        &alias.to_string(),
-                        field_name,
-                        field_arguments(
-                            arguments,
-                            map_query_arg,
-                            field_definition,
-                            parameters,
-                            field_name,
-                            &object_name,
-                            variables,
-                        )?,
-                        fields,
-                        field_definition,
-                        parameters,
-                        configuration,
-                        variables,
-                    )
-                })
-                .collect::<Result<_, _>>()?;
-
-            SelectionSet {
-                span: (pos(), pos()),
-                items,
-            }
-        }
-        None => SelectionSet {
-            span: (pos(), pos()),
-            items: vec![],
-        },
-    };
+    let selection_set = selection_set(
+        fields,
+        field_definition,
+        parameters,
+        configuration,
+        variables,
+    )?;
     Ok(Selection::Field(Field {
         position: pos(),
         alias: if alias == field_name.inner() {
@@ -443,6 +382,249 @@ fn selection_set_field<'a>(
         directives: vec![],
         selection_set,
     }))
+}
+
+fn selection_set<'a>(
+    fields: &Option<NestedField>,
+    field_definition: &ObjectFieldDefinition,
+    parameters: &mut OperationParameters,
+    configuration: &ServerConfig,
+    variables: &BTreeMap<VariableName, serde_json::Value>,
+) -> Result<SelectionSet<'a, String>, QueryBuilderError> {
+    let items = match fields.as_ref().and_then(underlying_fields) {
+        Some(requested_fields) => {
+            let object_name = field_definition.r#type.name();
+            match configuration.schema.definitions.get(&object_name) {
+                Some(TypeDef::Object { fields, .. }) => object_selection_items(
+                    &object_name,
+                    fields,
+                    requested_fields,
+                    parameters,
+                    configuration,
+                    variables,
+                ),
+                Some(TypeDef::Interface { possible_types, .. }) => polymorphic_selection_items(
+                    &object_name,
+                    possible_types,
+                    configuration
+                        .schema
+                        .definitions
+                        .get(&object_name)
+                        .and_then(|definition| match definition {
+                            TypeDef::Interface { fields, .. } => Some(fields),
+                            _ => None,
+                        }),
+                    requested_fields,
+                    parameters,
+                    configuration,
+                    variables,
+                ),
+                Some(TypeDef::Union { members, .. }) => polymorphic_selection_items(
+                    &object_name,
+                    members,
+                    None,
+                    requested_fields,
+                    parameters,
+                    configuration,
+                    variables,
+                ),
+                Some(_) | None => Err(QueryBuilderError::ObjectTypeNotFound(object_name)),
+            }?
+        }
+        None => vec![],
+    };
+
+    Ok(SelectionSet {
+        span: (pos(), pos()),
+        items,
+    })
+}
+
+fn object_selection_items<'a>(
+    object_name: &TypeName,
+    object_fields: &BTreeMap<FieldName, ObjectFieldDefinition>,
+    requested_fields: &IndexMap<FieldName, models::Field>,
+    parameters: &mut OperationParameters,
+    configuration: &ServerConfig,
+    variables: &BTreeMap<VariableName, serde_json::Value>,
+) -> Result<Vec<Selection<'a, String>>, QueryBuilderError> {
+    requested_fields
+        .iter()
+        .map(|(alias, field)| {
+            let (field_name, fields, arguments) = match field {
+                models::Field::Column {
+                    column,
+                    fields,
+                    arguments,
+                } => (column, fields, arguments),
+                models::Field::Relationship { .. } => {
+                    return Err(QueryBuilderError::NotSupported("Relationships".to_string()))
+                }
+            };
+
+            let field_definition = object_fields.get(field_name).ok_or_else(|| {
+                QueryBuilderError::ObjectFieldNotFound {
+                    object: object_name.clone(),
+                    field: field_name.clone(),
+                }
+            })?;
+
+            selection_set_field(
+                &alias.to_string(),
+                field_name,
+                field_arguments(
+                    arguments,
+                    map_query_arg,
+                    field_definition,
+                    parameters,
+                    field_name,
+                    object_name,
+                    variables,
+                )?,
+                fields,
+                field_definition,
+                parameters,
+                configuration,
+                variables,
+            )
+        })
+        .collect()
+}
+
+fn polymorphic_selection_items<'a>(
+    object_name: &TypeName,
+    concrete_types: &std::collections::BTreeSet<TypeName>,
+    common_fields: Option<&BTreeMap<FieldName, ObjectFieldDefinition>>,
+    requested_fields: &IndexMap<FieldName, models::Field>,
+    parameters: &mut OperationParameters,
+    configuration: &ServerConfig,
+    variables: &BTreeMap<VariableName, serde_json::Value>,
+) -> Result<Vec<Selection<'a, String>>, QueryBuilderError> {
+    requested_fields
+        .iter()
+        .map(|(alias, field)| {
+            let (field_name, nested_fields, arguments) = match field {
+                models::Field::Column {
+                    column,
+                    fields,
+                    arguments,
+                } => (column, fields, arguments),
+                models::Field::Relationship { .. } => {
+                    return Err(QueryBuilderError::NotSupported("Relationships".to_string()))
+                }
+            };
+
+            if field_name.inner() == "__typename" {
+                if !arguments.is_empty() {
+                    return Err(QueryBuilderError::TypenameArgumentsNotSupported {
+                        object: object_name.clone(),
+                    });
+                }
+                if nested_fields.is_some() {
+                    return Err(QueryBuilderError::TypenameSubselectionNotSupported {
+                        object: object_name.clone(),
+                    });
+                }
+                return Ok(Selection::Field(Field {
+                    position: pos(),
+                    alias: if alias == field_name {
+                        None
+                    } else {
+                        Some(alias.to_string())
+                    },
+                    name: "__typename".to_string(),
+                    arguments: vec![],
+                    directives: vec![],
+                    selection_set: SelectionSet {
+                        span: (pos(), pos()),
+                        items: vec![],
+                    },
+                }));
+            }
+
+            if let Some(concrete_type) = field_name.inner().strip_prefix("on_") {
+                if !arguments.is_empty() {
+                    return Err(QueryBuilderError::PolymorphicFieldArgumentsNotSupported {
+                        object: object_name.clone(),
+                        field: field_name.clone(),
+                    });
+                }
+
+                let concrete_type: TypeName = concrete_type.to_owned().into();
+                if !concrete_types.contains(&concrete_type) {
+                    return Err(QueryBuilderError::PolymorphicFieldNotFound {
+                        object: object_name.clone(),
+                        field: field_name.clone(),
+                    });
+                }
+
+                let requested_subfields = nested_fields
+                    .as_ref()
+                    .and_then(underlying_fields)
+                    .ok_or_else(|| QueryBuilderError::PolymorphicFieldMissingSelection {
+                        object: object_name.clone(),
+                        field: field_name.clone(),
+                    })?;
+
+                let concrete_object_fields =
+                    match configuration.schema.definitions.get(&concrete_type) {
+                        Some(TypeDef::Object { fields, .. }) => fields,
+                        Some(_) | None => {
+                            return Err(QueryBuilderError::ObjectTypeNotFound(concrete_type));
+                        }
+                    };
+                let concrete_variant_fields = interface_exclusive_fields(
+                    concrete_object_fields,
+                    common_fields,
+                );
+
+                let fragment_items = object_selection_items(
+                    &concrete_type,
+                    &concrete_variant_fields,
+                    requested_subfields,
+                    parameters,
+                    configuration,
+                    variables,
+                )?;
+
+                return Ok(Selection::InlineFragment(InlineFragment {
+                    position: pos(),
+                    type_condition: Some(TypeCondition::On(concrete_type.to_string())),
+                    directives: vec![],
+                    selection_set: SelectionSet {
+                        span: (pos(), pos()),
+                        items: fragment_items,
+                    },
+                }));
+            }
+
+            let field_definition = common_fields
+                .and_then(|fields| fields.get(field_name))
+                .ok_or_else(|| QueryBuilderError::PolymorphicFieldNotFound {
+                    object: object_name.clone(),
+                    field: field_name.clone(),
+                })?;
+
+            selection_set_field(
+                &alias.to_string(),
+                field_name,
+                field_arguments(
+                    arguments,
+                    map_query_arg,
+                    field_definition,
+                    parameters,
+                    field_name,
+                    object_name,
+                    variables,
+                )?,
+                nested_fields,
+                field_definition,
+                parameters,
+                configuration,
+                variables,
+            )
+        })
+        .collect()
 }
 
 fn field_arguments<'a, A, M>(
@@ -507,6 +689,27 @@ fn underlying_fields(nested_field: &NestedField) -> Option<&IndexMap<FieldName, 
         NestedField::Object(obj) => Some(&obj.fields),
         NestedField::Array(arr) => underlying_fields(&arr.fields),
         NestedField::Collection(_) => None,
+    }
+}
+
+fn interface_exclusive_fields(
+    concrete_fields: &BTreeMap<FieldName, ObjectFieldDefinition>,
+    common_fields: Option<&BTreeMap<FieldName, ObjectFieldDefinition>>,
+) -> BTreeMap<FieldName, ObjectFieldDefinition> {
+    match common_fields {
+        Some(common_fields) => concrete_fields
+            .iter()
+            .filter(|(field_name, _)| !common_fields.contains_key(*field_name))
+            .map(|(field_name, field_definition)| {
+                (field_name.to_owned(), field_definition.to_owned())
+            })
+            .collect(),
+        None => concrete_fields
+            .iter()
+            .map(|(field_name, field_definition)| {
+                (field_name.to_owned(), field_definition.to_owned())
+            })
+            .collect(),
     }
 }
 
