@@ -1,0 +1,7 @@
+---
+source: crates/ndc-graphql/tests/query_builder.rs
+expression: operation.variables
+---
+{
+  "arg_1_id": "acct-1"
+}

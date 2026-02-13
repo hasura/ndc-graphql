@@ -1,0 +1,14 @@
+---
+source: crates/ndc-graphql/tests/query_builder.rs
+assertion_line: 75
+expression: operation.variables
+input_file: crates/ndc-graphql/tests/config-1/queries/06_scalar_coercion.request.json
+---
+{
+  "arg_1_limit": 20,
+  "arg_2_where": {
+    "AlbumId": {
+      "_gt": 5
+    }
+  }
+}
