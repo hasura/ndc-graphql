@@ -1,0 +1,7 @@
+---
+source: crates/ndc-graphql/tests/query_builder.rs
+assertion_line: 76
+expression: operation.headers
+input_file: crates/ndc-graphql/tests/config-1/queries/06_scalar_coercion.request.json
+---
+Authorization: Bearer <token>

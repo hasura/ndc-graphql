@@ -80,40 +80,90 @@ pub async fn handle_query(
             Err(QueryError::new_unprocessable_content(&errors[0].message)
                 .with_details(serde_json::json!({ "errors": errors })))
         } else if let Some(data) = response.data {
+            #[cfg(debug_assertions)]
+            {
+                let response_string = serde_json::to_string(&data)
+                    .map_err(|err| QueryError::new_unprocessable_content(&err))?;
+                tracing::event!(Level::DEBUG, "Upstream Response" = response_string);
+            }
+
             let data = normalize_query_data(data, &request, configuration)?;
             let forward_response_headers = !configuration.response.forward_headers.is_empty();
 
-            let row = if forward_response_headers {
-                let headers = serde_json::to_value(headers)
-                    .map_err(|err| QueryError::new_unprocessable_content(&err))?;
-                let data = serde_json::to_value(data)
-                    .map_err(|err| QueryError::new_unprocessable_content(&err))?;
+            let row_sets = match &request.variables {
+                Some(variables) if !variables.is_empty() => {
+                    let mut row_sets = Vec::with_capacity(variables.len());
 
-                IndexMap::from_iter(vec![
-                    (
-                        configuration.response.headers_field.to_string().into(),
-                        models::RowFieldValue(headers),
-                    ),
-                    (
-                        configuration.response.response_field.to_string().into(),
-                        models::RowFieldValue(data),
-                    ),
-                ])
-            } else {
-                data
+                    for index in 1..=variables.len() {
+                        let alias: FieldName = format!("q{index}__value").into();
+                        let value = data.get(&alias).cloned().unwrap_or(
+                            models::RowFieldValue(serde_json::Value::Null),
+                        );
+
+                        let row = IndexMap::from_iter(vec![(
+                            FieldName::from("__value"),
+                            value,
+                        )]);
+
+                        let row = if forward_response_headers {
+                            wrap_row_with_headers(row, &headers, configuration)?
+                        } else {
+                            row
+                        };
+
+                        row_sets.push(models::RowSet {
+                            groups: None,
+                            aggregates: None,
+                            rows: Some(vec![row]),
+                        });
+                    }
+
+                    row_sets
+                }
+                _ => {
+                    let row = if forward_response_headers {
+                        wrap_row_with_headers(data, &headers, configuration)?
+                    } else {
+                        data
+                    };
+
+                    vec![models::RowSet {
+                        groups: None,
+                        aggregates: None,
+                        rows: Some(vec![row]),
+                    }]
+                }
             };
 
-            Ok(models::QueryResponse(vec![models::RowSet {
-                groups: None,
-                aggregates: None,
-                rows: Some(vec![row]),
-            }]))
+            Ok(models::QueryResponse(row_sets))
         } else {
             Err(QueryError::new_unprocessable_content(
                 &"No data or errors in response",
             ))
         }
     })
+}
+
+fn wrap_row_with_headers(
+    data: IndexMap<FieldName, models::RowFieldValue>,
+    headers: &BTreeMap<String, String>,
+    configuration: &ServerConfig,
+) -> Result<IndexMap<FieldName, models::RowFieldValue>, QueryError> {
+    let headers = serde_json::to_value(headers)
+        .map_err(|err| QueryError::new_unprocessable_content(&err))?;
+    let data = serde_json::to_value(data)
+        .map_err(|err| QueryError::new_unprocessable_content(&err))?;
+
+    Ok(IndexMap::from_iter(vec![
+        (
+            configuration.response.headers_field.to_string().into(),
+            models::RowFieldValue(headers),
+        ),
+        (
+            configuration.response.response_field.to_string().into(),
+            models::RowFieldValue(data),
+        ),
+    ]))
 }
 
 fn normalize_query_data(
@@ -666,6 +716,103 @@ mod tests {
             .swap_remove(&old_alias)
             .expect("request should contain polymorphic field alias");
         relationship_object.fields.insert(new_alias, field);
+    }
+
+    #[tokio::test]
+    async fn normalizes_foreach_response_into_separate_row_sets() {
+        let configuration = read_configuration("config-1").await;
+        let request_path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+            .join("tests")
+            .join("config-1")
+            .join("queries")
+            .join("04_foreach.request.json");
+        let request: models::QueryRequest =
+            serde_json::from_str(&fs::read_to_string(request_path).unwrap()).unwrap();
+
+        // Simulate upstream response with aliased keys
+        let data = IndexMap::from([
+            (
+                FieldName::from("q1__value"),
+                models::RowFieldValue(json!({
+                    "AlbumId": 1,
+                    "Title": "Album One",
+                    "Artist": { "ArtistId": 1, "Name": "Artist One" },
+                    "Tracks": []
+                })),
+            ),
+            (
+                FieldName::from("q2__value"),
+                models::RowFieldValue(json!({
+                    "AlbumId": 2,
+                    "Title": "Album Two",
+                    "Artist": { "ArtistId": 2, "Name": "Artist Two" },
+                    "Tracks": []
+                })),
+            ),
+            (
+                FieldName::from("q3__value"),
+                models::RowFieldValue(json!({
+                    "AlbumId": 3,
+                    "Title": "Album Three",
+                    "Artist": { "ArtistId": 3, "Name": "Artist Three" },
+                    "Tracks": []
+                })),
+            ),
+        ]);
+
+        let normalized = normalize_query_data(data, &request, &configuration)
+            .expect("Should normalize foreach response");
+
+        // Verify the normalized data still has qN__value keys
+        assert!(normalized.contains_key(&FieldName::from("q1__value")));
+        assert!(normalized.contains_key(&FieldName::from("q2__value")));
+        assert!(normalized.contains_key(&FieldName::from("q3__value")));
+
+        // Now simulate what handle_query does: split into separate RowSets
+        let variables = request.variables.as_ref().unwrap();
+        let mut row_sets = Vec::with_capacity(variables.len());
+        for index in 1..=variables.len() {
+            let alias: FieldName = format!("q{index}__value").into();
+            let value = normalized
+                .get(&alias)
+                .cloned()
+                .unwrap_or(models::RowFieldValue(serde_json::Value::Null));
+            let row = IndexMap::from_iter(vec![(FieldName::from("__value"), value)]);
+            row_sets.push(models::RowSet {
+                groups: None,
+                aggregates: None,
+                rows: Some(vec![row]),
+            });
+        }
+
+        // Should produce 3 RowSets, one per variable set
+        assert_eq!(row_sets.len(), 3);
+
+        // Each RowSet should have exactly one row with __value key
+        for (i, row_set) in row_sets.iter().enumerate() {
+            let rows = row_set.rows.as_ref().unwrap();
+            assert_eq!(rows.len(), 1, "RowSet {i} should have exactly one row");
+            assert!(
+                rows[0].contains_key(&FieldName::from("__value")),
+                "RowSet {i} row should have __value key"
+            );
+            assert!(
+                !rows[0].contains_key(&FieldName::from(format!("q{}__value", i + 1))),
+                "RowSet {i} row should NOT have aliased key"
+            );
+        }
+
+        // Verify the data content is correct
+        let row0 = &row_sets[0].rows.as_ref().unwrap()[0];
+        assert_eq!(
+            row0.get(&FieldName::from("__value")).unwrap().0["AlbumId"],
+            json!(1)
+        );
+        let row2 = &row_sets[2].rows.as_ref().unwrap()[0];
+        assert_eq!(
+            row2.get(&FieldName::from("__value")).unwrap().0["AlbumId"],
+            json!(3)
+        );
     }
 
     fn replace_relationship_selection_with_common_field(

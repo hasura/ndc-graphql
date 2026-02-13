@@ -17,6 +17,7 @@ use ndc_sdk::models::{
 };
 use std::collections::BTreeMap;
 
+mod coerce;
 pub mod error;
 mod operation_parameters;
 
@@ -85,6 +86,7 @@ pub fn build_mutation_document(
                         &field_name,
                         mutation_type_name,
                         &dummy_variables,
+                        &configuration.schema.definitions,
                     )?,
                     fields,
                     field_definition,
@@ -206,6 +208,7 @@ pub fn build_query_document(
                         &request.collection.to_string().into(),
                         query_type_name,
                         variables,
+                        &configuration.schema.definitions,
                     )?,
                     subfields,
                     root_field_definition,
@@ -246,6 +249,7 @@ pub fn build_query_document(
                     &request.collection.to_string().into(),
                     query_type_name,
                     &dummy_variables,
+                    &configuration.schema.definitions,
                 )?,
                 subfields,
                 root_field_definition,
@@ -480,6 +484,7 @@ fn object_selection_items<'a>(
                     field_name,
                     object_name,
                     variables,
+                    &configuration.schema.definitions,
                 )?,
                 fields,
                 field_definition,
@@ -616,6 +621,7 @@ fn polymorphic_selection_items<'a>(
                     field_name,
                     object_name,
                     variables,
+                    &configuration.schema.definitions,
                 )?,
                 nested_fields,
                 field_definition,
@@ -627,6 +633,7 @@ fn polymorphic_selection_items<'a>(
         .collect()
 }
 
+#[allow(clippy::too_many_arguments)]
 fn field_arguments<'a, A, M>(
     arguments: &BTreeMap<ArgumentName, A>,
     map_argument: M,
@@ -635,6 +642,7 @@ fn field_arguments<'a, A, M>(
     field_name: &FieldName,
     object_name: &TypeName,
     variables: &BTreeMap<VariableName, serde_json::Value>,
+    definitions: &BTreeMap<TypeName, TypeDef>,
 ) -> Result<Vec<(String, Value<'a, String>)>, QueryBuilderError>
 where
     M: Fn(
@@ -657,7 +665,7 @@ where
 
             let value = map_argument(arg, variables)?;
 
-            let value = parameters.insert(name, value, input_type);
+            let value = parameters.insert(name, value, input_type, definitions);
 
             Ok((name.to_string(), value))
         })
