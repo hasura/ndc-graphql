@@ -107,14 +107,12 @@ pub async fn handle_query(
 
                     for index in 1..=variables.len() {
                         let alias: FieldName = format!("q{index}__value").into();
-                        let value = data.get(&alias).cloned().unwrap_or(
-                            models::RowFieldValue(serde_json::Value::Null),
-                        );
+                        let value = data
+                            .get(&alias)
+                            .cloned()
+                            .unwrap_or(models::RowFieldValue(serde_json::Value::Null));
 
-                        let row = IndexMap::from_iter(vec![(
-                            FieldName::from("__value"),
-                            value,
-                        )]);
+                        let row = IndexMap::from_iter(vec![(FieldName::from("__value"), value)]);
 
                         let row = if forward_response_headers {
                             wrap_row_with_headers(row, &headers, configuration)?
@@ -160,10 +158,10 @@ fn wrap_row_with_headers(
     headers: &BTreeMap<String, String>,
     configuration: &ServerConfig,
 ) -> Result<IndexMap<FieldName, models::RowFieldValue>, QueryError> {
-    let headers = serde_json::to_value(headers)
-        .map_err(|err| QueryError::new_unprocessable_content(&err))?;
-    let data = serde_json::to_value(data)
-        .map_err(|err| QueryError::new_unprocessable_content(&err))?;
+    let headers =
+        serde_json::to_value(headers).map_err(|err| QueryError::new_unprocessable_content(&err))?;
+    let data =
+        serde_json::to_value(data).map_err(|err| QueryError::new_unprocessable_content(&err))?;
 
     Ok(IndexMap::from_iter(vec![
         (

@@ -578,10 +578,8 @@ fn polymorphic_selection_items<'a>(
                             return Err(QueryBuilderError::ObjectTypeNotFound(concrete_type));
                         }
                     };
-                let concrete_variant_fields = interface_exclusive_fields(
-                    concrete_object_fields,
-                    common_fields,
-                );
+                let concrete_variant_fields =
+                    interface_exclusive_fields(concrete_object_fields, common_fields);
 
                 let fragment_items = object_selection_items(
                     &concrete_type,

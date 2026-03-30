@@ -45,7 +45,9 @@ fn coerce_named(
         _ => {
             let type_key: TypeName = type_name.to_owned().into();
             match definitions.get(&type_key) {
-                Some(TypeDef::InputObject { fields, .. }) => coerce_input_object(value, fields, definitions),
+                Some(TypeDef::InputObject { fields, .. }) => {
+                    coerce_input_object(value, fields, definitions)
+                }
                 // enums are already strings; custom scalars and output types pass through
                 _ => value,
             }
@@ -55,7 +57,10 @@ fn coerce_named(
 
 fn coerce_input_object(
     value: serde_json::Value,
-    fields: &BTreeMap<ndc_sdk::models::FieldName, common::config::schema::InputObjectFieldDefinition>,
+    fields: &BTreeMap<
+        ndc_sdk::models::FieldName,
+        common::config::schema::InputObjectFieldDefinition,
+    >,
     definitions: &BTreeMap<TypeName, TypeDef>,
 ) -> serde_json::Value {
     match value {
@@ -140,55 +145,95 @@ mod tests {
 
     #[test]
     fn coerce_string_to_int() {
-        let result = coerce_value(json!("42"), &TypeRef::Named("Int".to_string()), &empty_definitions());
+        let result = coerce_value(
+            json!("42"),
+            &TypeRef::Named("Int".to_string()),
+            &empty_definitions(),
+        );
         assert_eq!(result, json!(42));
     }
 
     #[test]
     fn coerce_int_stays_int() {
-        let result = coerce_value(json!(42), &TypeRef::Named("Int".to_string()), &empty_definitions());
+        let result = coerce_value(
+            json!(42),
+            &TypeRef::Named("Int".to_string()),
+            &empty_definitions(),
+        );
         assert_eq!(result, json!(42));
     }
 
     #[test]
     fn coerce_string_to_float() {
-        let result = coerce_value(json!("1.5"), &TypeRef::Named("Float".to_string()), &empty_definitions());
+        let result = coerce_value(
+            json!("1.5"),
+            &TypeRef::Named("Float".to_string()),
+            &empty_definitions(),
+        );
         assert_eq!(result, json!(1.5));
     }
 
     #[test]
     fn coerce_int_to_float() {
-        let result = coerce_value(json!(1), &TypeRef::Named("Float".to_string()), &empty_definitions());
+        let result = coerce_value(
+            json!(1),
+            &TypeRef::Named("Float".to_string()),
+            &empty_definitions(),
+        );
         assert_eq!(result, json!(1.0));
     }
 
     #[test]
     fn coerce_string_to_boolean() {
-        let result = coerce_value(json!("true"), &TypeRef::Named("Boolean".to_string()), &empty_definitions());
+        let result = coerce_value(
+            json!("true"),
+            &TypeRef::Named("Boolean".to_string()),
+            &empty_definitions(),
+        );
         assert_eq!(result, json!(true));
 
-        let result = coerce_value(json!("false"), &TypeRef::Named("Boolean".to_string()), &empty_definitions());
+        let result = coerce_value(
+            json!("false"),
+            &TypeRef::Named("Boolean".to_string()),
+            &empty_definitions(),
+        );
         assert_eq!(result, json!(false));
     }
 
     #[test]
     fn coerce_number_to_string() {
-        let result = coerce_value(json!(42), &TypeRef::Named("String".to_string()), &empty_definitions());
+        let result = coerce_value(
+            json!(42),
+            &TypeRef::Named("String".to_string()),
+            &empty_definitions(),
+        );
         assert_eq!(result, json!("42"));
     }
 
     #[test]
     fn coerce_id_passes_through() {
-        let result = coerce_value(json!(42), &TypeRef::Named("ID".to_string()), &empty_definitions());
+        let result = coerce_value(
+            json!(42),
+            &TypeRef::Named("ID".to_string()),
+            &empty_definitions(),
+        );
         assert_eq!(result, json!(42));
 
-        let result = coerce_value(json!("42"), &TypeRef::Named("ID".to_string()), &empty_definitions());
+        let result = coerce_value(
+            json!("42"),
+            &TypeRef::Named("ID".to_string()),
+            &empty_definitions(),
+        );
         assert_eq!(result, json!("42"));
     }
 
     #[test]
     fn coerce_null_passes_through() {
-        let result = coerce_value(json!(null), &TypeRef::Named("Int".to_string()), &empty_definitions());
+        let result = coerce_value(
+            json!(null),
+            &TypeRef::Named("Int".to_string()),
+            &empty_definitions(),
+        );
         assert_eq!(result, json!(null));
     }
 
@@ -249,7 +294,11 @@ mod tests {
 
     #[test]
     fn coerce_unparseable_string_passes_through() {
-        let result = coerce_value(json!("not_a_number"), &TypeRef::Named("Int".to_string()), &empty_definitions());
+        let result = coerce_value(
+            json!("not_a_number"),
+            &TypeRef::Named("Int".to_string()),
+            &empty_definitions(),
+        );
         assert_eq!(result, json!("not_a_number"));
     }
 }

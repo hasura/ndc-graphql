@@ -114,8 +114,7 @@ pub fn schema_response(
                         continue;
                     };
 
-                    let exclusive_fields =
-                        interface_exclusive_fields(fields, concrete_fields);
+                    let exclusive_fields = interface_exclusive_fields(fields, concrete_fields);
                     if exclusive_fields.is_empty() {
                         continue;
                     }
@@ -131,13 +130,17 @@ pub fn schema_response(
                             foreign_keys: BTreeMap::new(),
                         },
                     );
-                    variant_types
-                        .push((concrete_type.to_string(), variant_type_name.to_string()));
+                    variant_types.push((concrete_type.to_string(), variant_type_name.to_string()));
                 }
 
                 object_types.insert(
                     name.to_owned().into(),
-                    polymorphic_object_type(name, description, Some(fields), variant_types.into_iter()),
+                    polymorphic_object_type(
+                        name,
+                        description,
+                        Some(fields),
+                        variant_types.into_iter(),
+                    ),
                 );
             }
             TypeDef::Union {
@@ -150,7 +153,9 @@ pub fn schema_response(
                         name,
                         description,
                         None,
-                        members.iter().map(|member| (member.to_string(), member.to_string())),
+                        members
+                            .iter()
+                            .map(|member| (member.to_string(), member.to_string())),
                     ),
                 );
             }
@@ -376,9 +381,7 @@ fn interface_exclusive_fields(
     concrete_fields
         .iter()
         .filter(|(field_name, _)| !common_fields.contains_key(*field_name))
-        .map(|(field_name, field_definition)| {
-            (field_name.to_owned(), field_definition.to_owned())
-        })
+        .map(|(field_name, field_definition)| (field_name.to_owned(), field_definition.to_owned()))
         .collect()
 }
 
