@@ -1,13 +1,19 @@
 use super::state::ServerState;
 use crate::query_builder::build_mutation_document;
 use common::{
-    client::{execute_graphql, GraphQLRequest},
+    client::{execute_graphql, GraphQLClientError, GraphQLRequest},
     config::ServerConfig,
 };
 use indexmap::IndexMap;
 use ndc_sdk::{connector::MutationError, models};
 use std::{collections::BTreeMap, mem};
 use tracing::{Instrument, Level};
+
+/// Converts a GraphQLClientError into a MutationError with appropriate details
+fn graphql_client_error_to_mutation_error(err: &GraphQLClientError) -> MutationError {
+    let details = err.to_details();
+    MutationError::new_invalid_request(&err).with_details(details)
+}
 
 pub async fn handle_mutation_explain(
     configuration: &ServerConfig,
@@ -67,10 +73,15 @@ pub async fn handle_mutation(
     )
     .instrument(execution_span)
     .await
-    .map_err(|err| MutationError::new_unprocessable_content(&err))?;
+    .map_err(|err| graphql_client_error_to_mutation_error(&err))?;
 
     tracing::info_span!("Process Response").in_scope(|| {
         if let Some(errors) = response.errors {
+            tracing::warn!(
+                error_count = errors.len(),
+                first_error = %errors[0].message,
+                "GraphQL mutation response contains errors"
+            );
             Err(MutationError::new_unprocessable_content(&errors[0].message)
                 .with_details(serde_json::json!({ "errors": errors })))
         } else if let Some(mut data) = response.data {

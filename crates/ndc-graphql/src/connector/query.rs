@@ -1,7 +1,7 @@
 use super::state::ServerState;
 use crate::query_builder::build_query_document;
 use common::{
-    client::{execute_graphql, GraphQLRequest},
+    client::{execute_graphql, GraphQLClientError, GraphQLRequest},
     config::{
         schema::{ObjectFieldDefinition, TypeDef},
         ServerConfig,
@@ -14,6 +14,12 @@ use ndc_sdk::{
 };
 use std::collections::{BTreeMap, BTreeSet};
 use tracing::{Instrument, Level};
+
+/// Converts a GraphQLClientError into a QueryError with appropriate details
+fn graphql_client_error_to_query_error(err: &GraphQLClientError) -> QueryError {
+    let details = err.to_details();
+    QueryError::new_invalid_request(&err).with_details(details)
+}
 
 pub async fn handle_query_explain(
     configuration: &ServerConfig,
@@ -73,10 +79,15 @@ pub async fn handle_query(
     )
     .instrument(execution_span)
     .await
-    .map_err(|err| QueryError::new_invalid_request(&err))?;
+    .map_err(|err| graphql_client_error_to_query_error(&err))?;
 
     tracing::info_span!("Process Response").in_scope(|| {
         if let Some(errors) = response.errors {
+            tracing::warn!(
+                error_count = errors.len(),
+                first_error = %errors[0].message,
+                "GraphQL response contains errors"
+            );
             Err(QueryError::new_unprocessable_content(&errors[0].message)
                 .with_details(serde_json::json!({ "errors": errors })))
         } else if let Some(data) = response.data {
