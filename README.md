@@ -75,11 +75,11 @@ Please see the [relevant documentation](https://hasura.info/graphql-getting-star
 ## Advanced Features
 
 ### Forward Headers from Pre-NDC Request Plugin
- 
+
 You can use a [Pre-NDC Request Plugin](https://hasura.io/docs/3.0/plugins/introduction#pre-ndc-request-plugin) to modify the request, and add dynamic headers in runtime via `request_arguments.headers` field, which is a string map. Those headers will be merged into the HTTP request headers before being sent to external services.
 
 > See the full example at [Pre-NDC Request Plugin Request](https://hasura.io/docs/3.0/plugins/introduction#example-configuration)
- 
+
 ```json
 {
   // ...
