@@ -1,5 +1,5 @@
 # https://github.com/LukeMathWalker/cargo-chef
-FROM rust:1.89 AS chef
+FROM us-docker.pkg.dev/hasura-container-images/external-images/docker.io/library/rust:1.89-stable AS chef
 RUN cargo install cargo-chef
 WORKDIR /app
 
