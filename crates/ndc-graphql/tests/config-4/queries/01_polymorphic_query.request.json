@@ -1,0 +1,104 @@
+{
+  "$schema": "_query_request.schema.json",
+  "collection": "getAccountById",
+  "query": {
+    "fields": {
+      "__value": {
+        "type": "column",
+        "column": "__value",
+        "fields": {
+          "type": "object",
+          "fields": {
+            "id": {
+              "type": "column",
+              "column": "id",
+              "fields": null
+            },
+            "relationship": {
+              "type": "column",
+              "column": "relationship",
+              "fields": {
+                "type": "object",
+                "fields": {
+                  "__typename": {
+                    "type": "column",
+                    "column": "__typename",
+                    "fields": null
+                  },
+                  "relId": {
+                    "type": "column",
+                    "column": "relId",
+                    "fields": null
+                  },
+                  "on_PersonRelationship": {
+                    "type": "column",
+                    "column": "on_PersonRelationship",
+                    "fields": {
+                      "type": "object",
+                      "fields": {
+                        "personName": {
+                          "type": "column",
+                          "column": "personName",
+                          "fields": null
+                        }
+                      }
+                    }
+                  },
+                  "on_OrganizationRelationship": {
+                    "type": "column",
+                    "column": "on_OrganizationRelationship",
+                    "fields": {
+                      "type": "object",
+                      "fields": {
+                        "orgName": {
+                          "type": "column",
+                          "column": "orgName",
+                          "fields": null
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "altRelationship": {
+              "type": "column",
+              "column": "altRelationship",
+              "fields": {
+                "type": "object",
+                "fields": {
+                  "__typename": {
+                    "type": "column",
+                    "column": "__typename",
+                    "fields": null
+                  },
+                  "on_PersonRelationship": {
+                    "type": "column",
+                    "column": "on_PersonRelationship",
+                    "fields": {
+                      "type": "object",
+                      "fields": {
+                        "relId": {
+                          "type": "column",
+                          "column": "relId",
+                          "fields": null
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "arguments": {
+    "id": {
+      "type": "literal",
+      "value": "acct-1"
+    }
+  },
+  "collection_relationships": {}
+}

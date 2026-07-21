@@ -1,0 +1,26 @@
+---
+source: crates/ndc-graphql/tests/query_builder.rs
+assertion_line: 91
+expression: operation.query
+---
+query($arg_1_id: ID!) {
+  __value: getAccountById(id: $arg_1_id) {
+    id
+    relationship {
+      __typename
+      relId
+      ... on PersonRelationship {
+        personName
+      }
+      ... on OrganizationRelationship {
+        orgName
+      }
+    }
+    altRelationship {
+      __typename
+      ... on PersonRelationship {
+        relId
+      }
+    }
+  }
+}

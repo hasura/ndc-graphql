@@ -1,0 +1,5 @@
+---
+source: crates/ndc-graphql/tests/query_builder.rs
+expression: operation.headers
+---
+{}

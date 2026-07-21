@@ -1,0 +1,169 @@
+---
+source: crates/ndc-graphql/tests/query_builder.rs
+assertion_line: 125
+expression: schema
+---
+scalar_types:
+  ID:
+    representation:
+      type: string
+    aggregate_functions: {}
+    comparison_operators: {}
+    extraction_functions: {}
+  String:
+    representation:
+      type: string
+    aggregate_functions: {}
+    comparison_operators: {}
+    extraction_functions: {}
+  _HeaderMap:
+    representation:
+      type: json
+    aggregate_functions: {}
+    comparison_operators: {}
+    extraction_functions: {}
+object_types:
+  Account:
+    fields:
+      altRelationship:
+        type:
+          type: nullable
+          underlying_type:
+            type: named
+            name: PartyRelationshipUnion
+      id:
+        type:
+          type: named
+          name: ID
+      relationship:
+        type:
+          type: named
+          name: PartyAccountRelationship
+    foreign_keys: {}
+  OrganizationRelationship:
+    fields:
+      orgName:
+        type:
+          type: nullable
+          underlying_type:
+            type: named
+            name: String
+      relId:
+        type:
+          type: named
+          name: ID
+    foreign_keys: {}
+  PartyAccountRelationship:
+    fields:
+      __typename:
+        description: Concrete GraphQL type name for polymorphic type PartyAccountRelationship
+        type:
+          type: named
+          name: String
+      on_OrganizationRelationship:
+        description: Fields available when runtime type is OrganizationRelationship
+        type:
+          type: nullable
+          underlying_type:
+            type: named
+            name: PartyAccountRelationshipOnOrganizationRelationship
+      on_PersonRelationship:
+        description: Fields available when runtime type is PersonRelationship
+        type:
+          type: nullable
+          underlying_type:
+            type: named
+            name: PartyAccountRelationshipOnPersonRelationship
+      relId:
+        type:
+          type: named
+          name: ID
+    foreign_keys: {}
+  PartyAccountRelationshipOnOrganizationRelationship:
+    description: Fields available only when runtime type is OrganizationRelationship for polymorphic type PartyAccountRelationship
+    fields:
+      orgName:
+        type:
+          type: nullable
+          underlying_type:
+            type: named
+            name: String
+    foreign_keys: {}
+  PartyAccountRelationshipOnPersonRelationship:
+    description: Fields available only when runtime type is PersonRelationship for polymorphic type PartyAccountRelationship
+    fields:
+      personName:
+        type:
+          type: nullable
+          underlying_type:
+            type: named
+            name: String
+    foreign_keys: {}
+  PartyRelationshipUnion:
+    fields:
+      __typename:
+        description: Concrete GraphQL type name for polymorphic type PartyRelationshipUnion
+        type:
+          type: named
+          name: String
+      on_OrganizationRelationship:
+        description: Fields available when runtime type is OrganizationRelationship
+        type:
+          type: nullable
+          underlying_type:
+            type: named
+            name: OrganizationRelationship
+      on_PersonRelationship:
+        description: Fields available when runtime type is PersonRelationship
+        type:
+          type: nullable
+          underlying_type:
+            type: named
+            name: PersonRelationship
+    foreign_keys: {}
+  PersonRelationship:
+    fields:
+      personName:
+        type:
+          type: nullable
+          underlying_type:
+            type: named
+            name: String
+      relId:
+        type:
+          type: named
+          name: ID
+    foreign_keys: {}
+collections: []
+functions:
+  - name: getAccountById
+    arguments:
+      id:
+        type:
+          type: named
+          name: ID
+    result_type:
+      type: nullable
+      underlying_type:
+        type: named
+        name: Account
+procedures: []
+capabilities: ~
+request_arguments:
+  query_arguments:
+    headers:
+      description: Headers to be merged into original request headers of graphql requests
+      type:
+        type: nullable
+        underlying_type:
+          type: named
+          name: _HeaderMap
+  mutation_arguments:
+    headers:
+      description: Headers to be merged into original request headers of graphql requests
+      type:
+        type: nullable
+        underlying_type:
+          type: named
+          name: _HeaderMap
+  relational_query_arguments: {}

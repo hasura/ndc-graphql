@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.1]
+
+- Add support for custom CA certificates and allow skipping TLS verification entirely
+- Breaking: GraphQL `interface` and `union` output types are now lowered into tagged-variant NDC object types by default.
+  - Lowered object types include `__typename` and one nullable field per concrete type (`on_<ConcreteType>`).
+  - Query generation translates tagged variant selections to GraphQL inline fragments (`... on <ConcreteType>`).
+  - Validation now fails early with clear errors for unsupported polymorphic schemas (for example unions/interfaces without concrete object members, or unresolved type references).
+
 ## [0.3.0]
 
 - Upgrade ndc-spec v0.2.10 and ndc-rust-sdk

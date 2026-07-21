@@ -9,6 +9,9 @@ graphql_client = { workspace = true }
 graphql-parser = { workspace = true }
 ndc-models = { workspace = true }
 reqwest = { workspace = true }
+rustls-pemfile = "2"
 schemars = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
+thiserror = "1"
+tracing = { workspace = true }

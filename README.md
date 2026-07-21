@@ -47,8 +47,8 @@ Below, you'll find a matrix of all supported features for the GraphQL connector:
 | Header Passthrough      | ✅         | Entire headers can be forwarded                              |
 | Request-level Arguments | ✅         | Support dynamic headers from the from Pre-NDC Request Plugin |
 | Subscriptions           | ❌         |                                                              |
-| Unions                  | ❌         | Can be brought in via scalar types                           |
-| Interfaces              | ❌         |                                                              |
+| Unions                  | ✅         | Lowered to tagged-variant object types (`__typename`, `on_<Type>`) |
+| Interfaces              | ✅         | Lowered to tagged-variant object types (`__typename`, `on_<Type>`) |
 | Relay API               | ❌         |                                                              |
 | Directives              | ❌         | @cached, Apollo directives                                   |
 
@@ -57,6 +57,10 @@ Below, you'll find a matrix of all supported features for the GraphQL connector:
 * Error formatting
   - The format of errors from the connector does not currently match V2 error formatting
   - No "partial error" or "multiple errors" responses
+* Polymorphic output lowering
+  - GraphQL `interface` and `union` outputs are lowered into synthetic object types in NDC metadata.
+  - Lowered object types expose `__typename` plus one nullable tagged field per concrete type: `on_<ConcreteType>`.
+  - When lowering is not possible (for example no concrete object members), config/schema validation fails with a targeted error.
 * Pattern matching in request header forwarding configuration
   - This uses simple glob patterns
   - More advanced matching and extraction is not currently supported
@@ -71,11 +75,11 @@ Please see the [relevant documentation](https://hasura.info/graphql-getting-star
 ## Advanced Features
 
 ### Forward Headers from Pre-NDC Request Plugin
- 
+
 You can use a [Pre-NDC Request Plugin](https://hasura.io/docs/3.0/plugins/introduction#pre-ndc-request-plugin) to modify the request, and add dynamic headers in runtime via `request_arguments.headers` field, which is a string map. Those headers will be merged into the HTTP request headers before being sent to external services.
 
 > See the full example at [Pre-NDC Request Plugin Request](https://hasura.io/docs/3.0/plugins/introduction#example-configuration)
- 
+
 ```json
 {
   // ...
@@ -90,3 +94,18 @@ You can use a [Pre-NDC Request Plugin](https://hasura.io/docs/3.0/plugins/introd
   }
 }
 ```
+
+### TLS/SSL Configuration
+
+The connector uses `rustls` for TLS which does not automatically pick up system certificate stores. For self-hosted deployments using organization-signed certificates, you can configure custom CA certificates or disable TLS verification via environment variables.
+
+| Variable | Description |
+|----------|-------------|
+| `GRAPHQL_CA_CERT_FILE` | Path to a single PEM-encoded CA certificate file |
+| `GRAPHQL_CA_CERT_DIR` | Directory containing PEM-encoded CA certificates (`.pem`, `.crt`, `.cer`) |
+| `GRAPHQL_INSECURE_SKIP_TLS_VERIFY` | Set to `true` or `1` to disable TLS verification |
+
+**Notes:**
+- `GRAPHQL_CA_CERT_FILE` and `GRAPHQL_CA_CERT_DIR` can be used together (certificates are combined)
+- `GRAPHQL_INSECURE_SKIP_TLS_VERIFY` takes precedence and skips all CA cert logic when enabled
+- **Warning:** Disabling TLS verification is insecure and should only be used for development/testing
