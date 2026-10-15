@@ -1,16 +1,9 @@
 use crate::config::ConnectionConfig;
 use glob_match::glob_match;
 use reqwest::header::{HeaderMap, HeaderValue, CONTENT_TYPE};
+use rustls_pki_types::{pem::PemObject, CertificateDer};
 use serde::Serialize;
-use std::{
-    collections::BTreeMap,
-    env,
-    error::Error,
-    fmt::Debug,
-    fs::{self, File},
-    io::BufReader,
-    path::Path,
-};
+use std::{collections::BTreeMap, env, error::Error, fmt::Debug, fs, path::Path};
 use thiserror::Error;
 
 /// Errors that can occur when executing a GraphQL request against an upstream server.
@@ -131,9 +124,7 @@ fn load_certs_from_file(path: &Path) -> Result<Vec<reqwest::Certificate>, Box<dy
         return Err(format!("{} is not a file", path.display()).into());
     }
     tracing::info!("Loading CA certs from file: {}", path.display());
-    let file = File::open(path)?;
-    let mut reader = BufReader::new(file);
-    let certs = rustls_pemfile::certs(&mut reader).collect::<Result<Vec<_>, _>>()?;
+    let certs = CertificateDer::pem_file_iter(path)?.collect::<Result<Vec<_>, _>>()?;
     let certs: Vec<_> = certs
         .into_iter()
         .map(|cert| reqwest::Certificate::from_der(cert.as_ref()).map_err(Into::into))
@@ -330,5 +321,45 @@ pub struct GraphQLRequest<'a> {
 impl<'a> GraphQLRequest<'a> {
     pub fn new(query: &'a str, variables: &'a BTreeMap<String, serde_json::Value>) -> Self {
         Self { query, variables }
+    }
+}
+
+#[cfg(test)]
+mod ca_tests {
+    use super::load_certs_from_file;
+    use std::{fs, path::PathBuf};
+
+    fn fixture() -> PathBuf {
+        PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/data/test-ca.pem")
+    }
+
+    #[test]
+    fn loads_test_ca_with_maintained_pem_parser() {
+        let certs = load_certs_from_file(&fixture()).unwrap();
+        assert_eq!(certs.len(), 1);
+    }
+
+    #[test]
+    fn loads_multiple_certificates_from_one_file() {
+        let cert = fs::read(fixture()).unwrap();
+        let path = std::env::temp_dir().join(format!("ndc-ca-bundle-{}.pem", std::process::id()));
+        fs::write(&path, [cert.as_slice(), cert.as_slice()].concat()).unwrap();
+        let result = load_certs_from_file(&path);
+        fs::remove_file(&path).unwrap();
+        assert_eq!(result.unwrap().len(), 2);
+    }
+
+    #[test]
+    fn rejects_malformed_pem_and_missing_file() {
+        let path = std::env::temp_dir().join(format!("ndc-ca-invalid-{}.pem", std::process::id()));
+        fs::write(
+            &path,
+            "-----BEGIN CERTIFICATE-----\n!!!\n-----END CERTIFICATE-----",
+        )
+        .unwrap();
+        let result = load_certs_from_file(&path);
+        fs::remove_file(&path).unwrap();
+        assert!(result.is_err());
+        assert!(load_certs_from_file(&path).is_err());
     }
 }

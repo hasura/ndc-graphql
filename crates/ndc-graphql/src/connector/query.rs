@@ -13,7 +13,9 @@ use ndc_sdk::{
     models::{self, FieldName},
 };
 use std::collections::{BTreeMap, BTreeSet};
-use tracing::{Instrument, Level};
+use tracing::Instrument;
+#[cfg(debug_assertions)]
+use tracing::Level;
 
 /// Converts a GraphQLClientError into a QueryError with appropriate details
 fn graphql_client_error_to_query_error(err: &GraphQLClientError) -> QueryError {
@@ -59,6 +61,12 @@ pub async fn handle_query(
         tracing::event!(Level::DEBUG, "Incoming IR" = request_string);
     }
 
+    // An explicitly empty foreach batch has no work. Do not generate an
+    // invalid GraphQL operation with an empty selection set.
+    if request.variables.as_ref().is_some_and(Vec::is_empty) {
+        return Ok(models::QueryResponse(vec![]));
+    }
+
     let operation = tracing::info_span!("Build Query Document", internal.visibility = "user")
         .in_scope(|| build_query_document(&request, configuration))?;
 
@@ -82,7 +90,7 @@ pub async fn handle_query(
     .map_err(|err| graphql_client_error_to_query_error(&err))?;
 
     tracing::info_span!("Process Response").in_scope(|| {
-        if let Some(errors) = response.errors {
+        if let Some(errors) = response.errors.filter(|errors| !errors.is_empty()) {
             tracing::warn!(
                 error_count = errors.len(),
                 first_error = %errors[0].message,
@@ -107,10 +115,11 @@ pub async fn handle_query(
 
                     for index in 1..=variables.len() {
                         let alias: FieldName = format!("q{index}__value").into();
-                        let value = data
-                            .get(&alias)
-                            .cloned()
-                            .unwrap_or(models::RowFieldValue(serde_json::Value::Null));
+                        let value = data.get(&alias).cloned().ok_or_else(|| {
+                            QueryError::new_unprocessable_content(&format!(
+                                "Missing function result alias {alias} in upstream response"
+                            ))
+                        })?;
 
                         let row = IndexMap::from_iter(vec![(FieldName::from("__value"), value)]);
 
@@ -130,6 +139,11 @@ pub async fn handle_query(
                     row_sets
                 }
                 _ => {
+                    if !data.contains_key(&FieldName::from("__value")) {
+                        return Err(QueryError::new_unprocessable_content(
+                            &"Missing function result alias __value in upstream response",
+                        ));
+                    }
                     let row = if forward_response_headers {
                         wrap_row_with_headers(data, &headers, configuration)?
                     } else {
