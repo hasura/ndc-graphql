@@ -7,7 +7,9 @@ use common::{
 use indexmap::IndexMap;
 use ndc_sdk::{connector::MutationError, models};
 use std::{collections::BTreeMap, mem};
-use tracing::{Instrument, Level};
+use tracing::Instrument;
+#[cfg(debug_assertions)]
+use tracing::Level;
 
 /// Converts a GraphQLClientError into a MutationError with appropriate details
 fn graphql_client_error_to_mutation_error(err: &GraphQLClientError) -> MutationError {
@@ -76,7 +78,7 @@ pub async fn handle_mutation(
     .map_err(|err| graphql_client_error_to_mutation_error(&err))?;
 
     tracing::info_span!("Process Response").in_scope(|| {
-        if let Some(errors) = response.errors {
+        if let Some(errors) = response.errors.filter(|errors| !errors.is_empty()) {
             tracing::warn!(
                 error_count = errors.len(),
                 first_error = %errors[0].message,

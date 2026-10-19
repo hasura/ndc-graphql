@@ -1,6 +1,6 @@
 # https://github.com/LukeMathWalker/cargo-chef
 FROM rust:1.89 AS chef
-RUN cargo install cargo-chef
+RUN cargo install cargo-chef --version 0.1.71 --locked
 WORKDIR /app
 
 FROM chef AS planner
@@ -12,14 +12,14 @@ RUN cargo chef prepare --recipe-path recipe.json
 FROM chef AS builder
 ARG RUSTFLAGS
 COPY --from=planner /app/recipe.json recipe.json
-RUN cargo chef cook --profile release --recipe-path recipe.json
+RUN cargo chef cook --locked --profile release --recipe-path recipe.json
 COPY Cargo.toml ./
 COPY Cargo.lock ./
 COPY crates crates
 RUN cargo build --locked --profile release --package ndc-graphql
 
-FROM ubuntu:latest AS runtime
-RUN apt-get update && apt-get install -y ca-certificates
+FROM ubuntu:24.04 AS runtime
+RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 COPY --from=builder /app/target/release/ndc-graphql /usr/local/bin
 

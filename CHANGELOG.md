@@ -7,7 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.3.1]
+## [0.4.0]
+
+- Fix batched function responses: return one RowSet per variable set in input order, using `__value` rather than upstream `qN__value` aliases.
+- Return no RowSets and make no upstream request for an explicitly empty variables batch.
+- Reject missing function-result aliases instead of silently converting malformed responses to null.
+- Accept empty GraphQL error arrays without panicking; preserve failures for nonempty errors.
+- Coerce built-in scalar arguments, including nested input objects and lists, to upstream types. String identifiers retain their existing leading zeros.
+- Add HTTP-backed production-handler regression tests for direct and batched list-valued commands, string identifiers, headers, null/empty results, and upstream failures.
+- Pin build tooling, use the committed lockfile in release builds, and gate publication on tests, formatting, and security audit.
+- Publish the CLI manifest with the other release assets.
+- Update locked dependencies for RustSec findings and replace the unmaintained `rustls-pemfile` wrapper with the maintained `rustls-pki-types` PEM API. Security checks reject advisory warnings as well as vulnerabilities.
+
+The changes below were previously listed under an unpublished 0.3.1 heading.
 
 - Add support for custom CA certificates and allow skipping TLS verification entirely
 - Breaking: GraphQL `interface` and `union` output types are now lowered into tagged-variant NDC object types by default.

@@ -90,3 +90,6 @@ impl Connector for GraphQLConnector {
         ))
     }
 }
+
+#[cfg(test)]
+mod handler_tests;

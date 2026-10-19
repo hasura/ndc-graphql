@@ -1,6 +1,7 @@
 name: "Test Suite"
 on:
   pull_request:
+  workflow_call:
 
 jobs:
   test:
@@ -14,7 +15,7 @@ jobs:
           # setting to empty strng to allow builds with warnings
           # todo: consider removing this, and disallowing pushing with warnings?
           rustflags: ""
-      - run: cargo test --all-features
+      - run: cargo test --workspace --all-features --locked
 
   # Check formatting with rustfmt
   formatting:

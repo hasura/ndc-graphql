@@ -9,7 +9,7 @@ graphql_client = { workspace = true }
 graphql-parser = { workspace = true }
 ndc-models = { workspace = true }
 reqwest = { workspace = true }
-rustls-pemfile = "2"
+rustls-pki-types = { version = "1.12", features = ["std"] }
 schemars = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
