@@ -234,7 +234,7 @@ fn normalize_query_data(
         if is_root_value_alias(field_name.inner()) {
             let normalized_value = normalize_field_value(
                 row_field_value.0,
-                root_nested_fields,
+                root_nested_fields.map(Box::as_ref),
                 root_field_definition,
                 &configuration.schema.definitions,
             )?;
@@ -363,8 +363,12 @@ fn normalize_object_from_source(
         })?;
 
         if let Some(value) = lookup_requested_value(source, alias, column) {
-            let normalized_value =
-                normalize_field_value(value, nested_field, field_definition, definitions)?;
+            let normalized_value = normalize_field_value(
+                value,
+                nested_field.map(Box::as_ref),
+                field_definition,
+                definitions,
+            )?;
             normalized.insert(alias.to_string(), normalized_value);
         }
     }
@@ -405,8 +409,12 @@ fn normalize_polymorphic_value(
                 common_fields.and_then(|fields| fields.get(column)),
                 lookup_requested_value(&source, alias, column),
             ) {
-                let normalized_value =
-                    normalize_field_value(value, nested_field, field_definition, definitions)?;
+                let normalized_value = normalize_field_value(
+                    value,
+                    nested_field.map(Box::as_ref),
+                    field_definition,
+                    definitions,
+                )?;
                 normalized.insert(alias.to_string(), normalized_value);
             }
             continue;
@@ -425,11 +433,13 @@ fn normalize_polymorphic_value(
             continue;
         }
 
-        let requested_subfields = nested_field.and_then(underlying_fields).ok_or_else(|| {
-            QueryError::new_invalid_request(&format!(
-                "Field {column} requires nested object fields for polymorphic response shaping"
-            ))
-        })?;
+        let requested_subfields = nested_field
+            .and_then(|field| underlying_fields(field))
+            .ok_or_else(|| {
+                QueryError::new_invalid_request(&format!(
+                    "Field {column} requires nested object fields for polymorphic response shaping"
+                ))
+            })?;
 
         let concrete_object_fields = match definitions.get(&concrete_type) {
             Some(TypeDef::Object { fields, .. }) => fields,
@@ -712,10 +722,13 @@ mod tests {
             .expect("request should contain __value");
 
         let models::Field::Column {
-            fields: Some(models::NestedField::Object(root_object)),
+            fields: Some(nested_fields),
             ..
         } = root_field
         else {
+            panic!("__value should contain an object selection");
+        };
+        let models::NestedField::Object(root_object) = nested_fields.as_mut() else {
             panic!("__value should contain an object selection");
         };
 
@@ -725,10 +738,13 @@ mod tests {
             .expect("request should contain relationship field");
 
         let models::Field::Column {
-            fields: Some(models::NestedField::Object(relationship_object)),
+            fields: Some(nested_fields),
             ..
         } = relationship_field
         else {
+            panic!("relationship field should contain an object selection");
+        };
+        let models::NestedField::Object(relationship_object) = nested_fields.as_mut() else {
             panic!("relationship field should contain an object selection");
         };
 
@@ -850,10 +866,13 @@ mod tests {
             .expect("request should contain __value");
 
         let models::Field::Column {
-            fields: Some(models::NestedField::Object(root_object)),
+            fields: Some(nested_fields),
             ..
         } = root_field
         else {
+            panic!("__value should contain an object selection");
+        };
+        let models::NestedField::Object(root_object) = nested_fields.as_mut() else {
             panic!("__value should contain an object selection");
         };
 
@@ -863,10 +882,13 @@ mod tests {
             .expect("request should contain relationship field");
 
         let models::Field::Column {
-            fields: Some(models::NestedField::Object(relationship_object)),
+            fields: Some(nested_fields),
             ..
         } = relationship_field
         else {
+            panic!("relationship field should contain an object selection");
+        };
+        let models::NestedField::Object(relationship_object) = nested_fields.as_mut() else {
             panic!("relationship field should contain an object selection");
         };
 

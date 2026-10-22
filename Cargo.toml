@@ -14,9 +14,9 @@ graphql_client = "0.14"
 graphql-introspection-query = "0.2"
 graphql-parser = "0.4"
 indexmap = "2.11"
-ndc-models = { git = "http://github.com/hasura/ndc-spec.git", tag = "v0.2.10" }
+ndc-models = { git = "http://github.com/hasura/ndc-spec.git", tag = "v0.2.12" }
 # 
-ndc-sdk = { git = "https://github.com/hasura/ndc-sdk-rs", tag = "v0.9.0-beta.1", package = "ndc-sdk", features = [
+ndc-sdk = { git = "https://github.com/hasura/ndc-sdk-rs", tag = "v0.9.1", package = "ndc-sdk", features = [
     "rustls",
 ], default-features = false }
 prometheus = "0.14"

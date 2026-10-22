@@ -329,7 +329,7 @@ fn query_request_with_polymorphic_field(
         field_name.into(),
         models::Field::Column {
             column: field_name.into(),
-            fields,
+            fields: fields.map(Box::new),
             arguments: arguments.unwrap_or_default(),
         },
     );
@@ -342,18 +342,22 @@ fn query_request_with_polymorphic_field(
                 "__value".into(),
                 models::Field::Column {
                     column: "__value".into(),
-                    fields: Some(models::NestedField::Object(models::NestedObject {
-                        fields: indexmap::IndexMap::from([(
-                            "relationship".into(),
-                            models::Field::Column {
-                                column: "relationship".into(),
-                                fields: Some(models::NestedField::Object(models::NestedObject {
-                                    fields: relationship_fields,
-                                })),
-                                arguments: BTreeMap::new(),
-                            },
-                        )]),
-                    })),
+                    fields: Some(Box::new(models::NestedField::Object(
+                        models::NestedObject {
+                            fields: indexmap::IndexMap::from([(
+                                "relationship".into(),
+                                models::Field::Column {
+                                    column: "relationship".into(),
+                                    fields: Some(Box::new(models::NestedField::Object(
+                                        models::NestedObject {
+                                            fields: relationship_fields,
+                                        },
+                                    ))),
+                                    arguments: BTreeMap::new(),
+                                },
+                            )]),
+                        },
+                    ))),
                     arguments: BTreeMap::new(),
                 },
             )])),
@@ -401,10 +405,13 @@ fn rename_polymorphic_variant_alias(
         .expect("request should contain __value");
 
     let models::Field::Column {
-        fields: Some(models::NestedField::Object(root_object)),
+        fields: Some(nested_fields),
         ..
     } = root_field
     else {
+        panic!("__value should contain an object selection");
+    };
+    let models::NestedField::Object(root_object) = nested_fields.as_mut() else {
         panic!("__value should contain an object selection");
     };
 
@@ -414,10 +421,13 @@ fn rename_polymorphic_variant_alias(
         .expect("request should contain relationship field");
 
     let models::Field::Column {
-        fields: Some(models::NestedField::Object(relationship_object)),
+        fields: Some(nested_fields),
         ..
     } = relationship_field
     else {
+        panic!("relationship field should contain an object selection");
+    };
+    let models::NestedField::Object(relationship_object) = nested_fields.as_mut() else {
         panic!("relationship field should contain an object selection");
     };
 

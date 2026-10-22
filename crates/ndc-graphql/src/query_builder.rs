@@ -88,7 +88,7 @@ pub fn build_mutation_document(
                         &dummy_variables,
                         &configuration.schema.definitions,
                     )?,
-                    fields,
+                    fields.as_ref(),
                     field_definition,
                     &mut parameters,
                     configuration,
@@ -210,7 +210,7 @@ pub fn build_query_document(
                         variables,
                         &configuration.schema.definitions,
                     )?,
-                    subfields,
+                    subfields.as_deref(),
                     root_field_definition,
                     &mut parameters,
                     configuration,
@@ -251,7 +251,7 @@ pub fn build_query_document(
                     &dummy_variables,
                     &configuration.schema.definitions,
                 )?,
-                subfields,
+                subfields.as_deref(),
                 root_field_definition,
                 &mut parameters,
                 configuration,
@@ -361,7 +361,7 @@ fn selection_set_field<'a>(
     alias: &str,
     field_name: &FieldName,
     arguments: Vec<(String, Value<'a, String>)>,
-    fields: &Option<NestedField>,
+    fields: Option<&NestedField>,
     field_definition: &ObjectFieldDefinition,
     parameters: &mut OperationParameters,
     configuration: &ServerConfig,
@@ -389,13 +389,13 @@ fn selection_set_field<'a>(
 }
 
 fn selection_set<'a>(
-    fields: &Option<NestedField>,
+    fields: Option<&NestedField>,
     field_definition: &ObjectFieldDefinition,
     parameters: &mut OperationParameters,
     configuration: &ServerConfig,
     variables: &BTreeMap<VariableName, serde_json::Value>,
 ) -> Result<SelectionSet<'a, String>, QueryBuilderError> {
-    let items = match fields.as_ref().and_then(underlying_fields) {
+    let items = match fields.and_then(underlying_fields) {
         Some(requested_fields) => {
             let object_name = field_definition.r#type.name();
             match configuration.schema.definitions.get(&object_name) {
@@ -486,7 +486,7 @@ fn object_selection_items<'a>(
                     variables,
                     &configuration.schema.definitions,
                 )?,
-                fields,
+                fields.as_deref(),
                 field_definition,
                 parameters,
                 configuration,
@@ -564,7 +564,7 @@ fn polymorphic_selection_items<'a>(
                 }
 
                 let requested_subfields = nested_fields
-                    .as_ref()
+                    .as_deref()
                     .and_then(underlying_fields)
                     .ok_or_else(|| QueryBuilderError::PolymorphicFieldMissingSelection {
                         object: object_name.clone(),
@@ -621,7 +621,7 @@ fn polymorphic_selection_items<'a>(
                     variables,
                     &configuration.schema.definitions,
                 )?,
-                nested_fields,
+                nested_fields.as_deref(),
                 field_definition,
                 parameters,
                 configuration,
