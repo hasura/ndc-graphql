@@ -2,7 +2,7 @@
 source: crates/ndc-graphql/tests/query_builder.rs
 expression: capabilities_response()
 ---
-version: 0.2.10
+version: 0.2.12
 capabilities:
   query:
     variables: {}
